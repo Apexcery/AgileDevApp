@@ -3,40 +3,42 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/ic_menu_home"
+        android:title="Home"
+        android:checkable="true" />
 
-    <group android:checkableBehavior="single">
-        <item
-            android:id="@+id/nav_home"
-            android:icon="@drawable/ic_menu_home"
-            android:title="Home" />
-
+    <group>
         <item android:title="Track">
             <menu>
-                <group android:checkableBehavior="single">
-                    <item
-                        android:id="@+id/nav_movies"
-                        android:icon="@drawable/ic_menu_movies"
-                        android:title="Movies" />
-                    <item
-                        android:id="@+id/nav_tv"
-                        android:icon="@drawable/ic_menu_tv"
-                        android:title="TV Shows" />
-                </group>
+                <item
+                    android:id="@+id/nav_movies"
+                    android:icon="@drawable/ic_menu_movies"
+                    android:title="Movies"
+                    android:checkable="true" />
+                <item
+                    android:id="@+id/nav_tv"
+                    android:icon="@drawable/ic_menu_tv"
+                    android:title="TV Shows"
+                    android:checkable="true" />
             </menu>
         </item>
+    </group>
 
-        <item android:title="Communicate">
+    <group>
+        <item android:title="About">
             <menu>
-                <group android:checkableBehavior="single">
-                    <item
-                        android:id="@+id/nav_help"
-                        android:icon="@drawable/ic_menu_help"
-                        android:title="Help" />
-                    <item
-                        android:id="@+id/nav_settings"
-                        android:icon="@drawable/ic_menu_settings"
-                        android:title="Settings" />
-                </group>
+                <item
+                    android:id="@+id/nav_help"
+                    android:icon="@drawable/ic_menu_help"
+                    android:title="Help"
+                    android:checkable="true" />
+                <item
+                    android:id="@+id/nav_settings"
+                    android:icon="@drawable/ic_menu_settings"
+                    android:title="Settings"
+                    android:checkable="true" />
             </menu>
         </item>
     </group>
