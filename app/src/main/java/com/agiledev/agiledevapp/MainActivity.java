@@ -1,8 +1,11 @@
 package com.agiledev.agiledevapp;
 
+import android.app.SearchManager;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.widget.SearchView;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -40,6 +43,7 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        navigationView.setCheckedItem(R.id.nav_home);
     }
 
     @Override
@@ -56,6 +60,11 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+
+        SearchManager searchManager = (SearchManager)getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = (SearchView)menu.findItem(R.id.search).getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+
         return true;
     }
 
@@ -67,7 +76,7 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.search) {
             return true;
         }
 
@@ -80,17 +89,15 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        if (id == R.id.nav_home) {
 
-        } else if (id == R.id.nav_slideshow) {
+        } else if (id == R.id.nav_movies) {
 
-        } else if (id == R.id.nav_manage) {
+        } else if (id == R.id.nav_tv) {
 
-        } else if (id == R.id.nav_share) {
+        } else if (id == R.id.nav_help) {
 
-        } else if (id == R.id.nav_send) {
+        } else if (id == R.id.nav_settings) {
 
         }
 
