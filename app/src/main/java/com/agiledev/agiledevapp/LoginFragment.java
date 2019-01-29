@@ -46,10 +46,10 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
         switch (view.getId()) {
             case R.id.btnLogin:
 
-                isUsernameValid();
+      //         isUsernameValid();
 
-//                Intent intent = new Intent(getActivity(), MainActivity.class);
-//                startActivity(intent);
+                Intent intent = new Intent(getActivity(), MainActivity.class);
+                startActivity(intent);
                 break;
         }
     }
