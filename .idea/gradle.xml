@@ -7,8 +7,8 @@
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/app" />
+            <option value="/home/scm-studs/t7037453/AndroidStudioProjects/App" />
+            <option value="/home/scm-studs/t7037453/AndroidStudioProjects/App/app" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

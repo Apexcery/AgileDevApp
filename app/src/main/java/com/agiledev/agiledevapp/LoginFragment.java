@@ -1,5 +1,6 @@
 package com.agiledev.agiledevapp;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -7,10 +8,15 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethod;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
+
 import com.microsoft.windowsazure.mobileservices.*;
 import com.microsoft.windowsazure.mobileservices.table.MobileServiceTable;
 
@@ -18,27 +24,32 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-public class LoginFragment extends Fragment implements View.OnClickListener {
+public class LoginFragment extends Fragment implements View.OnClickListener, View.OnTouchListener {
 
     private EditText txtUsername;
     private MobileServiceClient mClient;
     private MobileServiceTable<UserDetails> mUserDetailsTable;
     private MobileServiceList<UserDetails> results;
+    private View v;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.fragment_login, container, false);
+         v = inflater.inflate(R.layout.fragment_login, container, false);
 
-        Button btnLogin = view.findViewById(R.id.btnLogin);
+        Button btnLogin = v.findViewById(R.id.btnLogin);
         btnLogin.setOnClickListener(this);
 
-        txtUsername = view.findViewById(R.id.txtUsername);
+        txtUsername = v.findViewById(R.id.txtUsername);
+
+        RelativeLayout layout = v.findViewById(R.id.loginlayout);
+        layout.setOnTouchListener(this);
+
 
         mClient = AzureServiceAdapter.getInstance().getClient();
         mUserDetailsTable = mClient.getTable("UserDetails", UserDetails.class);
 
-        return view;
+        return v;
     }
 
     @Override
@@ -46,10 +57,10 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
         switch (view.getId()) {
             case R.id.btnLogin:
 
-                isUsernameValid();
+                //isUsernameValid();
 
-//                Intent intent = new Intent(getActivity(), MainActivity.class);
-//                startActivity(intent);
+                Intent intent = new Intent(getActivity(), MainActivity.class);
+                startActivity(intent);
                 break;
         }
     }
@@ -78,5 +89,11 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
                 return null;
             }
         }.execute();
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        hideKeyboard.HideKeyboard(getActivity());
+        return true;
     }
 }
