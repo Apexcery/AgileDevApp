@@ -16,8 +16,11 @@ public class LoginRegisterActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_register);
-        viewPager = (ViewPager) findViewById(R.id.viewPager);
-        tabLayout = (TabLayout) findViewById(R.id.tabLayout);
+
+        AzureServiceAdapter.Initialize(this);
+
+        viewPager = findViewById(R.id.viewPager);
+        tabLayout = findViewById(R.id.tabLayout);
 
         adapter = new TabAdapter(getSupportFragmentManager());
         adapter.addFragment(new LoginFragment(), "Login");
