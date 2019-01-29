@@ -29,12 +29,11 @@
         android:layout_marginTop="15dp"
         android:background="@drawable/roundedtextbox"
         android:ems="10"
-        android:hint="Username"
         android:gravity="center"
+        android:hint="Username"
         android:inputType="textPersonName"
         android:textColor="@color/colorAccent"
-        android:textColorHint="@android:color/darker_gray"
-        />
+        android:textColorHint="@android:color/darker_gray" />
 
     <EditText
         android:id="@+id/txtPassword"
@@ -62,6 +61,6 @@
         android:layout_marginTop="15dp"
         android:background="@drawable/roundedbutton"
         android:text="Login"
-        android:textColor="@color/colorAccent"/>
+        android:textColor="@color/colorAccent" />
 
 </RelativeLayout>
