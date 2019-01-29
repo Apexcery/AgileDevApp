@@ -7,11 +7,11 @@ import java.sql.Date;
  */
 
 public class UserDetails {
-    String id;
-    public String getId() {
+    int id;
+    public int getId() {
         return id;
     }
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
