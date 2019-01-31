@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -42,7 +43,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener, Vie
 
         txtUsername = v.findViewById(R.id.txtUsername);
 
-        RelativeLayout layout = v.findViewById(R.id.loginlayout);
+        ConstraintLayout layout = v.findViewById(R.id.loginlayout);
         layout.setOnTouchListener(this);
 
 
