@@ -1,13 +1,24 @@
 package com.agiledev.agiledevapp;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
+
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.ArrayList;
 
 public class LoginRegisterActivity extends AppCompatActivity {
 
@@ -15,10 +26,19 @@ public class LoginRegisterActivity extends AppCompatActivity {
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private Activity activity;
-
+    final static FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private static ArrayList<String> usernameList = new ArrayList<>();
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+
+        boolean isLoggedIn = sharedPref.getBoolean("LoggedIn",false);
+
+        if (isLoggedIn)
+            goToMain();
 
         setContentView(R.layout.activity_login_register);
 
@@ -42,5 +62,23 @@ public class LoginRegisterActivity extends AppCompatActivity {
         viewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewPager);
 
+    }
+
+    protected void goToMain() {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+        finishAffinity();
+    }
+
+    public static synchronized void populateUsernames() {
+        db.collection("UserDetails").get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                    usernameList.add(document.getId());
+                    Log.e("Found Username", document.getId());
+                }
+            }
+        });
     }
 }
