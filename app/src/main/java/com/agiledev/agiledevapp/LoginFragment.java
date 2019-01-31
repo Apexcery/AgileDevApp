@@ -12,26 +12,23 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
-import com.microsoft.windowsazure.mobileservices.*;
-import com.microsoft.windowsazure.mobileservices.table.MobileServiceTable;
-
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 public class LoginFragment extends Fragment implements View.OnClickListener, View.OnTouchListener {
 
     private EditText txtUsername;
-    private MobileServiceClient mClient;
-    private MobileServiceTable<UserDetails> mUserDetailsTable;
-    private MobileServiceList<UserDetails> results;
     private View v;
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -45,11 +42,6 @@ public class LoginFragment extends Fragment implements View.OnClickListener, Vie
 
         RelativeLayout layout = v.findViewById(R.id.layoutLogin);
         layout.setOnTouchListener(this);
-
-        mClient = AzureServiceAdapter.getInstance().getClient();
-        mUserDetailsTable = mClient.getTable("UserDetails", UserDetails.class);
-
-
 
         return v;
     }
@@ -69,31 +61,27 @@ public class LoginFragment extends Fragment implements View.OnClickListener, Vie
 
     private void isUsernameValid()
     {
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                try {
-                    Log.e("Test1", "Reached before results.");
-                    results = mUserDetailsTable.where().field("username").eq(txtUsername.getText().toString()).execute().get(30, TimeUnit.SECONDS);
-                    Log.e("Test2", "Reached after results.");
-                    if (results == null || results.size() <= 0) {
-                        AlertDialog ad = new AlertDialog.Builder(getActivity()).create();
-                        ad.setTitle("Username Available!");
-                        ad.setMessage("This username is available!");
-                        ad.show();
-                    } else {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                        builder.setTitle("Username Unavailable").setMessage("This username is already in use!").create();
-                        AlertDialog dialog = builder.show();
-                    }
-                }
-                catch(Exception e)
-                {
-                    Log.e("Exception", e.getMessage());
-                }
-                return null;
-            }
-        }.execute();
+        DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference();
+        Query query = databaseRef.child("UserDetails").child(txtUsername.getText().toString()).child("name");
+        if (query != null) {
+            Log.e("User Invalid", "This username is already in use!");
+        } else {
+            Log.e("User Valid", "This username is allowed!");
+        }
+//        Query userValid = databaseRef.equalTo(txtUsername.getText().toString());
+//        userValid.addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                if (dataSnapshot != null) {
+//                    Log.e("User Invalid", "This username is already in use!");
+//                } else {
+//                    Log.e("User Valid", "This username is allowed!");
+//                }
+//            }
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {}
+//        });
+
     }
 
     @Override

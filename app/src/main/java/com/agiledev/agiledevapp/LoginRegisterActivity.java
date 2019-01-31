@@ -3,16 +3,11 @@ package com.agiledev.agiledevapp;
 import android.app.Activity;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.transition.Explode;
-import android.transition.Slide;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.Window;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 public class LoginRegisterActivity extends AppCompatActivity {
 
@@ -26,8 +21,6 @@ public class LoginRegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_login_register);
-
-        AzureServiceAdapter.Initialize(this);
 
         viewPager = findViewById(R.id.viewPager);
         tabLayout = findViewById(R.id.tabLayout);
