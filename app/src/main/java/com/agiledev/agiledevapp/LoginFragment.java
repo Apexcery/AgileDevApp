@@ -1,8 +1,10 @@
 package com.agiledev.agiledevapp;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -26,16 +28,11 @@ public class LoginFragment extends Fragment implements View.OnClickListener, Vie
 
     private EditText txtUsername;
     private View v;
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-    private ArrayList<String> usernameList = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         v = inflater.inflate(R.layout.fragment_login, container, false);
-
-        populateUsernames();
 
         Button btnLogin = v.findViewById(R.id.btnLogin);
         btnLogin.setOnClickListener(this);
@@ -59,8 +56,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener, Vie
                     if(!usernameFound()) {
                         SimpleDialog.create(DialogOption.OkOnlyDismiss, view.getContext(), "Invalid Username", "The entered username was not found!").show();
                     } else {
-                        Intent intent = new Intent(getActivity(), MainActivity.class);
-                        startActivity(intent);
+                        logIn(txtUsername.getText().toString());
                     }
                 }
                 break;
@@ -69,19 +65,20 @@ public class LoginFragment extends Fragment implements View.OnClickListener, Vie
 
     private boolean usernameFound()
     {
-        return usernameList.contains(txtUsername.getText().toString());
+        return LoginRegisterActivity.usernameList.contains(txtUsername.getText().toString());
     }
 
-    public synchronized void populateUsernames() {
-        db.collection("UserDetails").get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-            @Override
-            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                    usernameList.add(document.getId());
-                    Log.e("Found Username", document.getId());
-                }
-            }
-        });
+    private void logIn(String username) {
+        SharedPreferences sharedPref = getActivity().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+
+        editor.putBoolean(getString(R.string.prefs_loggedin_boolean), true);
+        editor.putString(getString(R.string.prefs_loggedin_username), username);
+
+        editor.apply();
+
+        Intent intent = new Intent(getActivity(), MainActivity.class);
+        startActivity(intent);
     }
 
     @Override

@@ -8,6 +8,7 @@
 
     <string name="text_search">Search</string>
 
-
-
+    <string name="preference_file_key">com.agiledev.agiledevapp.sharedprefs</string>
+    <string name="prefs_loggedin_boolean">loggedIn</string>
+    <string name="prefs_loggedin_username">loggedInUsername</string>
 </resources>

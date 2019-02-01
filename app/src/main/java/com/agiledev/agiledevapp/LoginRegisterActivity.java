@@ -13,37 +13,41 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import com.facebook.stetho.Stetho;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.auth.User;
 
 import java.util.ArrayList;
 
 public class LoginRegisterActivity extends AppCompatActivity {
 
-    private TabAdapter adapter;
-    private TabLayout tabLayout;
-    private ViewPager viewPager;
     private Activity activity;
-    final static FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private static ArrayList<String> usernameList = new ArrayList<>();
-    
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    public static ArrayList<String> usernameList = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        boolean isLoggedIn = sharedPref.getBoolean(getString(R.string.prefs_loggedin_boolean),false);
 
-        boolean isLoggedIn = sharedPref.getBoolean("LoggedIn",false);
+        if (isLoggedIn) {
+            String loggedInUsername = sharedPref.getString(getString(R.string.prefs_loggedin_username), null);
+            goToMain(loggedInUsername);
+        }
 
-        if (isLoggedIn)
-            goToMain();
+        populateUsernames(db);
 
         setContentView(R.layout.activity_login_register);
 
-        viewPager = findViewById(R.id.viewPager);
-        tabLayout = findViewById(R.id.tabLayout);
+        Stetho.initializeWithDefaults(this);
+
+        ViewPager viewPager = findViewById(R.id.viewPager);
+        TabLayout tabLayout = findViewById(R.id.tabLayout);
 
         activity = this;
         LinearLayout layout = findViewById(R.id.layoutLoginRegister);
@@ -55,7 +59,7 @@ public class LoginRegisterActivity extends AppCompatActivity {
             }
         });
 
-        adapter = new TabAdapter(getSupportFragmentManager());
+        TabAdapter adapter = new TabAdapter(getSupportFragmentManager());
         adapter.addFragment(new LoginFragment(), "Login");
         adapter.addFragment(new RegisterFragment(), "Register");
 
@@ -64,19 +68,19 @@ public class LoginRegisterActivity extends AppCompatActivity {
 
     }
 
-    protected void goToMain() {
+    protected void goToMain(String loggedInUsername) {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
         finishAffinity();
     }
 
-    public static synchronized void populateUsernames() {
+    public static synchronized void populateUsernames(FirebaseFirestore db) {
         db.collection("UserDetails").get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                 for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                    usernameList.add(document.getId());
                     Log.e("Found Username", document.getId());
+                    usernameList.add(document.getId());
                 }
             }
         });
