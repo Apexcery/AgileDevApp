@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
+    android:background="@android:color/transparent"
     android:focusable="true"
     android:focusableInTouchMode="true"
     android:id="@+id/loginlayout">
@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
 
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="16dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:background="@drawable/roundedtextbox"
@@ -37,7 +37,7 @@
         android:layout_height="wrap_content"
         android:layout_alignStart="@+id/txtUsername"
         android:layout_below="@+id/txtUsername"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="108dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:background="@drawable/roundedtextbox"
