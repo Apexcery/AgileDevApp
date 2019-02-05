@@ -13,12 +13,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import com.facebook.stetho.Stetho;
+//import com.facebook.stetho.Stetho;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.auth.User;
 
 import java.util.ArrayList;
 
@@ -37,14 +36,14 @@ public class LoginRegisterActivity extends AppCompatActivity {
 
         if (isLoggedIn) {
             String loggedInUsername = sharedPref.getString(getString(R.string.prefs_loggedin_username), null);
-            goToMain(loggedInUsername);
+            goToMain();
         }
 
         populateUsernames(db);
 
         setContentView(R.layout.activity_login_register);
 
-        Stetho.initializeWithDefaults(this);
+//        Stetho.initializeWithDefaults(this);
 
         ViewPager viewPager = findViewById(R.id.viewPager);
         TabLayout tabLayout = findViewById(R.id.tabLayout);
@@ -68,7 +67,7 @@ public class LoginRegisterActivity extends AppCompatActivity {
 
     }
 
-    protected void goToMain(String loggedInUsername) {
+    protected void goToMain() {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
         finishAffinity();
