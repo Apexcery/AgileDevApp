@@ -1,5 +1,6 @@
 package com.agiledev.agiledevapp;
 
+import android.app.FragmentManager;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
@@ -90,14 +91,27 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
+        FragmentManager fragmentManager = getFragmentManager();
 
         if (id == R.id.nav_home) {
 
         } else if (id == R.id.nav_movies) {
+            fragmentManager.beginTransaction()
+                    .replace(R.id.content_frame
+                            ,new MovieFragment())
+                    .commit();
             
         } else if (id == R.id.nav_tv) {
+            fragmentManager.beginTransaction()
+                    .replace(R.id.content_frame
+                            ,new TvshowFragment())
+                    .commit();
 
         } else if (id == R.id.nav_help) {
+            fragmentManager.beginTransaction()
+                    .replace(R.id.content_frame
+                            ,new HelpFragment())
+                    .commit();
 
         } else if (id == R.id.nav_settings) {
 
