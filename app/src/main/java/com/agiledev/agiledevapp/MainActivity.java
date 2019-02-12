@@ -1,5 +1,6 @@
 package com.agiledev.agiledevapp;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.SearchManager;
 import android.content.Context;
@@ -12,6 +13,7 @@ import android.support.v7.widget.SearchView;
 import android.transition.Explode;
 import android.transition.Fade;
 import android.transition.Slide;
+import android.view.MotionEvent;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -22,6 +24,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity
@@ -56,7 +59,7 @@ public class MainActivity extends AppCompatActivity
 
         SharedPreferences sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         TextView textView = navigationView.getHeaderView(0).findViewById(R.id.loggedInUser);
-        textView.setText("Logged in as: " + sharedPref.getString(getString(R.string.prefs_loggedin_username),"Error, user not found!"));
+        textView.setText(getString(R.string.nav_loggedin_as, sharedPref.getString(getString(R.string.prefs_loggedin_username),"Error, user not found!")));
     }
 
     @Override
