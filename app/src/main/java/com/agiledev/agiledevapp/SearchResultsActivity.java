@@ -50,7 +50,7 @@ public class SearchResultsActivity extends AppCompatActivity {
 
         RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(this, 2);
         recyclerView.setLayoutManager(mLayoutManager);
-        recyclerView.addItemDecoration(new GridSpacingItemDecoration(2, dpToPx(15), true));
+        recyclerView.addItemDecoration(new GridSpacingItemDecoration(2, dpToPx(15), true)); //TODO: Experiment with making search cards 1 column wide, and horizontally laid out
         recyclerView.setItemAnimator(new DefaultItemAnimator());
     }
 
@@ -58,7 +58,7 @@ public class SearchResultsActivity extends AppCompatActivity {
         private int spanCount, spacing;
         private boolean includeEdge;
 
-        public GridSpacingItemDecoration(int spanCount, int spacing, boolean includeEdge) {
+        GridSpacingItemDecoration(int spanCount, int spacing, boolean includeEdge) {
             this.spanCount = spanCount;
             this.spacing = spacing;
             this.includeEdge = includeEdge;
@@ -110,7 +110,7 @@ public class SearchResultsActivity extends AppCompatActivity {
                 try {
                     results = response.getJSONArray("Search");
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    e.printStackTrace(); //TODO: Show a snackbar/toast if there are no results for search.
                 }
                 for (int i = 0; i < results.length(); i++) {
                     try {
