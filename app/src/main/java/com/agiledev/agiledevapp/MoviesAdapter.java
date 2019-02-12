@@ -17,10 +17,9 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHold
     private Context mContext;
     private List<Movie> movieList;
 
-    public class MyViewHolder extends RecyclerView.ViewHolder {
+    class MyViewHolder extends RecyclerView.ViewHolder {
         TextView title, year;
         ImageView poster;
-        View v;
 
         MyViewHolder(View view) {
             super(view);

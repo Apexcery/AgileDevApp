@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.app.Activity;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -14,7 +15,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
 
-//import com.facebook.stetho.Stetho;
+import com.facebook.stetho.Stetho;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -27,7 +28,6 @@ import android.widget.LinearLayout;
 
 public class LoginRegisterActivity extends AppCompatActivity {
 
-    private Activity activity;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     public static ArrayList<String> usernameList = new ArrayList<>();
     private Activity activity;
@@ -48,13 +48,13 @@ public class LoginRegisterActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_login_register);
 
-//        Stetho.initializeWithDefaults(this);
+        Stetho.initializeWithDefaults(this);
 
         ViewPager viewPager = findViewById(R.id.viewPager);
         TabLayout tabLayout = findViewById(R.id.tabLayout);
 
         activity = this;
-        LinearLayout layout = findViewById(R.id.layoutLoginRegister);
+        ConstraintLayout layout = findViewById(R.id.layoutLoginRegister);
         layout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {

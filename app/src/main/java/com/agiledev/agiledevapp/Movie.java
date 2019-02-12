@@ -1,18 +1,5 @@
 package com.agiledev.agiledevapp;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
-import android.util.Log;
-import android.widget.ImageView;
-
-import java.io.InputStream;
-import java.net.URL;
-
-/**
- * Created by glees on 12/02/2019.
- */
-
 public class Movie {
 
     private String Title;

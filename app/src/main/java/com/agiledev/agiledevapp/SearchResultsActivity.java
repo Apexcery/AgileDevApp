@@ -52,7 +52,6 @@ public class SearchResultsActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.addItemDecoration(new GridSpacingItemDecoration(2, dpToPx(15), true));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
-
     }
 
     public class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {

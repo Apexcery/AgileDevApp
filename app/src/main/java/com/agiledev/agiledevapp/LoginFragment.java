@@ -37,7 +37,6 @@ public class LoginFragment extends Fragment implements View.OnClickListener, Vie
 
     private EditText txtUsername;
     private View v;
-    private View v;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -49,13 +48,8 @@ public class LoginFragment extends Fragment implements View.OnClickListener, Vie
 
         txtUsername = v.findViewById(R.id.txtUsername);
 
-        ConstraintLayout layout = v.findViewById(R.id.loginlayout);
+        ConstraintLayout layout = v.findViewById(R.id.layoutLogin);
         layout.setOnTouchListener(this);
-
-        RelativeLayout layout = v.findViewById(R.id.layoutLogin);
-        layout.setOnTouchListener(this);
-
-
 
         return v;
     }
@@ -64,14 +58,14 @@ public class LoginFragment extends Fragment implements View.OnClickListener, Vie
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btnLogin:
-                if (txtUsername.getText() == null || txtUsername.getText().toString().equals(""))  {
+                if (txtUsername.getText() == null || txtUsername.getText().toString().trim().equals(""))  {
                     Log.e("Empty Input", "The username textbox is empty.");
                     SimpleDialog.create(DialogOption.OkOnlyDismiss, view.getContext(), "Invalid Username", "The username text field was left empty!").show();
                 } else {
                     if(!usernameFound()) {
                         SimpleDialog.create(DialogOption.OkOnlyDismiss, view.getContext(), "Invalid Username", "The entered username was not found!").show();
                     } else {
-                        logIn(txtUsername.getText().toString());
+                        logIn(txtUsername.getText().toString().trim());
                     }
                 }
                 break;
