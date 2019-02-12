@@ -22,9 +22,15 @@ import android.view.MenuItem;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    FragmentManager fragmentManager = getFragmentManager();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            return;
+        }
+
         setContentView(R.layout.activity_main);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -48,6 +54,9 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.setCheckedItem(R.id.nav_home);
+
+        fragmentManager.beginTransaction().replace(R.id.content_frame,new HomeFragment()).commit();
+        //new HomeFragment();
     }
 
     @Override
@@ -98,11 +107,13 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-        FragmentManager fragmentManager = getFragmentManager();
 
         if (id == R.id.nav_home) {
             //finish();
-            getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.content_frame)).commit();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.content_frame
+                            ,new HomeFragment())
+                    .commit();
 
         } else if (id == R.id.nav_movies) {
             fragmentManager.beginTransaction()

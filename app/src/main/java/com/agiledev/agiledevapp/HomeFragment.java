@@ -6,20 +6,19 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
 
 /**
  * Created by s6104158 on 07/02/19.
  */
 
-public class HelpFragment extends Fragment {
+public class HomeFragment extends Fragment {
 
     View myView;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        myView = inflater.inflate(R.layout.fragment_help, container, false);
+        myView = inflater.inflate(R.layout.fragment_home, container, false);
         return myView;
     }
 }
