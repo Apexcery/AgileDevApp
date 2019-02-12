@@ -6,7 +6,7 @@ package com.agiledev.agiledevapp;
 import com.loopj.android.http.*;
 
 public class OmdbRestClient {
-    private static final String BASE_URL = "http://www.omdbapi.com/?apikey=80b6b1ac&";
+    private static final String BASE_URL = "http://www.omdbapi.com/?apikey=80b6b1ac&type=movie&";
 
     private static AsyncHttpClient client = new AsyncHttpClient();
 
