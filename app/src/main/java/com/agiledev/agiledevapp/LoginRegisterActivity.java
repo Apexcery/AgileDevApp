@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.app.Activity;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -20,12 +21,16 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.LinearLayout;
 
 public class LoginRegisterActivity extends AppCompatActivity {
 
     private Activity activity;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     public static ArrayList<String> usernameList = new ArrayList<>();
+    private Activity activity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
