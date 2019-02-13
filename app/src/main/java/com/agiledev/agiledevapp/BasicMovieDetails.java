@@ -1,18 +1,20 @@
 package com.agiledev.agiledevapp;
 
-public class Movie {
+public class BasicMovieDetails {
 
     private String Title;
     private String Year;
     private String Poster;
+    private String imdbID;
 
-    public Movie() {
+    public BasicMovieDetails() {
     }
 
-    public Movie(String title, String year, String posterUrl) {
+    public BasicMovieDetails(String title, String year, String posterUrl, String imdbID) {
         this.Title = title;
         this.Year = year;
         this.Poster = posterUrl;
+        this.imdbID = imdbID;
     }
 
     public String getTitle() {
@@ -37,5 +39,13 @@ public class Movie {
 
     public void setPoster(String poster) {
         Poster = poster;
+    }
+
+    public String getImdbID() {
+        return imdbID;
+    }
+
+    public void setImdbID(String imdbID) {
+        this.imdbID = imdbID;
     }
 }

@@ -29,7 +29,7 @@ import android.widget.LinearLayout;
 public class LoginRegisterActivity extends AppCompatActivity {
 
     //TODO: Hash passwords with SHA-256.
-    
+
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     public static ArrayList<String> usernameList = new ArrayList<>();
     private Activity activity;
