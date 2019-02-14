@@ -21,15 +21,16 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHold
     public FragmentManager manager;
 
     class MyViewHolder extends RecyclerView.ViewHolder {
-        TextView title, year;
+        TextView title, genres, release_date;
         ImageView poster;
-        String imdbID;
+        String id;
         RelativeLayout layout;
 
         MyViewHolder(View view) {
             super(view);
             title = view.findViewById(R.id.movieCardTitle);
-            year = view.findViewById(R.id.movieCardYear);
+            genres = view.findViewById(R.id.movieCardGenres);
+            release_date = view.findViewById(R.id.movieCardReleaseDate);
             poster = view.findViewById(R.id.movieCardPoster);
             layout = view.findViewById(R.id.movieCard);
         }
@@ -50,18 +51,21 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHold
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position)  {
         BasicMovieDetails movie = movieList.get(position);
+
         holder.title.setText(movie.getTitle());
-        holder.year.setText(mContext.getString(R.string.movie_card_released, movie.getYear()));
-        holder.imdbID = movie.getImdbID();
+        holder.genres.setText(movie.getGenreNames());
+
+        holder.release_date.setText((movie.getRelease_date().equals("") ? "No Release" : mContext.getString(R.string.movie_card_released, movie.getRelease_date())));
+        holder.id = movie.getId();
         holder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MovieFullScreenDialog dialog = MovieFullScreenDialog.newInstance(holder.imdbID);
+                MovieFullScreenDialog dialog = MovieFullScreenDialog.newInstance(holder.id);
                 dialog.show(manager, MovieFullScreenDialog.TAG);
             }
         });
 
-        Glide.with(mContext).load(movie.getPoster()).into(holder.poster);
+        Glide.with(mContext).load(mContext.getResources().getString(R.string.movie_poster_icon_base_url) + movie.getPoster_path()).into(holder.poster);
     }
 
     @Override

@@ -1,20 +1,16 @@
 package com.agiledev.agiledevapp;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.SearchManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.SearchView;
-import android.transition.Explode;
-import android.transition.Fade;
-import android.transition.Slide;
-import android.view.MotionEvent;
+import android.util.Log;
+import android.util.SparseArray;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -24,9 +20,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.Window;
-import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.google.gson.Gson;
+import com.loopj.android.http.JsonHttpResponseHandler;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import cz.msebera.android.httpclient.Header;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -77,6 +80,8 @@ public class MainActivity extends AppCompatActivity
 
         TextView textView = navigationView.getHeaderView(0).findViewById(R.id.loggedInUser);
         textView.setText(getString(R.string.nav_loggedin_as, sharedPref.getString(getString(R.string.prefs_loggedin_username),"Error, user not found!")));
+
+        populateGenreTags();
     }
 
     @Override
@@ -143,5 +148,30 @@ public class MainActivity extends AppCompatActivity
         finishAffinity();
         Intent intent = new Intent(this, LoginRegisterActivity.class);
         getBaseContext().startActivity(intent);
+    }
+
+    public synchronized void populateGenreTags() {
+        TmdbRestClient.get("genre/movie/list?api_key=" + getString(R.string.tmdb_api_key), null, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                JSONArray results = new JSONArray();
+                try {
+                    results = response.getJSONArray("genres");
+                } catch (JSONException e) {
+                    Log.e("JSON Error", e.getMessage());
+                    e.printStackTrace();
+                }
+                SparseArray<String> genres = new SparseArray<>();
+                for (int i = 0; i < results.length(); i++) {
+                    try {
+                        JSONObject genre = results.getJSONObject(i);
+                        genres.put(genre.getInt("id"), genre.getString("name"));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                Globals.setGenreTags(genres);
+            }
+        });
     }
 }

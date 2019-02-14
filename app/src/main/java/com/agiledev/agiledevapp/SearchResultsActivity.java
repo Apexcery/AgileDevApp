@@ -66,12 +66,12 @@ public class SearchResultsActivity extends AppCompatActivity {
     }
 
     protected synchronized void searchMovieByTitle(String title) {
-        OmdbRestClient.get("s=" + title, null, new JsonHttpResponseHandler() {
+        TmdbRestClient.get("search/movie?api_key=" + getString(R.string.tmdb_api_key) + "&query=" + title, null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 JSONArray results = new JSONArray();
                 try {
-                    results = response.getJSONArray("Search");
+                    results = response.getJSONArray("results");
                 } catch (JSONException e) {
                     Log.e("JSON Error", e.getMessage());
                     if(e.getMessage().equals("No value for Search")) {

@@ -1,51 +1,56 @@
 package com.agiledev.agiledevapp;
 
+import java.util.ArrayList;
+
 public class BasicMovieDetails {
 
-    private String Title;
-    private String Year;
-    private String Poster;
-    private String imdbID;
+    private String title;
+    private String release_date;
+    private String poster_path;
+    private ArrayList<Integer> genre_ids;
+    private ArrayList<String> genre_names;
+    private String id;
 
     public BasicMovieDetails() {
     }
 
-    public BasicMovieDetails(String title, String year, String posterUrl, String imdbID) {
-        this.Title = title;
-        this.Year = year;
-        this.Poster = posterUrl;
-        this.imdbID = imdbID;
+    public BasicMovieDetails(String title, String releasedate, String poster_path, String id) {
+        this.title = title;
+        this.release_date = releasedate;
+        this.poster_path = poster_path;
+        this.id = id;
     }
 
     public String getTitle() {
-        return Title;
+        return title;
     }
 
-    public void setTitle(String title) {
-        Title = title;
+    public String getRelease_date() {
+        return release_date;
     }
 
-    public String getYear() {
-        return Year;
+    public String getPoster_path() {
+        return poster_path;
     }
 
-    public void setYear(String year) {
-        Year = year;
+    public String getId() {
+        return id;
     }
 
-    public String getPoster() {
-        return Poster;
+    public ArrayList<Integer> getGenre_ids() {
+        return genre_ids;
     }
 
-    public void setPoster(String poster) {
-        Poster = poster;
-    }
+    public String getGenreNames() {
+        ArrayList<Integer> ids = getGenre_ids();
+        ArrayList<String> names = new ArrayList<>();
+        for (int i : ids) {
+            names.add(Globals.getGenreTags().get(i));
+        }
+        String returnString = names.toString();
+        returnString = returnString.replace("[","");
+        returnString = returnString.replace("]","");
 
-    public String getImdbID() {
-        return imdbID;
-    }
-
-    public void setImdbID(String imdbID) {
-        this.imdbID = imdbID;
+        return returnString;
     }
 }
