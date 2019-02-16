@@ -24,7 +24,10 @@ public class FullMovieDetails {
     private String status;
     private String tagline;
     private String title;
+
     private Videos videos;
+
+    private Credits credits;
 
     public FullMovieDetails() {}
 
@@ -101,16 +104,22 @@ public class FullMovieDetails {
         return videos.getResults();
     }
 
+    public ArrayList<Cast> getCast() {
+        return credits.getCast();
+    }
+
     public class Genre {
         int id;
         String name;
     }
+
     public class ProductionCompanies {
         int id;
         String name;
         String logo_path;
         String origin_country;
     }
+
     public class Videos {
         ArrayList<Video> results;
 
@@ -119,11 +128,76 @@ public class FullMovieDetails {
         }
     }
     public class Video {
-        String id;
-        String key;
-        String name;
-        String site;
-        int size;
-        String type;
+        private String id;
+        private String key;
+        private String name;
+        private String site;
+        private int size;
+        private String type;
+
+        public String getId() {
+            return id;
+        }
+        public String getKey() {
+            return key;
+        }
+        public String getName() {
+            return name;
+        }
+        public String getSite() {
+            return site;
+        }
+        public int getSize() {
+            return size;
+        }
+        public String getType() {
+            return type;
+        }
+    }
+
+    public class Credits {
+        ArrayList<Cast> cast;
+
+        public ArrayList<Cast> getCast() {
+            return cast;
+        }
+    }
+    public class Cast {
+        private int cast_id;
+        private String character;
+        private int gender;
+        private int id;
+        private String name;
+        private String profile_path;
+
+        public int getCast_id() {
+            return cast_id;
+        }
+        public String getCharacter() {
+            return character;
+        }
+        public int getGender() {
+            return gender;
+        }
+        public int getId() {
+            return id;
+        }
+        public String getName() {
+            return name;
+        }
+        public String getProfile_path() {
+            return profile_path;
+        }
+    }
+
+    public String getGenresString() {
+        ArrayList<Genre> genres = getGenres();
+        StringBuilder returnString = new StringBuilder();
+        for (int i = 0; i < genres.size(); i++) {
+            returnString.append(genres.get(i).name);
+            if (i != genres.size() - 1)
+                returnString.append(" / ");
+        }
+        return returnString.toString();
     }
 }

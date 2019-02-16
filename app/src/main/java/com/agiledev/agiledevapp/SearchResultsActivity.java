@@ -11,6 +11,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
 import com.google.gson.Gson;
@@ -33,6 +34,7 @@ public class SearchResultsActivity extends AppCompatActivity {
     List<BasicMovieDetails> movies = new ArrayList<>();
     String searchPhrase;
     View v;
+    LinearLayout searchResults;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +47,7 @@ public class SearchResultsActivity extends AppCompatActivity {
 
         recyclerView = findViewById(R.id.search_recycler_view);
         spinner = findViewById(R.id.searchLoadingSpinner);
+        searchResults = findViewById(R.id.searchResults);
 
         handleIntent(getIntent());
 
@@ -97,6 +100,7 @@ public class SearchResultsActivity extends AppCompatActivity {
                 spinner.setVisibility(View.GONE);
                 adapter = new MoviesAdapter(getBaseContext(), movies, getSupportFragmentManager());
                 recyclerView.setAdapter(adapter);
+                searchResults.setVisibility(View.VISIBLE);
             }
         });
     }
