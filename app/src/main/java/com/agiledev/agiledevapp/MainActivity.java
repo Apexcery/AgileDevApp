@@ -2,12 +2,13 @@ package com.agiledev.agiledevapp;
 
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
+import android.app.AlertDialog;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.util.SparseArray;
@@ -22,7 +23,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONArray;
@@ -44,6 +44,8 @@ public class MainActivity extends AppCompatActivity
 
         sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         editor = sharedPref.edit();
+
+        TmdbClient.key = getResources().getString(R.string.tmdb_api_key);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -67,9 +69,6 @@ public class MainActivity extends AppCompatActivity
         logout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                editor.remove(getString(R.string.prefs_loggedin_username));
-                editor.remove(getString(R.string.prefs_loggedin_boolean));
-                editor.apply();
                 logout();
             }
         });
@@ -145,13 +144,29 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void logout() {
-        finishAffinity();
-        Intent intent = new Intent(this, LoginRegisterActivity.class);
-        getBaseContext().startActivity(intent);
+        DialogInterface.OnClickListener dialogClick = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if (i == DialogInterface.BUTTON_POSITIVE) {
+                    editor.remove(getString(R.string.prefs_loggedin_username));
+                    editor.remove(getString(R.string.prefs_loggedin_boolean));
+                    editor.apply();
+
+                    finishAffinity();
+                    Intent intent = new Intent(getBaseContext(), LoginRegisterActivity.class);
+                    getBaseContext().startActivity(intent);
+                } else if (i == DialogInterface.BUTTON_NEGATIVE)
+                    dialogInterface.dismiss();
+            }
+        };
+        AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, this,"Logout?", "Are you sure you want to logout?");
+        dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", dialogClick);
+        dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", dialogClick);
+        dialog.show();
     }
 
     public synchronized void populateGenreTags() {
-        TmdbRestClient.get("genre/movie/list?api_key=" + getString(R.string.tmdb_api_key), null, new JsonHttpResponseHandler() {
+        TmdbClient.getGenres(null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 JSONArray results = new JSONArray();

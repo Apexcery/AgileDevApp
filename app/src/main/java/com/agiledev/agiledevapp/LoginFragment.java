@@ -75,7 +75,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener, Vie
 
     private boolean usernameFound()
     {
-        return LoginRegisterActivity.usernameList.contains(txtUsername.getText().toString());
+        return LoginRegisterActivity.usernameList.contains(txtUsername.getText().toString().trim());
     }
 
     private void logIn(String username) {
@@ -84,7 +84,6 @@ public class LoginFragment extends Fragment implements View.OnClickListener, Vie
 
         editor.putBoolean(getString(R.string.prefs_loggedin_boolean), true);
         editor.putString(getString(R.string.prefs_loggedin_username), username);
-
         editor.apply();
 
         Intent intent = new Intent(getActivity(), MainActivity.class);

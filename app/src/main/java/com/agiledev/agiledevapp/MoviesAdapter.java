@@ -65,7 +65,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHold
             }
         });
 
-        Glide.with(mContext).load(mContext.getResources().getString(R.string.movie_poster_icon_base_url) + movie.getPoster_path()).into(holder.poster);
+        TmdbClient.loadImage(mContext, movie.getPoster_path(), holder.poster);
     }
 
     @Override

@@ -26,7 +26,7 @@
     <string name="nav_log_out">Log Out</string>
     <string name="logout_caps">LOGOUT</string>
 
-    <string name="movie_poster_icon_base_url">http://image.tmdb.org/t/p/w154/</string>
+    <string name="poster_icon_base_url">http://image.tmdb.org/t/p/w154/</string>
     <string name="plot_overview"><u><b>Plot Overview</b></u></string>
     <string name="genres"><u><b>Genres</b></u></string>
     <string name="cast"><u><b>Cast</b></u></string>

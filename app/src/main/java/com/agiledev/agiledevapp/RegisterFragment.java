@@ -26,7 +26,7 @@ public class RegisterFragment extends Fragment implements View.OnTouchListener {
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        hideKeyboard.HideKeyboard(getActivity());
+        CloseKeyboard.hideKeyboard(getActivity());
         return true;
     }
 }

@@ -68,7 +68,7 @@ public class MovieCastAdapter extends RecyclerView.Adapter<MovieCastAdapter.MyVi
         holder.charName.setText(cast.getCharacter());
         holder.gender.setText(cast.getGender() == 1 ? "Female" : "Male");
 
-        TmdbRestClient.get("person/" + cast.getId() + "?api_key=" + res.getString(R.string.tmdb_api_key), null, new JsonHttpResponseHandler() {
+        TmdbClient.getPersonDetails(cast.getId(), null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers,  JSONObject response) {
                 person = new Gson().fromJson(response.toString(), Person.class);
@@ -83,7 +83,8 @@ public class MovieCastAdapter extends RecyclerView.Adapter<MovieCastAdapter.MyVi
             }
         });
 
-        Glide.with(mContext).load(mContext.getResources().getString(R.string.movie_poster_icon_base_url) + cast.getProfile_path()).into(holder.image);
+        TmdbClient.loadImage(mContext, cast.getProfile_path(), holder.image);
+//        Glide.with(mContext).load(mContext.getResources().getString(R.string.movie_poster_icon_base_url) + cast.getProfile_path()).into(holder.image);
     }
 
     @Override

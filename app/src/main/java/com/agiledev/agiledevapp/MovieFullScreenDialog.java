@@ -7,29 +7,22 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.widget.CircularProgressDrawable;
 import android.support.v4.widget.NestedScrollView;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.VideoView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -113,7 +106,7 @@ public class MovieFullScreenDialog extends DialogFragment {
     }
 
     protected synchronized void getMovieDetails(final View view) {
-        TmdbRestClient.get("movie/" + id + "?api_key=" + getResources().getString(R.string.tmdb_api_key) + "&append_to_response=videos,credits", null, new JsonHttpResponseHandler() {
+        TmdbClient.getMovieInfo(id, null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 movieDetails = new Gson().fromJson(response.toString(), FullMovieDetails.class);
@@ -183,6 +176,10 @@ public class MovieFullScreenDialog extends DialogFragment {
                         viewMoreCast();
                     }
                 });
+            }
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                Log.e(String.valueOf(statusCode), throwable.getMessage());
             }
         });
     }

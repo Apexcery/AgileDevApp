@@ -42,7 +42,6 @@ public class LoginRegisterActivity extends AppCompatActivity {
         boolean isLoggedIn = sharedPref.getBoolean(getString(R.string.prefs_loggedin_boolean),false);
 
         if (isLoggedIn) {
-            String loggedInUsername = sharedPref.getString(getString(R.string.prefs_loggedin_username), null);
             goToMain();
         }
 
