@@ -4,11 +4,17 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.app.AlertDialog;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
+import android.util.SparseArray;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -18,11 +24,23 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
+
+import com.loopj.android.http.JsonHttpResponseHandler;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import cz.msebera.android.httpclient.Header;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     FragmentManager fragmentManager = getFragmentManager();
+
+    SharedPreferences sharedPref;
+    SharedPreferences.Editor editor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +50,11 @@ public class MainActivity extends AppCompatActivity
         }
 
         setContentView(R.layout.activity_main);
+
+        sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        editor = sharedPref.edit();
+
+        TmdbClient.key = getResources().getString(R.string.tmdb_api_key);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -51,12 +74,25 @@ public class MainActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
+        final TextView logout = findViewById(R.id.nav_logout);
+        logout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                logout();
+            }
+        });
+
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.setCheckedItem(R.id.nav_home);
 
         fragmentManager.beginTransaction().replace(R.id.content_frame,new HomeFragment()).commit();
         //new HomeFragment();
+
+        TextView textView = navigationView.getHeaderView(0).findViewById(R.id.loggedInUser);
+        textView.setText(getString(R.string.nav_loggedin_as, sharedPref.getString(getString(R.string.prefs_loggedin_username),"Error, user not found!")));
+
+        populateGenreTags();
     }
 
     @Override
@@ -120,7 +156,7 @@ public class MainActivity extends AppCompatActivity
                     .replace(R.id.content_frame
                             ,new MovieFragment())
                     .commit();
-            
+
         } else if (id == R.id.nav_tv) {
             fragmentManager.beginTransaction()
                     .replace(R.id.content_frame
@@ -140,5 +176,52 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    public void logout() {
+        DialogInterface.OnClickListener dialogClick = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if (i == DialogInterface.BUTTON_POSITIVE) {
+                    editor.remove(getString(R.string.prefs_loggedin_username));
+                    editor.remove(getString(R.string.prefs_loggedin_boolean));
+                    editor.apply();
+
+                    finishAffinity();
+                    Intent intent = new Intent(getBaseContext(), LoginRegisterActivity.class);
+                    getBaseContext().startActivity(intent);
+                } else if (i == DialogInterface.BUTTON_NEGATIVE)
+                    dialogInterface.dismiss();
+            }
+        };
+        AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, this,"Logout?", "Are you sure you want to logout?");
+        dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", dialogClick);
+        dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", dialogClick);
+        dialog.show();
+    }
+
+    public synchronized void populateGenreTags() {
+        TmdbClient.getGenres(null, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                JSONArray results = new JSONArray();
+                try {
+                    results = response.getJSONArray("genres");
+                } catch (JSONException e) {
+                    Log.e("JSON Error", e.getMessage());
+                    e.printStackTrace();
+                }
+                SparseArray<String> genres = new SparseArray<>();
+                for (int i = 0; i < results.length(); i++) {
+                    try {
+                        JSONObject genre = results.getJSONObject(i);
+                        genres.put(genre.getInt("id"), genre.getString("name"));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                Globals.setGenreTags(genres);
+            }
+        });
     }
 }
