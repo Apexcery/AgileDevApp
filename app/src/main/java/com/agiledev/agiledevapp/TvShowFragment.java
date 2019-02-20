@@ -11,7 +11,7 @@ import android.view.ViewGroup;
  * Created by s6104158 on 07/02/19.
  */
 
-public class TvshowFragment extends Fragment {
+public class TvShowFragment extends Fragment {
 
     View myView;
 
