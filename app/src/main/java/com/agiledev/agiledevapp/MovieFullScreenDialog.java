@@ -41,7 +41,7 @@ import cz.msebera.android.httpclient.Header;
 
 public class MovieFullScreenDialog extends DialogFragment {
 
-    public static String TAG = "FullScreenDialog";
+    public static String TAG = "MovieFullScreenDialog";
     public String id;
     public FullMovieDetails movieDetails;
     public TextView toolbarTitle;

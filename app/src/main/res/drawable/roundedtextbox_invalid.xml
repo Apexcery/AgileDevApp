@@ -11,6 +11,10 @@
 
     <solid android:color="#B3616161"/>
 
+    <stroke
+        android:color="@color/colorPrimaryDark"
+        android:width="2dp" />
+
     <padding
         android:bottom="0dp"
         android:left="0dp"

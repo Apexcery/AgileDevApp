@@ -1,10 +1,6 @@
 package com.agiledev.agiledevapp;
 
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,10 +9,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+
+import static com.agiledev.agiledevapp.LoginRegisterActivity.logIn;
+import static com.agiledev.agiledevapp.LoginRegisterActivity.usernameFound;
 
 public class LoginFragment extends Fragment implements View.OnClickListener, View.OnTouchListener {
 
-    private EditText txtUsername;
+    private EditText txtUsername, txtPassword;
     private View v;
 
     @Override
@@ -28,8 +28,9 @@ public class LoginFragment extends Fragment implements View.OnClickListener, Vie
         btnLogin.setOnClickListener(this);
 
         txtUsername = v.findViewById(R.id.txtUsername);
+        txtPassword = v.findViewById(R.id.txtPassword);
 
-        ConstraintLayout layout = v.findViewById(R.id.layoutLogin);
+        LinearLayout layout = v.findViewById(R.id.layoutLogin);
         layout.setOnTouchListener(this);
 
         return v;
@@ -39,35 +40,36 @@ public class LoginFragment extends Fragment implements View.OnClickListener, Vie
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btnLogin:
-                if (txtUsername.getText() == null || txtUsername.getText().toString().trim().equals(""))  {
-                    Log.e("Empty Input", "The username textbox is empty.");
+                if (txtUsername.getText() == null || txtUsername.getText().toString().trim().equals("")) {
+                    Log.e("Invalid Field", "The username field is empty!");
                     SimpleDialog.create(DialogOption.OkOnlyDismiss, view.getContext(), "Invalid Username", "The username text field was left empty!").show();
+                } else if (txtPassword.getText() == null || txtPassword.getText().toString().trim().equals("")) {
+                    Log.e("Invalid Field", "The password field is empty!");
+                    SimpleDialog.create(DialogOption.OkOnlyDismiss, view.getContext(), "Invalid Password", "The password text field was left empty!").show();
                 } else {
-                    if(!usernameFound()) {
+                    if (!usernameFound(txtUsername.getText().toString().trim())) {
                         SimpleDialog.create(DialogOption.OkOnlyDismiss, view.getContext(), "Invalid Username", "The entered username was not found!").show();
                     } else {
-                        logIn(txtUsername.getText().toString().trim());
+                        if (passwordMatchesUsername()) {
+                            logIn(txtUsername.getText().toString().trim(), getContext());
+                        } else {
+                            SimpleDialog.create(DialogOption.OkOnlyDismiss, view.getContext(), "Invalid Password", "The password you entered was incorrect!").show();
+                        }
                     }
                 }
                 break;
         }
     }
 
-    private boolean usernameFound()
-    {
-        return LoginRegisterActivity.usernameList.contains(txtUsername.getText().toString().trim());
-    }
-
-    private void logIn(String username) {
-        SharedPreferences sharedPref = getActivity().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-
-        editor.putBoolean(getString(R.string.prefs_loggedin_boolean), true);
-        editor.putString(getString(R.string.prefs_loggedin_username), username);
-        editor.apply();
-
-        Intent intent = new Intent(getActivity(), MainActivity.class);
-        startActivity(intent);
+    private boolean passwordMatchesUsername() {
+        boolean valid = false;
+        for (LoginRegisterActivity.User u : LoginRegisterActivity.userList) {
+            String hashedPass = RegisterFragment.hash(txtPassword.getText().toString());
+            if (u.getUsername().equals(txtUsername.getText().toString().trim()) && u.getPassword().equals(hashedPass)) {
+                valid = true;
+            }
+        }
+        return valid;
     }
 
     @Override
