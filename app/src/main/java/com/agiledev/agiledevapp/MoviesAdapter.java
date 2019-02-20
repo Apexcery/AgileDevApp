@@ -65,7 +65,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHold
             }
         });
 
-        TmdbClient.loadImage(mContext, movie.getPoster_path(), holder.poster);
+        TmdbClient.loadImage(mContext, movie.getPoster_path(), holder.poster, TmdbClient.imageType.ICON);
     }
 
     @Override

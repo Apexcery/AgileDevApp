@@ -68,7 +68,16 @@ class TmdbClient {
      * @param path The relative path of the image to load.
      * @param holder The ImageView to load the image into.
      */
-    static void loadImage(Context mContext, String path, ImageView holder) {
-        Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url) + path).into(holder);
+    static void loadImage(Context mContext, String path, ImageView holder, imageType type) {
+        switch(type) {
+            case ICON:
+                Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url) + path).into(holder);
+                break;
+        }
+
+    }
+
+    public enum imageType {
+        ICON
     }
 }
