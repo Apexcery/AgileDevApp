@@ -26,7 +26,6 @@ public class MovieCastAdapter extends RecyclerView.Adapter<MovieCastAdapter.MyVi
     private Context mContext;
     private List<FullMovieDetails.Cast> castList;
     public FragmentManager manager;
-    private Resources res;
     public Person person;
 
     class MyViewHolder extends RecyclerView.ViewHolder {
@@ -51,7 +50,6 @@ public class MovieCastAdapter extends RecyclerView.Adapter<MovieCastAdapter.MyVi
         this.mContext = mContext;
         this.castList = castList;
         this.manager = manager;
-        this.res = mContext.getResources();
     }
 
     @Override
@@ -85,6 +83,12 @@ public class MovieCastAdapter extends RecyclerView.Adapter<MovieCastAdapter.MyVi
 
         TmdbClient.loadImage(mContext, cast.getProfile_path(), holder.image, TmdbClient.imageType.ICON);
 //        Glide.with(mContext).load(mContext.getResources().getString(R.string.movie_poster_icon_base_url) + cast.getProfile_path()).into(holder.image);
+        holder.layout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
     }
 
     @Override
