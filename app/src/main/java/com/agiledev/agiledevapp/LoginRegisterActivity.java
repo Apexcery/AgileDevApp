@@ -55,7 +55,7 @@ public class LoginRegisterActivity extends AppCompatActivity {
         TabLayout tabLayout = findViewById(R.id.tabLayout);
 
         activity = this;
-        ConstraintLayout layout = findViewById(R.id.layoutLoginRegister);
+        LinearLayout layout = findViewById(R.id.layoutLoginRegister);
         layout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
