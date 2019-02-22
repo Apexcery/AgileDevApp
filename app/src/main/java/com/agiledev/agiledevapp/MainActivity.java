@@ -164,10 +164,9 @@ public class MainActivity extends AppCompatActivity
                     .commit();
 
         } else if (id == R.id.nav_help) {
-            fragmentManager.beginTransaction()
-                    .replace(R.id.content_frame
-                            ,new HelpFragment())
-                    .commit();
+            removeAllFragments(fragmentManager);
+            Intent intent = new Intent(this, ActivityHelp.class);
+            startActivity(intent);
 
         } else if (id == R.id.nav_settings) {
 
