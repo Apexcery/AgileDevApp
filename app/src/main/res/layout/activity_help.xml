@@ -1,18 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background">
-
-    <TextView
-        android:id="@+id/textView3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"
-        android:text="Help"
-        android:textColor="@android:color/holo_blue_light" />
 
     <Button
         android:id="@+id/FeedbackButton"
@@ -22,4 +13,13 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="28dp"
         android:text="@string/Feedback_button"/>
+
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/FeedbackButton"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="30dp"
+        app:srcCompat="@drawable/help" />
 </RelativeLayout>
