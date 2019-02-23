@@ -11,11 +11,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
-import static android.app.PendingIntent.getActivity;
-
-public class FeedbackDialogFragment extends DialogFragment
+public class issueDialogFragment extends DialogFragment
 {
-    private static final String TAG = "FeedbackDialogFragment";
+    private static final String TAG = "issueDialogFragment";
 
     //wigets
     private Button mActionSubmit, mActionCancel;
@@ -26,7 +24,7 @@ public class FeedbackDialogFragment extends DialogFragment
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState)
     {
-        View view = inflater.inflate(R.layout.dialogfrag_feedback, container, false);
+        View view = inflater.inflate(R.layout.dialogfrag_issue, container, false);
         mActionSubmit = view.findViewById(R.id.issueSubmitbutton);
         mActionCancel = view.findViewById(R.id.issuecancelbutton);
         mName = view.findViewById(R.id.issueNameText);
@@ -52,11 +50,11 @@ public class FeedbackDialogFragment extends DialogFragment
                 String emailS = mEmail.getText().toString();
                 Intent email = new Intent(Intent.ACTION_SEND);
                 email.putExtra(Intent.EXTRA_EMAIL, new String[] { "s6104158@live.tees.ac.uk" });
-                email.putExtra(Intent.EXTRA_SUBJECT, "Feedback by: " + nameS);
+                email.putExtra(Intent.EXTRA_SUBJECT, "Issue report by: " + nameS);
                 email.putExtra(Intent.EXTRA_TEXT, messageS + "\n\n Email: " + emailS);
 
                 email.setType("text/email");
-                startActivity(Intent.createChooser(email, "Choose app to send email"));
+                startActivity(Intent.createChooser(email, "Choose app to send issue"));
 
                 getDialog().dismiss();
                 dialog.show(getFragmentManager(), "ThankyouDialogFragment");

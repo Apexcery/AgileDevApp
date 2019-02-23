@@ -26,6 +26,8 @@
     <string name="nav_item_settings">Settings</string>
     <string name="nav_log_out">Log Out</string>
     <string name="logout_caps">LOGOUT</string>
+    <string name="about_text">This app is used to track movies and TV shows that you watch.
+        You can also get notifications about upcoming episodes of TV shows.</string>
 
     <string name="poster_icon_base_url">http://image.tmdb.org/t/p/w154/</string>
     <string name="plot_overview"><u><b>Plot Overview</b></u></string>
