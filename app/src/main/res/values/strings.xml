@@ -27,7 +27,11 @@
     <string name="nav_log_out">Log Out</string>
     <string name="logout_caps">LOGOUT</string>
     <string name="about_text">This app is used to track movies and TV shows that you watch.
-        You can also get notifications about upcoming episodes of TV shows.</string>
+        Allowing you to see information about the cast/crew/director etc. When you search for a movie,
+        you can watch the movies trailer and see the plot of it.
+        once you have some TV shows saved you can get notifications about upcoming episodes of those TV shows when they air.
+        You can also see movie recommendations based on the movies and TV shows you have watch/saved in the app.
+    </string>
 
     <string name="poster_icon_base_url">http://image.tmdb.org/t/p/w154/</string>
     <string name="plot_overview"><u><b>Plot Overview</b></u></string>
@@ -41,4 +45,6 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_feedback">Feedback</string>
     <string name="title_activity_help">activity_help</string>
+
+    <string name="About"><u>About</u></string>
 </resources>
