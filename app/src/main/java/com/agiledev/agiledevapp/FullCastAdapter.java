@@ -1,7 +1,8 @@
 package com.agiledev.agiledevapp;
 
+
+import android.app.FragmentManager;
 import android.content.Context;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,18 +20,22 @@ import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
 
-public class MovieCastAdapter extends RecyclerView.Adapter<MovieCastAdapter.MyViewHolder> {
+/**
+ * Created by t7037453 on 28/02/19.
+ */
+
+public class FullCastAdapter extends RecyclerView.Adapter<FullCastAdapter.MyViewHolder> {
 
     private Context mContext;
-    private List<FullMovieDetails.Cast> castList;
-    public FragmentManager manager;
+    private List<MovieCredits.Cast> castList;
+    public android.support.v4.app.FragmentManager manager;
 
     class MyViewHolder extends RecyclerView.ViewHolder {
         TextView realName, charName, gender, DOB, died;
         ImageView image;
         String id;
         RelativeLayout layout;
-        Person person;
+        MovieCastAdapter.Person person;
 
         MyViewHolder(View view) {
             super(view);
@@ -44,21 +49,21 @@ public class MovieCastAdapter extends RecyclerView.Adapter<MovieCastAdapter.MyVi
         }
     }
 
-    MovieCastAdapter(Context mContext, List<FullMovieDetails.Cast> castList, FragmentManager manager) {
+    FullCastAdapter(Context mContext, List<MovieCredits.Cast> castList, android.support.v4.app.FragmentManager manager) {
         this.mContext = mContext;
         this.castList = castList;
         this.manager = manager;
     }
 
     @Override
-    public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public FullCastAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.cast_movie_card, parent, false);
         return new MyViewHolder(itemView);
     }
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position)  {
-        final FullMovieDetails.Cast cast = castList.get(position);
+        final MovieCredits.Cast cast = castList.get(position);
 
         holder.realName.setText(cast.getName());
         holder.charName.setText(cast.getCharacter());
@@ -66,14 +71,14 @@ public class MovieCastAdapter extends RecyclerView.Adapter<MovieCastAdapter.MyVi
 
         TmdbClient.getPersonDetails(cast.getId(), null, new JsonHttpResponseHandler() {
             @Override
-            public void onSuccess(int statusCode, Header[] headers,  JSONObject response) {
-                holder.person = new Gson().fromJson(response.toString(), Person.class);
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                holder.person = new Gson().fromJson(response.toString(), MovieCastAdapter.Person.class);
                 if (holder.person == null)
                     return;
-                String DOBString = holder.DOB.getText().toString() + " " + holder.person.birthday;
+                String DOBString = holder.DOB.getText().toString() + " " + holder.person.getBirthday();
                 holder.DOB.setText(DOBString);
-                if (holder.person.deathday != null) {
-                    String diedString = "Died - " + holder.person.deathday;
+                if (holder.person.getDeathday() != null) {
+                    String diedString = "Died - " + holder.person.getDeathday();
                     holder.died.setText(diedString);
                 }
                 holder.layout.setOnClickListener(new View.OnClickListener() {
@@ -93,40 +98,5 @@ public class MovieCastAdapter extends RecyclerView.Adapter<MovieCastAdapter.MyVi
     public int getItemCount() {
         return castList.size();
     }
-
-    public class Person {
-        private String birthday;
-        private String known_for_department;
-        private String deathday;
-        private String name;
-        private int gender;
-        private String biography;
-        private String place_of_birth;
-        private String profile_path;
-
-        public String getBirthday() {
-            return birthday;
-        }
-        public String getKnown_for_department() {
-            return known_for_department;
-        }
-        public String getDeathday() {
-            return deathday;
-        }
-        public String getName() {
-            return name;
-        }
-        public int getGender() {
-            return gender;
-        }
-        public String getBiography() {
-            return biography;
-        }
-        public String getPlace_of_birth() {
-            return place_of_birth;
-        }
-        public String getProfile_path() {
-            return profile_path;
-        }
-    }
 }
+

@@ -27,6 +27,7 @@ public class LoginRegisterActivity extends AppCompatActivity {
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     public static ArrayList<String> usernameList = new ArrayList<>();
+    public static ArrayList<User> userList = new ArrayList<>();
     private Activity activity;
 
     @Override
@@ -40,7 +41,7 @@ public class LoginRegisterActivity extends AppCompatActivity {
             goToMain();
         }
 
-        populateUsernames(db);
+        populateUsers(db);
 
         setContentView(R.layout.activity_login_register);
 
@@ -74,15 +75,61 @@ public class LoginRegisterActivity extends AppCompatActivity {
         finishAffinity();
     }
 
-    public static synchronized void populateUsernames(FirebaseFirestore db) {
+    public static synchronized void populateUsers(FirebaseFirestore db) {
         db.collection("UserDetails").get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                 for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                     Log.e("Found Username", document.getId());
-                    usernameList.add(document.getId());
+                    Log.e("Found Password", document.getData().get("password").toString());
+                    User user = new User();
+                    user.setUsername(document.getId());
+                    user.setPassword(document.getData().get("password").toString());
+                    userList.add(user);
+                    Log.e("Saved User", "Username: " + user.getUsername() + " | Password: " + user.getPassword());
+                    Log.e("-",":-");
                 }
             }
         });
+    }
+
+    public static void logIn(String username, Context mContext) {
+        SharedPreferences sharedPref = mContext.getSharedPreferences("com.agiledev.agiledevapp.sharedprefs", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+
+        editor.putBoolean("loggedIn", true);
+        editor.putString("loggedInUsername", username);
+        editor.apply();
+
+        Intent intent = new Intent(mContext, MainActivity.class);
+        mContext.startActivity(intent);
+    }
+
+    public static boolean usernameFound(String username)
+    {
+        for (User u : userList) {
+            if (u.getUsername().equals(username))
+                return true;
+        }
+        return false;
+    }
+
+    public static class User {
+        private String username;
+        private String password;
+
+        public String getUsername() {
+            return username;
+        }
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+        public void setPassword(String password) {
+            this.password = password;
+        }
     }
 }

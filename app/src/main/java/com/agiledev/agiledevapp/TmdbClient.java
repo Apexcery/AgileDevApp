@@ -15,7 +15,7 @@ class TmdbClient {
 //  API Calls  //
 
     /**
-     * This method is used to return a JSONArray of genres from the API.
+     * This method is used to return a JSONArray of duration from the API.
      */
     static void getGenres(RequestParams params, AsyncHttpResponseHandler responseHandler) {
         String url = getAbsoluteUrl("genre/movie/list?api_key=" + key);
@@ -49,6 +49,11 @@ class TmdbClient {
      */
     static void getPersonDetails(int personID, RequestParams params, AsyncHttpResponseHandler responseHandler) {
         String url = getAbsoluteUrl("person/" + personID + "?api_key=" + key);
+        client.get(url, params, responseHandler);
+    }
+
+    static void getMovieCast(String movieID, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+        String url = getAbsoluteUrl("movie/" + movieID + "/credits?api_key=" + key);
         client.get(url, params, responseHandler);
     }
 

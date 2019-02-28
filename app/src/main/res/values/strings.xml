@@ -34,4 +34,12 @@
     <string name="born">Born -</string>
     <string name="release_date">Release Date:</string>
     <string name="runtime">Runtime:</string>
+    <string name="biography"><u>Biography</u></string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="email_address">Email Address</string>
+    <string name="register">Register</string>
+    <string name="name">Name</string>
+    <string name="date_of_birth">Date of Birth</string>
 </resources>
