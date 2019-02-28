@@ -71,4 +71,5 @@ public class FeedbackDialogFragment extends DialogFragment
         CloseKeyboard.hideKeyboard(getActivity());
         return true;
     }
+
 }

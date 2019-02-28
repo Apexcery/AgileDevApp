@@ -1,16 +1,12 @@
 package com.agiledev.agiledevapp;
 
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.app.AlertDialog;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
@@ -154,13 +150,13 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_movies) {
             fragmentManager.beginTransaction()
                     .replace(R.id.content_frame
-                            ,new MovieFragment())
+                            ,new TrackedMoviesFragment())
                     .commit();
 
         } else if (id == R.id.nav_tv) {
             fragmentManager.beginTransaction()
                     .replace(R.id.content_frame
-                            ,new TvshowFragment())
+                            ,new TrackedTvshowsFragment())
                     .commit();
 
         } else if (id == R.id.nav_help) {
