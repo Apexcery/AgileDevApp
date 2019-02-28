@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.app.AlertDialog;
@@ -24,11 +25,26 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.model.DocumentCollections;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import cz.msebera.android.httpclient.Header;
 
@@ -57,15 +73,6 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -84,12 +91,12 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.setCheckedItem(R.id.nav_home);
 
-        fragmentManager.beginTransaction().replace(R.id.content_frame,new HomeFragment()).commit();
-        //new HomeFragment();
-
         TextView textView = navigationView.getHeaderView(0).findViewById(R.id.loggedInUser);
         textView.setText(getString(R.string.nav_loggedin_as, sharedPref.getString(getString(R.string.prefs_loggedin_username),"Error, user not found!")));
 
+        fragmentManager.beginTransaction().replace(R.id.content_frame,new HomeFragment()).commit();
+
+        populateTrackedMovies();
         populateGenreTags();
     }
 
@@ -198,6 +205,7 @@ public class MainActivity extends AppCompatActivity
         dialog.show();
     }
 
+    //TODO: Move this method to the splash screen activity.
     public synchronized void populateGenreTags() {
         TmdbClient.getGenres(null, new JsonHttpResponseHandler() {
             @Override
@@ -219,6 +227,32 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
                 Globals.setGenreTags(genres);
+            }
+        });
+    }
+
+    public synchronized void populateTrackedMovies() {
+        DocumentReference trackedMoviesRef = FirebaseFirestore.getInstance().collection("TrackedMovies").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
+        trackedMoviesRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        Map<String, Object> movies = document.getData();
+                        List<Globals.Movie> movieList = new ArrayList<>();
+                        for(Map.Entry<String, Object> entry : movies.entrySet()) {
+                            Globals.Movie movie = new Globals.Movie();
+                            movie.id = entry.getKey();
+                            Map<String, Object> field = (Map)entry.getValue();
+                            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+                            Timestamp timestamp = (Timestamp)field.get("date");
+                            movie.date = timestamp.toDate();
+                            movieList.add(movie);
+                        }
+                        Globals.setTrackedMovies(movieList);
+                    }
+                }
             }
         });
     }
