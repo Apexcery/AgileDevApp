@@ -52,6 +52,11 @@ class TmdbClient {
         client.get(url, params, responseHandler);
     }
 
+    static void getMovieImages(String movieId, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+        String url = getAbsoluteUrl("movie/" + movieId + "/images?api_key=" + key);
+        client.get(url, params, responseHandler);
+    }
+
     /**
      * @param relativeUrl The specific part of the url after the BASE_URL that you want to request from.
      * @return The BASE_URL concatenated with the relative url that was passed as a parameter.

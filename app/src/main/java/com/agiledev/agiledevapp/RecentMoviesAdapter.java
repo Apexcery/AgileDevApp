@@ -19,16 +19,11 @@ public class RecentMoviesAdapter extends RecyclerView.Adapter<RecentMoviesAdapte
     public FragmentManager manager;
 
     class MyViewHolder extends RecyclerView.ViewHolder {
-        TextView title, duration, watched_date;
         ImageView poster;
-        String id;
         RelativeLayout layout;
 
         MyViewHolder(View view) {
             super(view);
-            title = view.findViewById(R.id.movieRecentCardTitle);
-            duration = view.findViewById(R.id.movieRecentCardDuration);
-            watched_date = view.findViewById(R.id.movieRecentCardWatchDate);
             poster = view.findViewById(R.id.movieRecentCardPoster);
             layout = view.findViewById(R.id.movieVerticalCard);
         }
@@ -48,17 +43,12 @@ public class RecentMoviesAdapter extends RecyclerView.Adapter<RecentMoviesAdapte
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position)  {
-        BasicMovieDetails movie = movieList.get(position);
+        final BasicMovieDetails movie = movieList.get(position);
 
-        holder.title.setText(movie.getTitle());
-        holder.duration.setText(movie.getGenreNames());
-
-        holder.watched_date.setText((movie.getRelease_date().equals("") ? "No Release" : mContext.getString(R.string.movie_card_released, movie.getRelease_date())));
-        holder.id = movie.getId();
         holder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MovieFullScreenDialog dialog = MovieFullScreenDialog.newInstance(holder.id);
+                MovieFullScreenDialog dialog = MovieFullScreenDialog.newInstance(movie.getId());
                 dialog.show(manager, MovieFullScreenDialog.TAG);
             }
         });
