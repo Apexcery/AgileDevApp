@@ -1,14 +1,11 @@
 package com.agiledev.agiledevapp;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.annotation.StringDef;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,8 +28,8 @@ public class HomeFragment extends Fragment {
         TabLayout tabLayout = myView.findViewById(R.id.tabLayout);
         //TabAdapter adapter = new TabAdapter(getActivity().getSupportFragmentManager());
         TabAdapter Adapter = new TabAdapter(((FragmentActivity) getActivity()).getSupportFragmentManager());
-        Adapter.addFragment(new trendingMovies(), "Movies");
-        Adapter.addFragment(new trendingTvshows(), "Tv Shows");
+        Adapter.addFragment(new trendingMoviesFragment(), "Movies");
+        Adapter.addFragment(new trendingTvShowsFragment(), "Tv Shows");
         viewPager.setAdapter(Adapter);
         tabLayout.setupWithViewPager(viewPager);
 

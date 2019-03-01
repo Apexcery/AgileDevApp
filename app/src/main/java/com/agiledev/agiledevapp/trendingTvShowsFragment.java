@@ -1,7 +1,5 @@
 package com.agiledev.agiledevapp;
 
-import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -11,6 +9,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.GridLayout;
+import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
@@ -27,27 +27,27 @@ import java.util.List;
 import cz.msebera.android.httpclient.Header;
 
 
-public class trendingMovies extends Fragment
+public class trendingTvShowsFragment extends Fragment
 {
     ProgressBar spinner;
     RecyclerView recyclerView;
     MoviesAdapter adapter;
     List<BasicMovieDetails> movies = new ArrayList<>();
     View v;
-    LinearLayout trendingMovieResults;
+    LinearLayout trendingtvResults;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        v = inflater.inflate(R.layout.fragment_trendingmovies, container, false);
+        v = inflater.inflate(R.layout.fragment_trendingtvshows, container, false);
 
-        recyclerView = v.findViewById(R.id.movietrending_recycler_view);
-        spinner = v.findViewById(R.id.movietrendingspinner);
-        trendingMovieResults = v.findViewById(R.id.movietrendingresults);
+        recyclerView = v.findViewById(R.id.Tvtrending_recycler_view);
+        spinner = v.findViewById(R.id.Tvtrendingspinner);
+        trendingtvResults = v.findViewById(R.id.tvtrendingresults);
 
         getTrendingMovies();
 
-        RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getActivity(), 1);
+        RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getActivity(), 2);
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
@@ -56,29 +56,32 @@ public class trendingMovies extends Fragment
 
     private void getTrendingMovies()
     {
-        TmdbClient.getweektrendingmovies(null, new JsonHttpResponseHandler() {
+        TmdbClient.getweektrendingtvshows(null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 JSONArray results = new JSONArray();
                 try {
                     results = response.getJSONArray("results");
+
+                    for (int i = 0; i < 10; i++) {
+                        try {
+                            Log.e("Results:", results.get(i).toString());
+                            BasicMovieDetails movie = new Gson().fromJson(results.get(i).toString(), BasicMovieDetails.class);
+                            movies.add(movie);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                    TrendingTvShowsAdapter adapter = new TrendingTvShowsAdapter(getContext(), movies, getFragmentManager());
+                    spinner.setVisibility(View.GONE);
+                    recyclerView.setAdapter(adapter);
+                    trendingtvResults.setVisibility(View.VISIBLE);
                 } catch (JSONException e) {
                     Log.e("JSON Error", e.getMessage());
 
                 }
-                for (int i = 0; i < 6; i++) {
-                    try {
-                        Log.e("Results:", results.get(i).toString());
-                        BasicMovieDetails movie = new Gson().fromJson(results.get(i).toString(), BasicMovieDetails.class);
-                        movies.add(movie);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
 
-                }
-                spinner.setVisibility(View.GONE);
-                recyclerView.setAdapter(adapter);
-                trendingMovieResults.setVisibility(View.VISIBLE);
             }
         });
     }

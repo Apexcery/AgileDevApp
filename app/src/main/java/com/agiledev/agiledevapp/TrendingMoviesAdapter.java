@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -33,7 +34,7 @@ public class TrendingMoviesAdapter extends RecyclerView.Adapter<TrendingMoviesAd
 
 
             poster = view.findViewById(R.id.trendingmoviesimg);
-            rating = view.findViewById(R.id.trendingmovierating);
+            rating = view.findViewById(R.id.trendingmovrating);
             layout = view.findViewById(R.id.trendingmovieslayout);
 
         }
@@ -54,7 +55,8 @@ public class TrendingMoviesAdapter extends RecyclerView.Adapter<TrendingMoviesAd
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position)  {
         BasicMovieDetails movie = movieList.get(position);
-        //holder.id = movie.getId();
+        holder.id = movie.getId();
+        //holder.rating = movie.getRating();
         holder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -64,6 +66,7 @@ public class TrendingMoviesAdapter extends RecyclerView.Adapter<TrendingMoviesAd
         });
 
         TmdbClient.loadImage(mContext, movie.getPoster_path(), holder.poster);
+
     }
 
     @Override
