@@ -6,16 +6,13 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.GridLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RatingBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.List;
 
-public class TrendingMoviesAdapter extends RecyclerView.Adapter<TrendingMoviesAdapter.MyViewHolder> {
+public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShowsAdapter.MyViewHolder> {
 
     private Context mContext;
     private List<BasicMovieDetails> movieList;
@@ -25,7 +22,7 @@ public class TrendingMoviesAdapter extends RecyclerView.Adapter<TrendingMoviesAd
     {
         ImageView poster;
         String id;
-        TrendingMoviesAdapter adapter;
+        TrendingTvShowsAdapter adapter;
         RelativeLayout layout;
         TextView rating;
 
@@ -33,14 +30,14 @@ public class TrendingMoviesAdapter extends RecyclerView.Adapter<TrendingMoviesAd
             super(view);
 
 
-            poster = view.findViewById(R.id.trendingmoviesimg);
-            //rating = view.findViewById(R.id.trendingmovrating);
-            layout = view.findViewById(R.id.trendingmovieslayout);
+            poster = view.findViewById(R.id.trendingtvimg);
+            rating = view.findViewById(R.id.trendingtvrating);
+            layout = view.findViewById(R.id.trendingtvlayout);
 
         }
     }
 
-    TrendingMoviesAdapter(Context mContext, List<BasicMovieDetails> movieList, FragmentManager manager) {
+    TrendingTvShowsAdapter(Context mContext, List<BasicMovieDetails> movieList, FragmentManager manager) {
         this.mContext = mContext;
         this.movieList = movieList;
         this.manager = manager;
@@ -48,7 +45,7 @@ public class TrendingMoviesAdapter extends RecyclerView.Adapter<TrendingMoviesAd
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.trending_movieimage, parent, false);
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.trending_tvshowimage, parent, false);
         return new MyViewHolder(itemView);
     }
 
@@ -56,15 +53,15 @@ public class TrendingMoviesAdapter extends RecyclerView.Adapter<TrendingMoviesAd
     public void onBindViewHolder(final MyViewHolder holder, int position)  {
         BasicMovieDetails movie = movieList.get(position);
         holder.id = movie.getId();
-        //holder.rating = movie.getRating();
-        holder.layout.setOnClickListener(new View.OnClickListener() {
+        //holder.rating.setText("1.0");
+        /*holder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 MovieFullScreenDialog dialog = MovieFullScreenDialog.newInstance(holder.id);
                 dialog.show(manager, MovieFullScreenDialog.TAG);
             }
-        });
-
+        });*/
+        //TODO create a Tv show fullscreen dialog
         TmdbClient.loadImage(mContext, movie.getPoster_path(), holder.poster);
 
     }
