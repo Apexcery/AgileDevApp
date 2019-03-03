@@ -8,14 +8,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import java.util.List;
 
 public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShowsAdapter.MyViewHolder> {
 
     private Context mContext;
-    private List<BasicMovieDetails> movieList;
+    private List<FullTvShowDetails> tvshowList;
     public FragmentManager manager;
 
     class MyViewHolder extends RecyclerView.ViewHolder
@@ -24,22 +23,22 @@ public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShows
         String id;
         TrendingTvShowsAdapter adapter;
         RelativeLayout layout;
-        TextView rating;
+        String rating;
 
         MyViewHolder(View view) {
             super(view);
 
 
             poster = view.findViewById(R.id.trendingtvimg);
-            rating = view.findViewById(R.id.trendingtvrating);
+            //rating = view.findViewById(R.id.trendingtvrating);
             layout = view.findViewById(R.id.trendingtvlayout);
 
         }
     }
 
-    TrendingTvShowsAdapter(Context mContext, List<BasicMovieDetails> movieList, FragmentManager manager) {
+    TrendingTvShowsAdapter(Context mContext, List<FullTvShowDetails> tvshowList, FragmentManager manager) {
         this.mContext = mContext;
-        this.movieList = movieList;
+        this.tvshowList = tvshowList;
         this.manager = manager;
     }
 
@@ -51,23 +50,23 @@ public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShows
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position)  {
-        BasicMovieDetails movie = movieList.get(position);
-        holder.id = movie.getId();
-        //holder.rating.setText("1.0");
-        /*holder.layout.setOnClickListener(new View.OnClickListener() {
+        FullTvShowDetails tvshow = tvshowList.get(position);
+        holder.id = tvshow.getId();
+        holder.rating = tvshow.getVote_average();
+        holder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MovieFullScreenDialog dialog = MovieFullScreenDialog.newInstance(holder.id);
-                dialog.show(manager, MovieFullScreenDialog.TAG);
+                TvShowFullScreenDialog dialog = TvShowFullScreenDialog.newInstance(holder.id);
+                dialog.show(manager, TvShowFullScreenDialog.TAG);
             }
-        });*/
+        });
         //TODO create a Tv show fullscreen dialog
-        TmdbClient.loadImage(mContext, movie.getPoster_path(), holder.poster);
+        TmdbClient.loadImage(mContext, tvshow.getPoster_path(), holder.poster);
 
     }
 
     @Override
     public int getItemCount() {
-        return movieList.size();
+        return tvshowList.size();
     }
 }

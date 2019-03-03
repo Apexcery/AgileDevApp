@@ -32,7 +32,7 @@ public class trendingTvShowsFragment extends Fragment
     ProgressBar spinner;
     RecyclerView recyclerView;
     MoviesAdapter adapter;
-    List<BasicMovieDetails> movies = new ArrayList<>();
+    List<FullTvShowDetails> tvshows = new ArrayList<>();
     View v;
     LinearLayout trendingtvResults;
 
@@ -41,7 +41,7 @@ public class trendingTvShowsFragment extends Fragment
     {
         v = inflater.inflate(R.layout.fragment_trendingtvshows, container, false);
 
-        recyclerView = v.findViewById(R.id.Tvtrending_recycler_view);
+        recyclerView = v.findViewById(R.id.tvtrending_recycler_view);
         spinner = v.findViewById(R.id.Tvtrendingspinner);
         trendingtvResults = v.findViewById(R.id.tvtrendingresults);
 
@@ -66,14 +66,14 @@ public class trendingTvShowsFragment extends Fragment
                     for (int i = 0; i < 10; i++) {
                         try {
                             Log.e("Results:", results.get(i).toString());
-                            BasicMovieDetails movie = new Gson().fromJson(results.get(i).toString(), BasicMovieDetails.class);
-                            movies.add(movie);
+                            FullTvShowDetails tvshow = new Gson().fromJson(results.get(i).toString(), FullTvShowDetails.class);
+                            tvshows.add(tvshow);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
 
                     }
-                    TrendingTvShowsAdapter adapter = new TrendingTvShowsAdapter(getContext(), movies, getFragmentManager());
+                    TrendingTvShowsAdapter adapter = new TrendingTvShowsAdapter(getContext(), tvshows, getFragmentManager());
                     spinner.setVisibility(View.GONE);
                     recyclerView.setAdapter(adapter);
                     trendingtvResults.setVisibility(View.VISIBLE);

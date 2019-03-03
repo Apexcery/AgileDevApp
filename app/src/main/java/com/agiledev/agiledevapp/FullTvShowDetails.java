@@ -1,5 +1,7 @@
 package com.agiledev.agiledevapp;
 
+import android.widget.TextView;
+
 import java.util.ArrayList;
 
 /**
@@ -26,8 +28,10 @@ public class FullTvShowDetails
     private ArrayList<season> seasons;
     private String status;
     private String type;
-    private Number vote_average;
+    private String vote_average;
+    private String id;
 
+    private Videos videos;
 
     private Credits credits;
 
@@ -40,7 +44,7 @@ public class FullTvShowDetails
                              String overview, String poster_path,
                              ArrayList<TVProductionCompanies> production_companies,
                              ArrayList<season> seasons, String status,
-                             String type, Number vote_average) {
+                             String type, String vote_average, Videos videos, String id) {
 
         this.backdrop_path = backdrop_path;
         this.episode_run_time = episode_run_time;
@@ -58,6 +62,8 @@ public class FullTvShowDetails
         this.status = status;
         this.type = type;
         this.vote_average = vote_average;
+        this.videos = videos;
+        this.id = id;
 
     }
 
@@ -75,6 +81,10 @@ public class FullTvShowDetails
     public ArrayList<Genre> getGenres() { return genres; }
 
     public String getHomepage() { return homepage; }
+
+    public String getId() {
+        return id;
+    }
 
     public String getLast_air_date() { return last_air_date; }
 
@@ -104,12 +114,18 @@ public class FullTvShowDetails
 
     public String getType() { return type; }
 
-    public Number getVote_average() { return vote_average; }
+    public String getVote_average() { return vote_average; }
+
+    public ArrayList<Video> getVideos() {
+        return videos.getResults();
+    }
 
     public ArrayList<Cast> getCast() {
         return credits.getCast();
     }
 
+    public void add(FullTvShowDetails tvshow) {
+    }
 
 
     public class season
@@ -121,6 +137,41 @@ public class FullTvShowDetails
         String overview;
         String poster_path;
         int season_number;
+    }
+
+    public class Videos {
+        ArrayList<Video> results;
+
+        public ArrayList<Video> getResults() {
+            return results;
+        }
+    }
+    public class Video {
+        private String id;
+        private String key;
+        private String name;
+        private String site;
+        private int size;
+        private String type;
+
+        public String getId() {
+            return id;
+        }
+        public String getKey() {
+            return key;
+        }
+        public String getName() {
+            return name;
+        }
+        public String getSite() {
+            return site;
+        }
+        public int getSize() {
+            return size;
+        }
+        public String getType() {
+            return type;
+        }
     }
 
     public class TVProductionCompanies
