@@ -1,16 +1,20 @@
 package com.agiledev.agiledevapp;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 public class ActivityHelp extends AppCompatActivity
 {
     private static final String TAG = "ActivityHelp";
-    private Button mOpenDialog;
+    private Button mOpenDialog, ReportButton;
+    private ImageButton imdbButton;
     public FeedbackDialogFragment dialog = new FeedbackDialogFragment();
     public issueDialogFragment issueDialog = new issueDialogFragment();
 
@@ -21,7 +25,7 @@ public class ActivityHelp extends AppCompatActivity
         setContentView(R.layout.activity_help);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        Button ReportButton = findViewById(R.id.ReportIssue);
+        ReportButton = findViewById(R.id.ReportIssue);
         ReportButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -40,6 +44,20 @@ public class ActivityHelp extends AppCompatActivity
             {
 
                 dialog.show(getFragmentManager(), "FeedbackDialogFragment");
+            }
+        });
+
+        imdbButton = findViewById(R.id.imdbButton);
+        imdbButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_VIEW);
+                intent.addCategory(Intent.CATEGORY_BROWSABLE);
+                intent.setData(Uri.parse("https://www.themoviedb.org/"));
+                startActivity(intent);
             }
         });
     }

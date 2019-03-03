@@ -68,14 +68,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/imageView3"
+    <ImageButton
+        android:id="@+id/imdbButton"
         android:layout_width="96dp"
         android:layout_height="87dp"
         android:layout_marginBottom="25dp"
         android:layout_marginEnd="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/tmdb" />
+        android:background="@drawable/tmdb" />
 
 </android.support.constraint.ConstraintLayout>
