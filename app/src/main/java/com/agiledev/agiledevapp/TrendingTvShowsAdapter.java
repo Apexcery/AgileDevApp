@@ -8,13 +8,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import java.util.List;
 
 public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShowsAdapter.MyViewHolder> {
 
     private Context mContext;
-    private List<FullTvShowDetails> tvshowList;
+    private List<BasicMovieDetails> tvshowList;
     public FragmentManager manager;
 
     class MyViewHolder extends RecyclerView.ViewHolder
@@ -23,20 +24,20 @@ public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShows
         String id;
         TrendingTvShowsAdapter adapter;
         RelativeLayout layout;
-        String rating;
+        TextView rating;
 
         MyViewHolder(View view) {
             super(view);
 
 
             poster = view.findViewById(R.id.trendingtvimg);
-            //rating = view.findViewById(R.id.trendingtvrating);
+            rating = view.findViewById(R.id.trendingtvshowrating);
             layout = view.findViewById(R.id.trendingtvlayout);
 
         }
     }
 
-    TrendingTvShowsAdapter(Context mContext, List<FullTvShowDetails> tvshowList, FragmentManager manager) {
+    TrendingTvShowsAdapter(Context mContext, List<BasicMovieDetails> tvshowList, FragmentManager manager) {
         this.mContext = mContext;
         this.tvshowList = tvshowList;
         this.manager = manager;
@@ -50,9 +51,10 @@ public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShows
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position)  {
-        FullTvShowDetails tvshow = tvshowList.get(position);
+        BasicMovieDetails tvshow = tvshowList.get(position);
         holder.id = tvshow.getId();
-        holder.rating = tvshow.getVote_average();
+        //TODO why does adding vote_average to basicmoviedetails break the whole tvshows view
+        //holder.rating.setText((tvshow.getVote_average().equals("") ? "No Release" : mContext.getString(R.string.movie_card_released, tvshow.getVote_average())));
         holder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

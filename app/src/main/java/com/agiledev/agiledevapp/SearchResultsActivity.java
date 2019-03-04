@@ -97,8 +97,8 @@ public class SearchResultsActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }
-                spinner.setVisibility(View.GONE);
                 adapter = new MoviesAdapter(getBaseContext(), movies, getSupportFragmentManager());
+                spinner.setVisibility(View.GONE);
                 recyclerView.setAdapter(adapter);
                 searchResults.setVisibility(View.VISIBLE);
             }

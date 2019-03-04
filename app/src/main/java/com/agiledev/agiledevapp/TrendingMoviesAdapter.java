@@ -18,7 +18,7 @@ import java.util.List;
 public class TrendingMoviesAdapter extends RecyclerView.Adapter<TrendingMoviesAdapter.MyViewHolder> {
 
     private Context mContext;
-    private List<BasicMovieDetails> movieList;
+    private List<FullMovieDetails> movieList;
     public FragmentManager manager;
 
     class MyViewHolder extends RecyclerView.ViewHolder
@@ -40,7 +40,7 @@ public class TrendingMoviesAdapter extends RecyclerView.Adapter<TrendingMoviesAd
         }
     }
 
-    TrendingMoviesAdapter(Context mContext, List<BasicMovieDetails> movieList, FragmentManager manager) {
+    TrendingMoviesAdapter(Context mContext, List<FullMovieDetails> movieList, FragmentManager manager) {
         this.mContext = mContext;
         this.movieList = movieList;
         this.manager = manager;
@@ -54,7 +54,7 @@ public class TrendingMoviesAdapter extends RecyclerView.Adapter<TrendingMoviesAd
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position)  {
-        BasicMovieDetails movie = movieList.get(position);
+        FullMovieDetails movie = movieList.get(position);
         holder.id = movie.getId();
         //holder.rating = movie.getRating();
         holder.layout.setOnClickListener(new View.OnClickListener() {

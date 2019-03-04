@@ -20,10 +20,7 @@ public class TrackedTvshowsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         myView = inflater.inflate(R.layout.fragment_tvshow, container, false);
 
-        if (getActivity().getTitle() != getString(R.string.tvshows_name))
-        {
-            getActivity().setTitle(R.string.tvshows_name);
-        }
+        getActivity().setTitle(R.string.tvshows_name);
 
         return myView;
     }

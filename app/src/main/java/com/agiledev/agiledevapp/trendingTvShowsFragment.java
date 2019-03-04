@@ -1,5 +1,7 @@
 package com.agiledev.agiledevapp;
 
+import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -10,7 +12,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridLayout;
-import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
@@ -31,8 +32,8 @@ public class trendingTvShowsFragment extends Fragment
 {
     ProgressBar spinner;
     RecyclerView recyclerView;
-    MoviesAdapter adapter;
-    List<FullTvShowDetails> tvshows = new ArrayList<>();
+    TrendingTvShowsAdapter adapter;
+    List<BasicMovieDetails> tvshows = new ArrayList<>();
     View v;
     LinearLayout trendingtvResults;
 
@@ -45,7 +46,7 @@ public class trendingTvShowsFragment extends Fragment
         spinner = v.findViewById(R.id.Tvtrendingspinner);
         trendingtvResults = v.findViewById(R.id.tvtrendingresults);
 
-        getTrendingMovies();
+        getTrendingTvShows();
 
         RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getActivity(), 2);
         recyclerView.setLayoutManager(mLayoutManager);
@@ -54,7 +55,7 @@ public class trendingTvShowsFragment extends Fragment
         return v;
     }
 
-    private void getTrendingMovies()
+    private void getTrendingTvShows()
     {
         TmdbClient.getweektrendingtvshows(null, new JsonHttpResponseHandler() {
             @Override
@@ -66,14 +67,14 @@ public class trendingTvShowsFragment extends Fragment
                     for (int i = 0; i < 10; i++) {
                         try {
                             Log.e("Results:", results.get(i).toString());
-                            FullTvShowDetails tvshow = new Gson().fromJson(results.get(i).toString(), FullTvShowDetails.class);
+                            BasicMovieDetails tvshow = new Gson().fromJson(results.get(i).toString(), BasicMovieDetails.class);
                             tvshows.add(tvshow);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
 
                     }
-                    TrendingTvShowsAdapter adapter = new TrendingTvShowsAdapter(getContext(), tvshows, getFragmentManager());
+                    adapter = new TrendingTvShowsAdapter(getContext(), tvshows, getFragmentManager());
                     spinner.setVisibility(View.GONE);
                     recyclerView.setAdapter(adapter);
                     trendingtvResults.setVisibility(View.VISIBLE);
@@ -85,4 +86,5 @@ public class trendingTvShowsFragment extends Fragment
             }
         });
     }
+
 }

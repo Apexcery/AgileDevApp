@@ -19,10 +19,9 @@ public class TrackedMoviesFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         myView = inflater.inflate(R.layout.fragment_movie, container, false);
-        if (getActivity().getTitle() != getString(R.string.movies_name))
-        {
-            getActivity().setTitle(R.string.movies_name);
-        }
+
+        getActivity().setTitle(R.string.movies_name);
+
         return myView;
     }
 }

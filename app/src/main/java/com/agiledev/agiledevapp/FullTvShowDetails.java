@@ -2,6 +2,8 @@ package com.agiledev.agiledevapp;
 
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 
 /**
@@ -28,7 +30,7 @@ public class FullTvShowDetails
     private ArrayList<season> seasons;
     private String status;
     private String type;
-    private String vote_average;
+    private TextView vote_average;
     private String id;
 
     private Videos videos;
@@ -44,7 +46,7 @@ public class FullTvShowDetails
                              String overview, String poster_path,
                              ArrayList<TVProductionCompanies> production_companies,
                              ArrayList<season> seasons, String status,
-                             String type, String vote_average, Videos videos, String id) {
+                             String type, TextView vote_average, Videos videos, String id) {
 
         this.backdrop_path = backdrop_path;
         this.episode_run_time = episode_run_time;
@@ -114,7 +116,7 @@ public class FullTvShowDetails
 
     public String getType() { return type; }
 
-    public String getVote_average() { return vote_average; }
+    public TextView getVote_average() { return vote_average; }
 
     public ArrayList<Video> getVideos() {
         return videos.getResults();

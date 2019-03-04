@@ -83,9 +83,8 @@ public class TvShowFullScreenDialog extends DialogFragment {
         });
 
         recyclerView = view.findViewById(R.id.tvshowcast_recycler_view);
-
-        trailerVideoImage = view.findViewById(R.id.tvshowTrailerImage);
-        trailerVideoPlayImage = view.findViewById(R.id.tvshowTrailerPlayIcon);
+        //trailerVideoImage = view.findViewById(R.id.tvshowTrailerImage);
+        //trailerVideoPlayImage = view.findViewById(R.id.tvshowTrailerPlayIcon);
 
         this.id = getArguments().getString("id", "No Title Found");
 
@@ -122,16 +121,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
 
                     @Override
                     public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                        trailerVideoPlayImage.setVisibility(View.VISIBLE);
-
-                        final FullTvShowDetails.Video tempVideo = tvshowDetails.getVideos().get(0);
-
-                        trailerVideoPlayImage.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                openYoutubeVideo(getContext(), tempVideo.getKey());
-                            }
-                        });
+                        //trailerVideoPlayImage.setVisibility(View.VISIBLE);
 
                         view.findViewById(R.id.tvshowLoadingSpinner).setVisibility(View.GONE);
                         pageContent.setVisibility(View.VISIBLE);
@@ -143,7 +133,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
                 recyclerView.setLayoutManager(mLayoutManager);
                 recyclerView.setItemAnimator(new DefaultItemAnimator());
 
-                TextView tvshowTitle = view.findViewById(R.id.tvshowTitle);
+                /*TextView tvshowTitle = view.findViewById(R.id.tvshowTitle);
                 TextView tvshowPlot = view.findViewById(R.id.tvshowInfoPlot);
                 TextView tvshowReleaseDate = view.findViewById(R.id.tvshowInfoReleaseDate);
                 TextView tvshowRuntime = view.findViewById(R.id.tvshowInfoRuntime);
@@ -154,9 +144,9 @@ public class TvShowFullScreenDialog extends DialogFragment {
                 String releaseDateString = getResources().getString(R.string.release_date) + " <font color='#ffffff'>" + tvshowDetails.getFirst_air_date() + "</font>";
 
                 //TODO implement runtime per episode
-                //int runtimeMins = tvshowDetails.getRuntime();
-                //int hours = runtimeMins / 60, minutes = runtimeMins % 60;
-                //String runtimeString = String.format("%s %s", getResources().getString(R.string.runtime), String.format(" <font color='#ffffff'>%s</font>", String.format("%dhrs %02dmins", hours, minutes)));
+                int runtimeMins = tvshowDetails.getRuntime();
+                int hours = runtimeMins / 60, minutes = runtimeMins % 60;
+                String runtimeString = String.format("%s %s", getResources().getString(R.string.runtime), String.format(" <font color='#ffffff'>%s</font>", String.format("%dhrs %02dmins", hours, minutes)));
 
                 tvshowTitle.setText(tvshowDetails.getName());
                 tvshowPlot.setText(tvshowDetails.getOverview());
@@ -176,7 +166,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
                     public void onClick(View view) {
                         viewMoreCast();
                     }
-                });
+                }*/
             }
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
@@ -185,7 +175,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
         });
     }
 
-    public void openYoutubeVideo(Context context, String id) {
+    /*public void openYoutubeVideo(Context context, String id) {
         Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + id));
         Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.youtube.com/watch?v=" + id));
         try {
@@ -193,9 +183,9 @@ public class TvShowFullScreenDialog extends DialogFragment {
         } catch (ActivityNotFoundException e) {
             context.startActivity(webIntent);
         }
-    }
+    }*/
 
-    public void addCastToLayout(ArrayList<FullTvShowDetails.Cast> castList, FragmentManager fragmentManager) {
+    /*public void addCastToLayout(ArrayList<FullTvShowDetails.Cast> castList, FragmentManager fragmentManager) {
         Context mContext = getContext();
         List<FullTvShowDetails.Cast> top3Cast = new ArrayList<>();
 
@@ -209,5 +199,5 @@ public class TvShowFullScreenDialog extends DialogFragment {
 
     public void viewMoreCast() {
         //TODO: Show popup of viewing more cast with the ability to click each one for their summary.
-    }
+    }*/
 }
