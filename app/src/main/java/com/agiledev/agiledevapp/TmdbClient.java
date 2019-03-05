@@ -93,4 +93,8 @@ class TmdbClient {
     static void loadImage(Context mContext, String path, ImageView holder) {
         Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url) + path).into(holder);
     }
+
+    static void loadLargeImage(Context mContext, String path, ImageView holder) {
+        Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_large_base_url) + path).into(holder);
+    }
 }

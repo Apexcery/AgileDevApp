@@ -14,23 +14,22 @@ public class FullTvShowDetails
 {
 
     private String backdrop_path;
-    private ArrayList<EpisodeRunTime> episode_run_time;
+    private ArrayList<Integer> episode_run_time;
     private String first_air_date;
     private ArrayList<Genre> genres;
     private String homepage;
     private String last_air_date;
-    private ArrayList<LastEpisodeToAir> last_episode_to_air;
+    private LastEpisodeToAir last_episode_to_air;
     private String name;
-    //private null next_episode_to_air;
+    private NextEpisodeToAir next_episode_to_air;
     private int number_of_episodes;
     private int number_of_seasons;
     private String overview;
     private String poster_path;
-    private ArrayList<TVProductionCompanies> production_companies;
     private ArrayList<season> seasons;
     private String status;
     private String type;
-    private TextView vote_average;
+    private Float vote_average;
     private String id;
 
     private Videos videos;
@@ -39,14 +38,13 @@ public class FullTvShowDetails
 
     public FullTvShowDetails() {}
 
-    public FullTvShowDetails(String backdrop_path, ArrayList<EpisodeRunTime> episode_run_time,
+    public FullTvShowDetails(String backdrop_path, ArrayList<Integer> episode_run_time,
                              String first_air_date, ArrayList<Genre> genres, String homepage,
-                             String last_air_date, ArrayList<LastEpisodeToAir> last_episode_to_air,
+                             String last_air_date, LastEpisodeToAir last_episode_to_air,
                              String name, int number_of_episodes, int number_of_seasons,
-                             String overview, String poster_path,
-                             ArrayList<TVProductionCompanies> production_companies,
-                             ArrayList<season> seasons, String status,
-                             String type, TextView vote_average, Videos videos, String id) {
+                             String overview, String poster_path, ArrayList<season> seasons,
+                             String status, String type, Float vote_average, Videos videos,
+                             String id) {
 
         this.backdrop_path = backdrop_path;
         this.episode_run_time = episode_run_time;
@@ -57,9 +55,8 @@ public class FullTvShowDetails
         this.name = name;
         this.number_of_episodes = number_of_episodes;
         this.number_of_seasons = number_of_seasons;
-        this .overview = overview;
+        this.overview = overview;
         this.poster_path = poster_path;
-        this.production_companies = production_companies;
         this.seasons = seasons;
         this.status = status;
         this.type = type;
@@ -74,7 +71,7 @@ public class FullTvShowDetails
         return backdrop_path;
     }
 
-    public ArrayList<EpisodeRunTime> getRunTime() {
+    public ArrayList<Integer> getRunTime() {
         return episode_run_time;
     }
 
@@ -90,7 +87,9 @@ public class FullTvShowDetails
 
     public String getLast_air_date() { return last_air_date; }
 
-    public ArrayList<LastEpisodeToAir> getLast_episode_to_air() { return last_episode_to_air; }
+    public LastEpisodeToAir getLast_episode_to_air() { return last_episode_to_air; }
+
+    public NextEpisodeToAir getNext_episode_to_air() { return next_episode_to_air;}
 
     public String getName() { return name; }
 
@@ -106,8 +105,6 @@ public class FullTvShowDetails
         return poster_path;
     }
 
-    public ArrayList<TVProductionCompanies> getProduction_companies() { return production_companies; }
-
     public ArrayList<season> getSeason() { return seasons; }
 
     public String getStatus() {
@@ -116,7 +113,7 @@ public class FullTvShowDetails
 
     public String getType() { return type; }
 
-    public TextView getVote_average() { return vote_average; }
+    public Float getVote_average() { return vote_average; }
 
     public ArrayList<Video> getVideos() {
         return videos.getResults();
@@ -201,7 +198,7 @@ public class FullTvShowDetails
         int season_number;
         int show_id;
         String still_path;
-        Number vote_average;
+        Float vote_average;
         int vote_count;
     }
 
@@ -256,6 +253,26 @@ public class FullTvShowDetails
     public class EpisodeRunTime
     {
         int episode_run_time;
+    }
+
+    public class NextEpisodeToAir
+    {
+        String air_date;
+        int episode_number;
+        int id;
+        String name;
+        String overview;
+        int season_number;
+        String still_path;
+
+        public String getAir_date() { return air_date;}
+        public int getEpisode_number() {return episode_number;}
+        public int getId() { return id;}
+        public String getName() {return name;}
+        public String getOverview() {return overview;}
+        public int getSeason_number(){return season_number;}
+        public String getStill_path(){return still_path;}
+
     }
 
 }

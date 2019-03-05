@@ -23,6 +23,7 @@ public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShows
 
     class MyViewHolder extends RecyclerView.ViewHolder
     {
+        TextView name, genres;
         ImageView poster;
         String id;
         TrendingTvShowsAdapter adapter;
@@ -31,7 +32,6 @@ public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShows
 
         MyViewHolder(View view) {
             super(view);
-
 
             poster = view.findViewById(R.id.trendingtvimg);
             rating = view.findViewById(R.id.trendingtvshowrating);
@@ -55,6 +55,8 @@ public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShows
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position)  {
         BasicTvShowDetails tvshow = tvshowList.get(position);
+        //holder.name.setText(tvshow.getName());
+        //holder.genres.setText(tvshow.getGenreNames());
         holder.id = tvshow.getId();
         holder.rating.setRating(tvshow.getVote_average()/2);
         holder.layout.setOnClickListener(new View.OnClickListener() {
@@ -65,7 +67,7 @@ public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShows
             }
         });
         //TODO create a Tv show fullscreen dialog
-        TmdbClient.loadImage(mContext, tvshow.getPoster_path(), holder.poster);
+        TmdbClient.loadLargeImage(mContext, tvshow.getPoster_path(), holder.poster);
 
     }
 

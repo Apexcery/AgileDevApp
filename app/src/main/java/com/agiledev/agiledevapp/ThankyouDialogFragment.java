@@ -22,6 +22,7 @@ public class ThankyouDialogFragment extends DialogFragment
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState)
     {
+
         View view = inflater.inflate(R.layout.dialogfrag_thankyou, container, false);
         mOk = view.findViewById(R.id.okbutton);
 

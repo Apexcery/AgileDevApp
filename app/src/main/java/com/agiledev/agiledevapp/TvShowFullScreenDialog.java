@@ -46,10 +46,10 @@ public class TvShowFullScreenDialog extends DialogFragment {
     public FullTvShowDetails tvshowDetails;
     public TextView toolbarTitle;
     public Toolbar toolbar;
-    //public ImageView trailerVideoImage, trailerVideoPlayImage;
+    public ImageView trailerVideoImage, trailerVideoPlayImage;
     NestedScrollView pageContent;
-    RecyclerView recyclerView;
     TvShowCastAdapter adapter;
+    RecyclerView recyclerView;
     private FragmentActivity mContext;
 
     public static TvShowFullScreenDialog newInstance(String id) {
@@ -83,8 +83,10 @@ public class TvShowFullScreenDialog extends DialogFragment {
         });
 
         recyclerView = view.findViewById(R.id.tvshowcast_recycler_view);
-        //trailerVideoImage = view.findViewById(R.id.tvshowTrailerImage);
-        //trailerVideoPlayImage = view.findViewById(R.id.tvshowTrailerPlayIcon);
+
+
+        trailerVideoImage = view.findViewById(R.id.tvshowTrailerImage);
+        trailerVideoPlayImage = view.findViewById(R.id.tvshowTrailerPlayIcon);
 
         this.id = getArguments().getString("id", "No Title Found");
 
@@ -121,47 +123,73 @@ public class TvShowFullScreenDialog extends DialogFragment {
 
                     @Override
                     public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                        //trailerVideoPlayImage.setVisibility(View.VISIBLE);
+                        trailerVideoPlayImage.setVisibility(View.VISIBLE);
+
+                        /*final FullTvShowDetails.Video tempVideo = tvshowDetails.getVideos().get(0);
+
+                        trailerVideoPlayImage.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                openYoutubeVideo(getContext(), tempVideo.getKey());
+                            }
+                        });*/
 
                         view.findViewById(R.id.tvshowLoadingSpinner).setVisibility(View.GONE);
                         pageContent.setVisibility(View.VISIBLE);
                         return false;
                     }
-                });//.diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).dontAnimate().into(trailerVideoImage);
+                }).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).dontAnimate().into(trailerVideoImage);
 
                 RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getContext(), 1);
                 recyclerView.setLayoutManager(mLayoutManager);
                 recyclerView.setItemAnimator(new DefaultItemAnimator());
 
-                /*TextView tvshowTitle = view.findViewById(R.id.tvshowTitle);
+                TextView tvshowName = view.findViewById(R.id.tvshowTitle);
                 TextView tvshowPlot = view.findViewById(R.id.tvshowInfoPlot);
                 TextView tvshowReleaseDate = view.findViewById(R.id.tvshowInfoReleaseDate);
-                TextView tvshowRuntime = view.findViewById(R.id.tvshowInfoRuntime);
+                TextView tvshowNextEpisode = view.findViewById(R.id.tvshowNextEp);
                 TextView tvshowGenres = view.findViewById(R.id.tvshowInfoGenres);
-                Button tvshowCastMore = view.findViewById(R.id.tvshowInfoCastMore);
+                //Button tvshowCastMore = view.findViewById(R.id.tvshowInfoCastMore);
 
-
-                String releaseDateString = getResources().getString(R.string.release_date) + " <font color='#ffffff'>" + tvshowDetails.getFirst_air_date() + "</font>";
+                String nextEpString;
+                String firstReleased = getResources().getString(R.string.first_released) + " <font color='#ffffff'>" + tvshowDetails.getFirst_air_date() + "</font>";
+                if(tvshowDetails.getNext_episode_to_air() == null)
+                {
+                    nextEpString = getResources().getString(R.string.nextep) + " <font color='#ffffff'>N/A</font>";
+                }
+                else
+                {
+                    nextEpString = getResources().getString(R.string.nextep) + " <font color='#ffffff'>" + tvshowDetails.getNext_episode_to_air().air_date + "</font>";
+                }
 
                 //TODO implement runtime per episode
-                int runtimeMins = tvshowDetails.getRuntime();
-                int hours = runtimeMins / 60, minutes = runtimeMins % 60;
-                String runtimeString = String.format("%s %s", getResources().getString(R.string.runtime), String.format(" <font color='#ffffff'>%s</font>", String.format("%dhrs %02dmins", hours, minutes)));
+                //int runtimeMins = tvshowDetails.getRuntime();
+                //int hours = runtimeMins / 60, minutes = runtimeMins % 60;
+                //String runtimeString = String.format("%s %s", getResources().getString(R.string.runtime), String.format(" <font color='#ffffff'>%s</font>", String.format("%dhrs %02dmins", hours, minutes)));
 
-                tvshowTitle.setText(tvshowDetails.getName());
+                tvshowName.setText(tvshowDetails.getName());
                 tvshowPlot.setText(tvshowDetails.getOverview());
+                if (tvshowDetails.getNext_episode_to_air() == null)
+                {
+                    tvshowNextEpisode.setText(" ");
+                }
+                else
+                {
+                    tvshowNextEpisode.setText(tvshowDetails.getNext_episode_to_air().air_date);
+
+                }
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    tvshowReleaseDate.setText(Html.fromHtml(releaseDateString, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
-                    //movieRuntime.setText(Html.fromHtml(runtimeString, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
+                    tvshowReleaseDate.setText(Html.fromHtml(firstReleased, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
+                    tvshowNextEpisode.setText(Html.fromHtml(nextEpString, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
                 } else {
-                    tvshowReleaseDate.setText(Html.fromHtml(releaseDateString), TextView.BufferType.SPANNABLE);
-                    //movieRuntime.setText(Html.fromHtml(runtimeString), TextView.BufferType.SPANNABLE);
+                    tvshowReleaseDate.setText(Html.fromHtml(firstReleased), TextView.BufferType.SPANNABLE);
+                    tvshowNextEpisode.setText(Html.fromHtml(nextEpString), TextView.BufferType.SPANNABLE);
                 }
 
                 tvshowGenres.setText(tvshowDetails.getGenresString());
-                //addCastToLayout(tvshowDetails.getCast(), getActivity().getSupportFragmentManager());
-                tvshowCastMore.setOnClickListener(new View.OnClickListener() {
+                addCastToLayout(tvshowDetails.getCast(), getActivity().getSupportFragmentManager());
+                /*tvshowCastMore.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         viewMoreCast();
@@ -175,7 +203,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
         });
     }
 
-    /*public void openYoutubeVideo(Context context, String id) {
+    public void openYoutubeVideo(Context context, String id) {
         Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + id));
         Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.youtube.com/watch?v=" + id));
         try {
@@ -183,21 +211,18 @@ public class TvShowFullScreenDialog extends DialogFragment {
         } catch (ActivityNotFoundException e) {
             context.startActivity(webIntent);
         }
-    }*/
+    }
 
-    /*public void addCastToLayout(ArrayList<FullTvShowDetails.Cast> castList, FragmentManager fragmentManager) {
+    public void addCastToLayout(ArrayList<FullTvShowDetails.Cast> castList, FragmentManager fragmentManager) {
         Context mContext = getContext();
         List<FullTvShowDetails.Cast> top3Cast = new ArrayList<>();
 
         for (int i = 0; i < 3; i++) {
-            //top3Cast.add(castList.get(i));
+            top3Cast.add(castList.get(i));
         }
 
         adapter = new TvShowCastAdapter(mContext, top3Cast, fragmentManager);
         recyclerView.setAdapter(adapter);
     }
 
-    public void viewMoreCast() {
-        //TODO: Show popup of viewing more cast with the ability to click each one for their summary.
-    }*/
 }

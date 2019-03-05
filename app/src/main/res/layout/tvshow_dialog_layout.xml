@@ -97,7 +97,7 @@
                     android:padding="5dp">
                     <TextView
                         android:id="@+id/tvshowInfoReleaseDate"
-                        android:text="@string/release_date"
+                        android:text="@string/first_released"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_columnSpan="4"
@@ -106,8 +106,8 @@
                         android:textSize="15sp"
                         android:layout_marginBottom="5dp"/>
                     <TextView
-                        android:id="@+id/tvshowInfoRuntime"
-                        android:text="@string/runtime"
+                        android:id="@+id/tvshowNextEp"
+                        android:text="@string/nextep"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_columnSpan="2"

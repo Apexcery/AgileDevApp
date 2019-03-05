@@ -3,6 +3,7 @@ package com.agiledev.agiledevapp;
 import android.app.DialogFragment;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -57,6 +58,7 @@ public class issueDialogFragment extends DialogFragment
                 startActivity(Intent.createChooser(email, "Choose app to send issue"));
 
                 getDialog().dismiss();
+
                 dialog.show(getFragmentManager(), "ThankyouDialogFragment");
             }
 

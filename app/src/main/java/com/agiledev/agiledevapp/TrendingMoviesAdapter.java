@@ -65,7 +65,7 @@ public class TrendingMoviesAdapter extends RecyclerView.Adapter<TrendingMoviesAd
             }
         });
 
-        TmdbClient.loadImage(mContext, movie.getPoster_path(), holder.poster);
+        TmdbClient.loadLargeImage(mContext, movie.getPoster_path(), holder.poster);
 
     }
 
