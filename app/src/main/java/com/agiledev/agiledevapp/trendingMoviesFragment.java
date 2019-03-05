@@ -33,7 +33,7 @@ public class trendingMoviesFragment extends Fragment
     ProgressBar spinner;
     RecyclerView recyclerView;
     TrendingMoviesAdapter adapter;
-    List<FullMovieDetails> movies = new ArrayList<>();
+    List<BasicMovieDetails> movies = new ArrayList<>();
     View v;
     LinearLayout trendingMovieResults;
 
@@ -67,7 +67,7 @@ public class trendingMoviesFragment extends Fragment
                     for (int i = 0; i < 10; i++) {
                         try {
                             Log.e("Results:", results.get(i).toString());
-                            FullMovieDetails movie = new Gson().fromJson(results.get(i).toString(), FullMovieDetails.class);
+                            BasicMovieDetails movie = new Gson().fromJson(results.get(i).toString(), BasicMovieDetails.class);
                             movies.add(movie);
                         } catch (JSONException e) {
                             e.printStackTrace();

@@ -33,7 +33,7 @@ public class trendingTvShowsFragment extends Fragment
     ProgressBar spinner;
     RecyclerView recyclerView;
     TrendingTvShowsAdapter adapter;
-    List<BasicMovieDetails> tvshows = new ArrayList<>();
+    List<BasicTvShowDetails> tvshows = new ArrayList<>();
     View v;
     LinearLayout trendingtvResults;
 
@@ -67,7 +67,7 @@ public class trendingTvShowsFragment extends Fragment
                     for (int i = 0; i < 10; i++) {
                         try {
                             Log.e("Results:", results.get(i).toString());
-                            BasicMovieDetails tvshow = new Gson().fromJson(results.get(i).toString(), BasicMovieDetails.class);
+                            BasicTvShowDetails tvshow = new Gson().fromJson(results.get(i).toString(), BasicTvShowDetails.class);
                             tvshows.add(tvshow);
                         } catch (JSONException e) {
                             e.printStackTrace();

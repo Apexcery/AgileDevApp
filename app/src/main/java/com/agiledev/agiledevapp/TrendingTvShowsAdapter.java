@@ -7,15 +7,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import org.w3c.dom.Text;
 
 import java.util.List;
 
 public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShowsAdapter.MyViewHolder> {
 
     private Context mContext;
-    private List<BasicMovieDetails> tvshowList;
+    private List<BasicTvShowDetails> tvshowList;
     public FragmentManager manager;
 
     class MyViewHolder extends RecyclerView.ViewHolder
@@ -24,7 +27,7 @@ public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShows
         String id;
         TrendingTvShowsAdapter adapter;
         RelativeLayout layout;
-        TextView rating;
+        RatingBar rating;
 
         MyViewHolder(View view) {
             super(view);
@@ -37,7 +40,7 @@ public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShows
         }
     }
 
-    TrendingTvShowsAdapter(Context mContext, List<BasicMovieDetails> tvshowList, FragmentManager manager) {
+    TrendingTvShowsAdapter(Context mContext, List<BasicTvShowDetails> tvshowList, FragmentManager manager) {
         this.mContext = mContext;
         this.tvshowList = tvshowList;
         this.manager = manager;
@@ -51,10 +54,9 @@ public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShows
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position)  {
-        BasicMovieDetails tvshow = tvshowList.get(position);
+        BasicTvShowDetails tvshow = tvshowList.get(position);
         holder.id = tvshow.getId();
-        //TODO why does adding vote_average to basicmoviedetails break the whole tvshows view
-        //holder.rating.setText((tvshow.getVote_average().equals("") ? "No Release" : mContext.getString(R.string.movie_card_released, tvshow.getVote_average())));
+        holder.rating.setRating(tvshow.getVote_average()/2);
         holder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

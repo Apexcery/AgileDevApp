@@ -2,9 +2,9 @@ package com.agiledev.agiledevapp;
 
 import java.util.ArrayList;
 
-public class BasicMovieDetails {
+public class BasicTvShowDetails {
 
-    private String title;
+    private String name;
     private String release_date;
     private String poster_path;
     private ArrayList<Integer> genre_ids;
@@ -12,19 +12,19 @@ public class BasicMovieDetails {
     private String id;
     private Float vote_average;
 
-    public BasicMovieDetails() {
+    public BasicTvShowDetails() {
     }
 
-    public BasicMovieDetails(String title, String releasedate, String poster_path, String id, Float vote_average) {
-        this.title = title;
+    public BasicTvShowDetails(String name, String releasedate, String poster_path, String id, Float vote_average) {
+        this.name = name;
         this.release_date = releasedate;
         this.poster_path = poster_path;
         this.id = id;
         this.vote_average = vote_average;
     }
 
-    public String getTitle() {
-        return title;
+    public String getName() {
+        return name;
     }
 
     public String getRelease_date() {
@@ -40,7 +40,6 @@ public class BasicMovieDetails {
     }
 
     public Float getVote_average() { return vote_average; }
-
 
     public ArrayList<Integer> getGenre_ids() {
         return genre_ids;

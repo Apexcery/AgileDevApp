@@ -8,22 +8,22 @@
     android:numColumns="auto_fit"
     android:stretchMode="columnWidth" >
 
-    <android.support.v7.widget.AppCompatImageView
+    <ImageView
         android:id="@+id/trendingtvimg"
         android:layout_width="210dp"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:adjustViewBounds="false"
-        android:cropToPadding="false" />
+        android:cropToPadding="true" />
 
-    <TextView
+    <RatingBar
         android:id="@+id/trendingtvshowrating"
-        android:layout_width="180dp"
+        style="?android:attr/ratingBarStyleSmall"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/trendingtvimg"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:textColor="@color/white" />
+        android:paddingBottom="10dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

@@ -46,7 +46,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
     public FullTvShowDetails tvshowDetails;
     public TextView toolbarTitle;
     public Toolbar toolbar;
-    public ImageView trailerVideoImage, trailerVideoPlayImage;
+    //public ImageView trailerVideoImage, trailerVideoPlayImage;
     NestedScrollView pageContent;
     RecyclerView recyclerView;
     TvShowCastAdapter adapter;
@@ -105,7 +105,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
     }
 
     protected synchronized void getTvShowDetails(final View view) {
-        TmdbClient.getMovieInfo(id, null, new JsonHttpResponseHandler() {
+        TmdbClient.getTvShowInfo(id, null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 tvshowDetails = new Gson().fromJson(response.toString(), FullTvShowDetails.class);
@@ -127,7 +127,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
                         pageContent.setVisibility(View.VISIBLE);
                         return false;
                     }
-                }).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).dontAnimate().into(trailerVideoImage);
+                });//.diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).dontAnimate().into(trailerVideoImage);
 
                 RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getContext(), 1);
                 recyclerView.setLayoutManager(mLayoutManager);
