@@ -134,6 +134,8 @@ public class MovieFullScreenDialog extends DialogFragment {
         }
     }
 
+
+
     protected synchronized void getMovieDetails(final View view) {
         TmdbClient.getMovieInfo(id, null, new JsonHttpResponseHandler() {
             @Override
@@ -237,6 +239,10 @@ public class MovieFullScreenDialog extends DialogFragment {
 
     public void viewMoreCast() {
         //TODO: Show popup of viewing more cast with the ability to click each one for their summary.
+
+        FullCastDialog dialog = FullCastDialog.newInstance(id);
+//        dialog.show(getActivity().getSupportFragmentManager(), FullCastDialog.TAG);
+        dialog.show(getActivity().getFragmentManager(), FullCastDialog.TAG);
     }
 
     public void trackMovie() {

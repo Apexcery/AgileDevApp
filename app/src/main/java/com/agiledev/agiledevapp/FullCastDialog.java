@@ -6,10 +6,12 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.support.v7.widget.Toolbar;
 
@@ -34,6 +36,8 @@ public class FullCastDialog extends DialogFragment {
     FullCastAdapter adapter;
 
     ArrayList<MovieCredits.Cast> castList;
+
+
 
 
 
@@ -106,6 +110,7 @@ public class FullCastDialog extends DialogFragment {
 
         adapter = new FullCastAdapter(mContext, castList, fragmentManager);
         recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayout.VERTICAL, false));
     }
 
 }

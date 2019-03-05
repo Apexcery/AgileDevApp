@@ -38,8 +38,7 @@ public class MovieCastAdapter extends RecyclerView.Adapter<MovieCastAdapter.MyVi
             charName = view.findViewById(R.id.movieCastCardCharacter);
             gender = view.findViewById(R.id.movieCastCardGender);
             image = view.findViewById(R.id.movieCastCardImage);
-            DOB = view.findViewById(R.id.movieCastCardDOB);
-            died = view.findViewById(R.id.movieCastCardDied);
+
             layout = view.findViewById(R.id.movieCastCard);
         }
     }
@@ -64,25 +63,12 @@ public class MovieCastAdapter extends RecyclerView.Adapter<MovieCastAdapter.MyVi
         holder.charName.setText(cast.getCharacter());
         holder.gender.setText(cast.getGender() == 1 ? "Female" : "Male");
 
-        TmdbClient.getPersonDetails(cast.getId(), null, new JsonHttpResponseHandler() {
+        holder.layout.setOnClickListener(new View.OnClickListener() {
+
             @Override
-            public void onSuccess(int statusCode, Header[] headers,  JSONObject response) {
-                holder.person = new Gson().fromJson(response.toString(), Person.class);
-                if (holder.person == null)
-                    return;
-                String DOBString = holder.DOB.getText().toString() + " " + holder.person.birthday;
-                holder.DOB.setText(DOBString);
-                if (holder.person.deathday != null) {
-                    String diedString = "Died - " + holder.person.deathday;
-                    holder.died.setText(diedString);
-                }
-                holder.layout.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        CastDialog dialog = CastDialog.newInstance(holder.person);
-                        dialog.show(manager, CastDialog.TAG);
-                    }
-                });
+            public void onClick(View v) {
+                CastDialog dialog = CastDialog.newInstance(cast.getId());
+                dialog.show(manager, CastDialog.TAG);
             }
         });
 
