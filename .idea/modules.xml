@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/AgileDevApp.iml" filepath="$PROJECT_DIR$/AgileDevApp.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file:///home/scm-studs/t7037453/AndroidStudioProjects/AgileDevApp/app/app.iml" filepath="/home/scm-studs/t7037453/AndroidStudioProjects/AgileDevApp/app/app.iml" />
     </modules>
   </component>
 </project>

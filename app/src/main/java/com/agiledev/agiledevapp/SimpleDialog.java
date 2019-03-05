@@ -24,7 +24,6 @@ public class SimpleDialog {
 
         if(option == YesCancel) {
             builder.setPositiveButton("Yes", null);
-            builder.setNegativeButton("Cancel", null);
         }
 
         final AlertDialog dialog = builder.create();
@@ -35,6 +34,16 @@ public class SimpleDialog {
                 dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ResourcesCompat.getColor(finalContext.getResources(), R.color.colorPrimaryDark, null));
             }
         });
+
+        if (option == YesCancel) {
+            dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialog.dismiss();
+                }
+            });
+        }
+
         return dialog;
     }
 }

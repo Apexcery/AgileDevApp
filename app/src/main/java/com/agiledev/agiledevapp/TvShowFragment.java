@@ -11,17 +11,14 @@ import android.view.ViewGroup;
  * Created by s6104158 on 07/02/19.
  */
 
-public class TrackedMoviesFragment extends Fragment {
+public class TvShowFragment extends Fragment {
 
     View myView;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        myView = inflater.inflate(R.layout.fragment_movie, container, false);
-
-        getActivity().setTitle(R.string.movies_name);
-
+        myView = inflater.inflate(R.layout.fragment_tvshow, container, false);
         return myView;
     }
 }

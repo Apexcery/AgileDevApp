@@ -1,7 +1,6 @@
 package com.agiledev.agiledevapp;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -11,7 +10,6 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
@@ -26,14 +24,13 @@ public class MovieCastAdapter extends RecyclerView.Adapter<MovieCastAdapter.MyVi
     private Context mContext;
     private List<FullMovieDetails.Cast> castList;
     public FragmentManager manager;
-    private Resources res;
-    public Person person;
 
     class MyViewHolder extends RecyclerView.ViewHolder {
         TextView realName, charName, gender, DOB, died;
         ImageView image;
         String id;
         RelativeLayout layout;
+        Person person;
 
         MyViewHolder(View view) {
             super(view);
@@ -51,7 +48,6 @@ public class MovieCastAdapter extends RecyclerView.Adapter<MovieCastAdapter.MyVi
         this.mContext = mContext;
         this.castList = castList;
         this.manager = manager;
-        this.res = mContext.getResources();
     }
 
     @Override
@@ -62,7 +58,7 @@ public class MovieCastAdapter extends RecyclerView.Adapter<MovieCastAdapter.MyVi
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position)  {
-        FullMovieDetails.Cast cast = castList.get(position);
+        final FullMovieDetails.Cast cast = castList.get(position);
 
         holder.realName.setText(cast.getName());
         holder.charName.setText(cast.getCharacter());
@@ -71,20 +67,26 @@ public class MovieCastAdapter extends RecyclerView.Adapter<MovieCastAdapter.MyVi
         TmdbClient.getPersonDetails(cast.getId(), null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers,  JSONObject response) {
-                person = new Gson().fromJson(response.toString(), Person.class);
-                if (person == null)
+                holder.person = new Gson().fromJson(response.toString(), Person.class);
+                if (holder.person == null)
                     return;
-                String DOBString = holder.DOB.getText().toString() + " " + person.birthday;
+                String DOBString = holder.DOB.getText().toString() + " " + holder.person.birthday;
                 holder.DOB.setText(DOBString);
-                if (person.deathday != null) {
-                    String diedString = "Died - " + person.deathday;
+                if (holder.person.deathday != null) {
+                    String diedString = "Died - " + holder.person.deathday;
                     holder.died.setText(diedString);
                 }
+                holder.layout.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        CastDialog dialog = CastDialog.newInstance(holder.person);
+                        dialog.show(manager, CastDialog.TAG);
+                    }
+                });
             }
         });
 
-        TmdbClient.loadImage(mContext, cast.getProfile_path(), holder.image);
-//        Glide.with(mContext).load(mContext.getResources().getString(R.string.movie_poster_icon_base_url) + cast.getProfile_path()).into(holder.image);
+        TmdbClient.loadImage(mContext, cast.getProfile_path(), holder.image, TmdbClient.imageType.ICON);
     }
 
     @Override
@@ -93,11 +95,38 @@ public class MovieCastAdapter extends RecyclerView.Adapter<MovieCastAdapter.MyVi
     }
 
     public class Person {
-        String birthday;
-        String known_for_department;
-        String deathday;
-        String name;
-        String biography;
-        String place_of_birth;
+        private String birthday;
+        private String known_for_department;
+        private String deathday;
+        private String name;
+        private int gender;
+        private String biography;
+        private String place_of_birth;
+        private String profile_path;
+
+        public String getBirthday() {
+            return birthday;
+        }
+        public String getKnown_for_department() {
+            return known_for_department;
+        }
+        public String getDeathday() {
+            return deathday;
+        }
+        public String getName() {
+            return name;
+        }
+        public int getGender() {
+            return gender;
+        }
+        public String getBiography() {
+            return biography;
+        }
+        public String getPlace_of_birth() {
+            return place_of_birth;
+        }
+        public String getProfile_path() {
+            return profile_path;
+        }
     }
 }

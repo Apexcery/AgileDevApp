@@ -1,12 +1,18 @@
 package com.agiledev.agiledevapp;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -23,34 +29,46 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.Gson;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONObject;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import cz.msebera.android.httpclient.Header;
 
 public class MovieFullScreenDialog extends DialogFragment {
 
-    public static String TAG = "FullScreenDialog";
+    public static String TAG = "MovieFullScreenDialog";
     public String id;
     public FullMovieDetails movieDetails;
-    public TextView toolbarTitle;
     public Toolbar toolbar;
     public ImageView trailerVideoImage, trailerVideoPlayImage;
     NestedScrollView pageContent;
     RecyclerView recyclerView;
     MovieCastAdapter adapter;
-    private FragmentActivity mContext;
+
+    SharedPreferences sharedPref;
+    SharedPreferences.Editor editor;
 
     public static MovieFullScreenDialog newInstance(String id) {
         MovieFullScreenDialog fragment = new MovieFullScreenDialog();
@@ -87,7 +105,18 @@ public class MovieFullScreenDialog extends DialogFragment {
         trailerVideoImage = view.findViewById(R.id.movieTrailerImage);
         trailerVideoPlayImage = view.findViewById(R.id.movieTrailerPlayIcon);
 
+        sharedPref = getContext().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        editor = sharedPref.edit();
+
         this.id = getArguments().getString("id", "No Title Found");
+
+        FloatingActionButton fab = view.findViewById(R.id.fabTrackMovie);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                trackMovie();
+            }
+        });
 
         getMovieDetails(view);
 
@@ -208,5 +237,66 @@ public class MovieFullScreenDialog extends DialogFragment {
 
     public void viewMoreCast() {
         //TODO: Show popup of viewing more cast with the ability to click each one for their summary.
+    }
+
+    public void trackMovie() {
+        boolean alreadyTracked = false;
+        if (Globals.trackedMoviesContains(id))
+            alreadyTracked = true;
+
+        final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, getContext(), "Track Movie", "Are you sure you want to track this movie?");
+        dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                final DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedMovies").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
+                ref.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            DocumentSnapshot doc = task.getResult();
+                            Map<String, Object> trackedMovie = new HashMap<>();
+                            Map<String, Date> trackData = new HashMap<>();
+                            trackData.put("date", new Date());
+                            trackedMovie.put(id, trackData);
+                            if (!doc.exists()) {
+                                ref.set(trackedMovie);
+                            } else {
+                                ref.update(trackedMovie);
+                            }
+                            Globals.Movie movie = new Globals.Movie();
+                            movie.id = id;
+                            movie.date = new Date();
+                            Globals.addToTrackedMovies(movie);
+                        }
+                    }
+                });
+                Toast.makeText(getContext(), "Movie tracked!", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        if (alreadyTracked) {
+            dialog.setTitle("Untrack Movie");
+            dialog.setMessage("Are you sure you want to untrack this movie?");
+            dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedMovies").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
+                    ref.update(id, FieldValue.delete());
+
+                    Globals.removeFromTrackedMovies(id);
+
+                    Toast.makeText(getContext(), "Movie untracked!", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+
+        dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
     }
 }

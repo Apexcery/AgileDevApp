@@ -15,7 +15,7 @@ class TmdbClient {
 //  API Calls  //
 
     /**
-     * This method is used to return a JSONArray of genres from the API.
+     * This method is used to return a JSONArray of duration from the API.
      */
     static void getGenres(RequestParams params, AsyncHttpResponseHandler responseHandler) {
         String url = getAbsoluteUrl("genre/movie/list?api_key=" + key);
@@ -90,8 +90,17 @@ class TmdbClient {
      * @param path The relative path of the image to load.
      * @param holder The ImageView to load the image into.
      */
-    static void loadImage(Context mContext, String path, ImageView holder) {
-        Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url) + path).into(holder);
+    static void loadImage(Context mContext, String path, ImageView holder, imageType type) {
+        switch(type) {
+            case ICON:
+                Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url) + path).into(holder);
+                break;
+        }
+
+    }
+
+    public enum imageType {
+        ICON
     }
 
     static void loadLargeImage(Context mContext, String path, ImageView holder) {

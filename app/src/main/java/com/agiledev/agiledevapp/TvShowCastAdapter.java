@@ -82,7 +82,7 @@ public class TvShowCastAdapter extends RecyclerView.Adapter<TvShowCastAdapter.My
             }
         });
 
-        TmdbClient.loadImage(mContext, cast.getProfile_path(), holder.image);
+        TmdbClient.loadLargeImage(mContext, cast.getProfile_path(), holder.image);
 //        Glide.with(mContext).load(mContext.getResources().getString(R.string.movie_poster_icon_base_url) + cast.getProfile_path()).into(holder.image);
     }
 

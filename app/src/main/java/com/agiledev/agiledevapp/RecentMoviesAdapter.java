@@ -12,29 +12,29 @@ import android.widget.TextView;
 
 import java.util.List;
 
-public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHolder> {
+public class RecentMoviesAdapter extends RecyclerView.Adapter<RecentMoviesAdapter.MyViewHolder> {
 
     private Context mContext;
     private List<BasicMovieDetails> movieList;
     public FragmentManager manager;
 
     class MyViewHolder extends RecyclerView.ViewHolder {
-        TextView title, genres, release_date;
+        TextView title, duration, watched_date;
         ImageView poster;
         String id;
         RelativeLayout layout;
 
         MyViewHolder(View view) {
             super(view);
-            title = view.findViewById(R.id.movieCardTitle);
-            genres = view.findViewById(R.id.movieCardGenres);
-            release_date = view.findViewById(R.id.movieCardReleaseDate);
-            poster = view.findViewById(R.id.movieCardPoster);
-            layout = view.findViewById(R.id.movieCard);
+            title = view.findViewById(R.id.movieRecentCardTitle);
+            duration = view.findViewById(R.id.movieRecentCardDuration);
+            watched_date = view.findViewById(R.id.movieRecentCardWatchDate);
+            poster = view.findViewById(R.id.movieRecentCardPoster);
+            layout = view.findViewById(R.id.movieVerticalCard);
         }
     }
 
-    MoviesAdapter(Context mContext, List<BasicMovieDetails> movieList, FragmentManager manager) {
+    RecentMoviesAdapter(Context mContext, List<BasicMovieDetails> movieList, FragmentManager manager) {
         this.mContext = mContext;
         this.movieList = movieList;
         this.manager = manager;
@@ -42,7 +42,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHold
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.search_movie_card, parent, false);
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.movie_vertical_card, parent, false);
         return new MyViewHolder(itemView);
     }
 
@@ -51,9 +51,9 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHold
         BasicMovieDetails movie = movieList.get(position);
 
         holder.title.setText(movie.getTitle());
-        holder.genres.setText(movie.getGenreNames());
+        holder.duration.setText(movie.getGenreNames());
 
-        holder.release_date.setText((movie.getRelease_date().equals("") ? "No Release" : mContext.getString(R.string.movie_card_released, movie.getRelease_date())));
+        holder.watched_date.setText((movie.getRelease_date().equals("") ? "No Release" : mContext.getString(R.string.movie_card_released, movie.getRelease_date())));
         holder.id = movie.getId();
         holder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
