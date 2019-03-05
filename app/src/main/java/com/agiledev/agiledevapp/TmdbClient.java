@@ -38,7 +38,7 @@ class TmdbClient {
      * @param tvshowID The ID of the movie whose details will be pulled from the API.
      */
     static void getTvShowInfo(String tvshowID, RequestParams params, AsyncHttpResponseHandler responseHandler) {
-        String url = getAbsoluteUrl("tv/" + tvshowID + "?api_key=" + key + "&append_to_response=credits");
+        String url = getAbsoluteUrl("tv/" + tvshowID + "?api_key=" + key + "&append_to_response=videos,credits");
         client.get(url, params, responseHandler);
     }
 

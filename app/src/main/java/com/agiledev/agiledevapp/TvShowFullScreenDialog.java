@@ -125,14 +125,14 @@ public class TvShowFullScreenDialog extends DialogFragment {
                     public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
                         trailerVideoPlayImage.setVisibility(View.VISIBLE);
 
-                        /*final FullTvShowDetails.Video tempVideo = tvshowDetails.getVideos().get(0);
+                        final FullTvShowDetails.Video tempVideo = tvshowDetails.getVideos().get(0);
 
                         trailerVideoPlayImage.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
                                 openYoutubeVideo(getContext(), tempVideo.getKey());
                             }
-                        });*/
+                        });
 
                         view.findViewById(R.id.tvshowLoadingSpinner).setVisibility(View.GONE);
                         pageContent.setVisibility(View.VISIBLE);
