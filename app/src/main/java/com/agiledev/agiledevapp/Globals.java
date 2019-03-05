@@ -2,20 +2,18 @@ package com.agiledev.agiledevapp;
 
 import android.util.SparseArray;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
 
 public class Globals {
+
+    //Lists
     private static SparseArray<String> genreTags = new SparseArray<>();
-    private static List<Movie> trackedMovies = new ArrayList<>();
-//    private static Map<String, Object> trackedMovies = new HashMap<>();
+    private static List<trackedMovie> trackedMovies = new ArrayList<>();
+    private static List<recentMovie> recentMovies = new ArrayList<>();
 
-
+    //Genres getter and setter
     public static SparseArray<String> getGenreTags() {
         return genreTags;
     }
@@ -23,14 +21,14 @@ public class Globals {
         genreTags = genres;
     }
 
-
-    public static List<Movie> getTrackedMovies() {
+    //Tracked movies configurators
+    public static List<trackedMovie> getTrackedMovies() {
         return trackedMovies;
     }
-    public static void setTrackedMovies(List<Movie> trackedMovies) {
+    public static void setTrackedMovies(List<trackedMovie> trackedMovies) {
         Globals.trackedMovies = trackedMovies;
     }
-    public static void addToTrackedMovies(Movie movie) {
+    public static void addToTrackedMovies(trackedMovie movie) {
         Globals.trackedMovies.add(movie);
     }
     public static void removeFromTrackedMovies(String id) {
@@ -42,14 +40,38 @@ public class Globals {
         }
     }
     public static boolean trackedMoviesContains(String id) {
-        for (Movie m : Globals.trackedMovies) {
+        for (trackedMovie m : Globals.trackedMovies) {
             if(m.id.equals(id))
                 return true;
         }
         return false;
     }
-    public static class Movie {
+    public static class trackedMovie {
         String id;
         Date date;
+        String poster_path;
+    }
+
+    //Recent movies configurators
+    public static List<recentMovie> getRecentMovies() {
+        return  recentMovies;
+    }
+    public static void setRecentMovies(List<recentMovie> recentMovies) {
+        Globals.recentMovies = recentMovies;
+    }
+    public static void addToRecentMovies(recentMovie movie) {
+        Globals.recentMovies.add(movie);
+    }
+    public static void removeFromRecentMovies(String id) {
+        for (int i = 0; i < Globals.recentMovies.size(); i++) {
+            if (Globals.recentMovies.get(i).id.equals(id)) {
+                Globals.recentMovies.remove(i);
+            }
+        }
+    }
+    public static class recentMovie {
+        String id;
+        Date date;
+        String poster_path;
     }
 }

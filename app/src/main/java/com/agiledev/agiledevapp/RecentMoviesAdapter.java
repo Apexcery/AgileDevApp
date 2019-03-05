@@ -15,7 +15,7 @@ import java.util.List;
 public class RecentMoviesAdapter extends RecyclerView.Adapter<RecentMoviesAdapter.MyViewHolder> {
 
     private Context mContext;
-    private List<BasicMovieDetails> movieList;
+    private List<Globals.trackedMovie> movieList;
     public FragmentManager manager;
 
     class MyViewHolder extends RecyclerView.ViewHolder {
@@ -29,7 +29,7 @@ public class RecentMoviesAdapter extends RecyclerView.Adapter<RecentMoviesAdapte
         }
     }
 
-    RecentMoviesAdapter(Context mContext, List<BasicMovieDetails> movieList, FragmentManager manager) {
+    RecentMoviesAdapter(Context mContext, List<Globals.trackedMovie> movieList, FragmentManager manager) {
         this.mContext = mContext;
         this.movieList = movieList;
         this.manager = manager;
@@ -43,17 +43,17 @@ public class RecentMoviesAdapter extends RecyclerView.Adapter<RecentMoviesAdapte
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position)  {
-        final BasicMovieDetails movie = movieList.get(position);
+        final Globals.trackedMovie movie = movieList.get(position);
 
         holder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MovieFullScreenDialog dialog = MovieFullScreenDialog.newInstance(movie.getId());
+                MovieFullScreenDialog dialog = MovieFullScreenDialog.newInstance(movie.id);
                 dialog.show(manager, MovieFullScreenDialog.TAG);
             }
         });
 
-        TmdbClient.loadImage(mContext, movie.getPoster_path(), holder.poster, TmdbClient.imageType.ICON);
+        TmdbClient.loadImage(mContext, movie.poster_path, holder.poster, TmdbClient.imageType.ICON);
     }
 
     @Override

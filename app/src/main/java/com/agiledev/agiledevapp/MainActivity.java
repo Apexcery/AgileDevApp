@@ -8,8 +8,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.app.AlertDialog;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
@@ -28,11 +26,9 @@ import android.widget.TextView;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.model.DocumentCollections;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONArray;
@@ -41,8 +37,8 @@ import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -52,6 +48,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     FragmentManager fragmentManager = getFragmentManager();
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
@@ -98,6 +95,7 @@ public class MainActivity extends AppCompatActivity
 
         populateTrackedMovies();
         populateGenreTags();
+        getRecentMovies();
     }
 
     @Override
@@ -240,15 +238,48 @@ public class MainActivity extends AppCompatActivity
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         Map<String, Object> movies = document.getData();
-                        List<Globals.Movie> movieList = new ArrayList<>();
+                        List<Globals.trackedMovie> movieList = new ArrayList<>();
                         for(Map.Entry<String, Object> entry : movies.entrySet()) {
-                            Globals.Movie movie = new Globals.Movie();
+                            Globals.trackedMovie movie = new Globals.trackedMovie();
                             movie.id = entry.getKey();
                             Map<String, Object> field = (Map)entry.getValue();
                             SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
                             Timestamp timestamp = (Timestamp)field.get("date");
                             movie.date = timestamp.toDate();
                             movieList.add(movie);
+                        }
+                        Globals.setTrackedMovies(movieList);
+                    }
+                }
+            }
+        });
+    }
+
+    public void getRecentMovies() {
+        final ArrayList<Globals.trackedMovie> movieList = new ArrayList<>();
+        db.collection("TrackedMovies").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot doc = task.getResult();
+                    if (doc.exists()) {
+                        Map<String, Object> movies = doc.getData();
+                        for (Map.Entry<String, Object> entry : movies.entrySet()) {
+                            Globals.trackedMovie movie = new Globals.trackedMovie();
+                            movie.id = entry.getKey();
+                            Map<String, Object> field = (Map)entry.getValue();
+                            Timestamp timestamp = (Timestamp)field.get("date");
+                            movie.date = timestamp.toDate();
+                            movie.poster_path = (String)field.get("poster_path");
+                            movieList.add(movie);
+                        }
+                        if (movieList.size() > 0) {
+                            Collections.sort(movieList, new Comparator<Globals.trackedMovie>() {
+                                @Override
+                                public int compare(Globals.trackedMovie o1, Globals.trackedMovie o2) {
+                                    return o2.date.compareTo(o1.date);
+                                }
+                            });
                         }
                         Globals.setTrackedMovies(movieList);
                     }

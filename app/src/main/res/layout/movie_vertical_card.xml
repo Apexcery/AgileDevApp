@@ -31,7 +31,7 @@
             <!--android:textColor="@color/textOnWhite"-->
             <!--android:layout_below="@id/movieRecentCardPoster"-->
             <!--android:paddingTop="2dp"-->
-            <!--android:text="Movie Name"/>-->
+            <!--android:tetrackedMovieovie Name"/>-->
         <!--<TextView-->
             <!--android:id="@+id/movieRecentCardDuration"-->
             <!--android:layout_width="wrap_content"-->

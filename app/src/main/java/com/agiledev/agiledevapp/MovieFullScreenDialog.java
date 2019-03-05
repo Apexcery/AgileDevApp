@@ -12,9 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -47,7 +45,6 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONObject;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -59,7 +56,7 @@ import cz.msebera.android.httpclient.Header;
 public class MovieFullScreenDialog extends DialogFragment {
 
     public static String TAG = "MovieFullScreenDialog";
-    public String id;
+    public String id, poster_path;
     public FullMovieDetails movieDetails;
     public Toolbar toolbar;
     public ImageView trailerVideoImage, trailerVideoPlayImage;
@@ -142,6 +139,8 @@ public class MovieFullScreenDialog extends DialogFragment {
                 if (movieDetails == null)
                     return;
                 Uri uri = Uri.parse("https://image.tmdb.org/t/p/w1280" + movieDetails.getBackdrop_path());
+
+                poster_path = movieDetails.getPoster_path();
 
                 Glide.with(MovieFullScreenDialog.this).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
                     @Override
@@ -244,7 +243,7 @@ public class MovieFullScreenDialog extends DialogFragment {
         if (Globals.trackedMoviesContains(id))
             alreadyTracked = true;
 
-        final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, getContext(), "Track Movie", "Are you sure you want to track this movie?");
+        final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, getContext(), "Track trackedMovie", "Are you sure you want to track this movie?");
         dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
@@ -263,14 +262,15 @@ public class MovieFullScreenDialog extends DialogFragment {
                             } else {
                                 ref.update(trackedMovie);
                             }
-                            Globals.Movie movie = new Globals.Movie();
+                            Globals.trackedMovie movie = new Globals.trackedMovie();
                             movie.id = id;
                             movie.date = new Date();
+                            movie.poster_path = poster_path;
                             Globals.addToTrackedMovies(movie);
                         }
                     }
                 });
-                Toast.makeText(getContext(), "Movie tracked!", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "trackedMovie tracked!", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -285,7 +285,7 @@ public class MovieFullScreenDialog extends DialogFragment {
 
                     Globals.removeFromTrackedMovies(id);
 
-                    Toast.makeText(getContext(), "Movie untracked!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), "trackedMovie untracked!", Toast.LENGTH_LONG).show();
                 }
             });
         }

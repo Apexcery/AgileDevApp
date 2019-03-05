@@ -19,11 +19,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.loopj.android.http.JsonHttpResponseHandler;
 
-import org.json.JSONObject;
-
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -52,57 +48,15 @@ public class MovieFragment extends Fragment {
     }
 
     public void populateRecentMovies() {
-        List<Globals.Movie> recentMovies = new ArrayList<>();
+        List<Globals.trackedMovie> recentMovies = Globals.getTrackedMovies();
 
         RecyclerView recyclerView = view.findViewById(R.id.moviesHomeRecentlyWatchedRecycler);
 
-        recentMovies = getRecentMovies();
+        RecentMoviesAdapter adapter = new RecentMoviesAdapter(getActivity(), recentMovies, ((FragmentActivity)getActivity()).getSupportFragmentManager());
 
-//        RecentMoviesAdapter adapter = new RecentMoviesAdapter(getActivity(), recentMovies, ((FragmentActivity)getActivity()).getSupportFragmentManager());
-
+        recyclerView.setAdapter(adapter);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL,false);
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
     }
-
-    public List<Globals.Movie> getRecentMovies() {
-        final ArrayList<Globals.Movie> movieList = new ArrayList<>();
-        db.collection("TrackedMovies").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot doc = task.getResult();
-                    if (doc.exists()) {
-                        Map<String, Object> movies = doc.getData();
-                        for (Map.Entry<String, Object> entry : movies.entrySet()) {
-                            Globals.Movie movie = new Globals.Movie();
-                            movie.id = entry.getKey();
-                            Map<String, Object> field = (Map)entry.getValue();
-                            Timestamp timestamp = (Timestamp)field.get("date");
-                            movie.date = timestamp.toDate();
-                            movieList.add(movie);
-                        }
-                        if (movieList.size() > 0) {
-                            Collections.sort(movieList, new Comparator<Globals.Movie>() {
-                                @Override
-                                public int compare(Globals.Movie o1, Globals.Movie o2) {
-                                    return o2.date.compareTo(o1.date);
-                                }
-                            });
-                        }
-                    }
-                }
-            }
-        });
-        List<Globals.Movie> returnList = movieList.subList(0, 10);
-        return returnList;
-    }
-
-//    public ArrayList<BasicMovieDetails> getMovieImages(List<Globals.Movie> movieList) {
-//        for (Globals.Movie m : movieList) {
-//            TmdbClient.getMovieImages(m.id, null, new JsonHttpResponseHandler() {
-//
-//            });
-//        }
-//    }
 }
