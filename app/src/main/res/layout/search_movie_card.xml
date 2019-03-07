@@ -5,7 +5,8 @@
     android:layout_height="wrap_content"
     android:layout_margin="@dimen/card_margin"
     android:elevation="10dp"
-    card_view:cardCornerRadius="@dimen/card_movie_radius">
+    card_view:cardCornerRadius="@dimen/card_movie_radius"
+    style="@style/DarkCard">
         <RelativeLayout
             android:id="@+id/movieCard"
             android:layout_width="match_parent"
@@ -38,7 +39,8 @@
                 android:layout_below="@id/movieCardReleaseDate"
                 android:layout_toEndOf="@id/movieCardPoster"
                 android:padding="10dp"
-                android:textSize="12sp"/>
+                android:textSize="12sp"
+                android:textColor="@color/colorAccent"/>
             <TextView
                 android:id="@+id/movieCardReleaseDate"
                 android:layout_width="match_parent"
@@ -46,6 +48,7 @@
                 android:layout_below="@id/movieCardTitle"
                 android:layout_toEndOf="@id/movieCardPoster"
                 android:padding="10dp"
-                android:textSize="12sp"/>
+                android:textSize="12sp"
+                android:textColor="@color/colorAccent"/>
         </RelativeLayout>
 </android.support.v7.widget.CardView>

@@ -48,7 +48,8 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="56dp">
+        android:layout_marginTop="56dp"
+        android:background="@color/darkBackground">
         <android.support.v7.widget.RecyclerView
             android:id="@+id/full_cast_recycler_view"
             android:layout_width="match_parent"

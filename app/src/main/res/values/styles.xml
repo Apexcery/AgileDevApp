@@ -28,4 +28,7 @@
         <!-- This is important! Don't forget to set window background -->
         <item name="android:windowBackground">@color/background</item>
     </style>
+    <style name="DarkCard" parent="CardView.Dark">
+        <item name="cardBackgroundColor">@color/darkBackground</item>
+    </style>
 </resources>

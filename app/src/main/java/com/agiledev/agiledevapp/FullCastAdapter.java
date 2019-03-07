@@ -28,7 +28,7 @@ public class FullCastAdapter extends RecyclerView.Adapter<FullCastAdapter.MyView
 
     private Context mContext;
     private List<MovieCredits.Cast> castList;
-    public android.support.v4.app.FragmentManager manager;
+    private android.support.v4.app.FragmentManager manager;
 
     class MyViewHolder extends RecyclerView.ViewHolder {
         TextView realName, charName, gender, DOB, died;
@@ -72,6 +72,7 @@ public class FullCastAdapter extends RecyclerView.Adapter<FullCastAdapter.MyView
             @Override
             public void onClick(View v) {
                 CastDialog dialog = CastDialog.newInstance(cast.getId());
+
                 dialog.show(manager, CastDialog.TAG);
             }
         });

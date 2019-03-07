@@ -41,12 +41,14 @@ public class CastDialog extends DialogFragment {
         return fragment;
     }
 
-    public synchronized void getPersonDetails(){
+    public synchronized void getPersonDetails(final View view){
         TmdbClient.getPersonDetails(personID, null, new JsonHttpResponseHandler() {
           @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
               person = new Gson().fromJson(response.toString(), MovieCastAdapter.Person.class);
+              displayCastDetails(view);
           }
+
         });
     }
 
@@ -59,8 +61,10 @@ public class CastDialog extends DialogFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
         super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.cast_dialog_layout, container, false);
+        getPersonDetails(view);
 
 
 
@@ -74,10 +78,6 @@ public class CastDialog extends DialogFragment {
                 dismiss();
             }
         });
-
-
-        displayCastDetails(view);
-
         return view;
     }
 
