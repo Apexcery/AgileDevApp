@@ -39,6 +39,8 @@ import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
 
+import static java.lang.Math.min;
+
 public class TvShowFullScreenDialog extends DialogFragment {
 
     public static String TAG = "TvShowFullScreenDialog";
@@ -217,7 +219,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
         Context mContext = getContext();
         List<FullTvShowDetails.Cast> top3Cast = new ArrayList<>();
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < min(3,castList.size()); i++) {
             top3Cast.add(castList.get(i));
         }
 

@@ -1,5 +1,6 @@
 package com.agiledev.agiledevapp;
 
+import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.content.Intent;
 import android.os.Bundle;
@@ -58,8 +59,9 @@ public class FeedbackDialogFragment extends DialogFragment
                 email.setType("text/email");
                 startActivity(Intent.createChooser(email, "Choose app to send email"));
 
-                getDialog().dismiss();
-                dialog.show(getFragmentManager(), "ThankyouDialogFragment");
+                dismiss();
+                final AlertDialog dialog = SimpleDialog.create(DialogOption.OkOnlyDismiss, getActivity(), "Feedback sent", "Thank you for sending feedback");
+                dialog.show();
             }
 
         });

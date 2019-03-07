@@ -33,7 +33,6 @@ public class trendingMoviesFragment extends Fragment
     ProgressBar spinner;
     RecyclerView recyclerView;
     TrendingMoviesAdapter adapter;
-    List<BasicMovieDetails> movies = new ArrayList<>();
     View v;
     LinearLayout trendingMovieResults;
 
@@ -43,11 +42,9 @@ public class trendingMoviesFragment extends Fragment
         v = inflater.inflate(R.layout.fragment_trendingmovies, container, false);
 
         recyclerView = v.findViewById(R.id.movietrending_recycler_view);
-        spinner = v.findViewById(R.id.movietrendingspinner);
         trendingMovieResults = v.findViewById(R.id.movietrendingresults);
 
         getTrendingMovies();
-
         RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getActivity(), 2);
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -57,33 +54,8 @@ public class trendingMoviesFragment extends Fragment
 
     private void getTrendingMovies()
     {
-        TmdbClient.getweektrendingmovies(null, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JSONArray results = new JSONArray();
-                try {
-                    results = response.getJSONArray("results");
+        adapter = new TrendingMoviesAdapter(getContext(), Globals.getTrendingMovies(), getFragmentManager());
+        recyclerView.setAdapter(adapter);
 
-                    for (int i = 0; i < 10; i++) {
-                        try {
-                            Log.e("Results:", results.get(i).toString());
-                            BasicMovieDetails movie = new Gson().fromJson(results.get(i).toString(), BasicMovieDetails.class);
-                            movies.add(movie);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-
-                    }
-                    adapter = new TrendingMoviesAdapter(getContext(), movies, getFragmentManager());
-                    spinner.setVisibility(View.GONE);
-                    recyclerView.setAdapter(adapter);
-                    trendingMovieResults.setVisibility(View.VISIBLE);
-                } catch (JSONException e) {
-                    Log.e("JSON Error", e.getMessage());
-
-                }
-
-            }
-        });
     }
 }

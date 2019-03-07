@@ -55,8 +55,6 @@ public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShows
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position)  {
         BasicTvShowDetails tvshow = tvshowList.get(position);
-        //holder.name.setText(tvshow.getName());
-        //holder.genres.setText(tvshow.getGenreNames());
         holder.id = tvshow.getId();
         holder.rating.setRating(tvshow.getVote_average()/2);
         holder.layout.setOnClickListener(new View.OnClickListener() {

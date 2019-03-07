@@ -2,17 +2,14 @@ package com.agiledev.agiledevapp;
 
 import android.util.SparseArray;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
 
 public class Globals {
     private static SparseArray<String> genreTags = new SparseArray<>();
     private static List<Movie> trackedMovies = new ArrayList<>();
+    private static List<trendingMovie> trendingMovies = new ArrayList<>();
 //    private static Map<String, Object> trackedMovies = new HashMap<>();
 
 
@@ -48,8 +45,24 @@ public class Globals {
         }
         return false;
     }
+
+    public static List<trendingMovie> getTrendingMovies() {
+        return trendingMovies;
+    }
+    public static void setTrendingMovies(List<trendingMovie> trendingMovies) {
+        Globals.trendingMovies = trendingMovies;
+    }
+    public static void addToTrendingMovies(trendingMovie movie) {
+        Globals.trendingMovies.add(movie);
+    }
+
     public static class Movie {
         String id;
         Date date;
+    }
+    public static class trendingMovie {
+        String id;
+        String poster_path;
+        Float vote_average;
     }
 }

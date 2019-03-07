@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -33,6 +34,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.model.DocumentCollections;
+import com.google.gson.Gson;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONArray;
@@ -94,10 +96,13 @@ public class MainActivity extends AppCompatActivity
         TextView textView = navigationView.getHeaderView(0).findViewById(R.id.loggedInUser);
         textView.setText(getString(R.string.nav_loggedin_as, sharedPref.getString(getString(R.string.prefs_loggedin_username),"Error, user not found!")));
 
-        fragmentManager.beginTransaction().replace(R.id.content_frame,new HomeFragment()).commit();
-
         populateTrackedMovies();
         populateGenreTags();
+        populateTrendingMovies();
+
+
+        fragmentManager.beginTransaction().replace(R.id.content_frame,new HomeFragment()).commit();
+
     }
 
     @Override
@@ -252,6 +257,42 @@ public class MainActivity extends AppCompatActivity
                         Globals.setTrackedMovies(movieList);
                     }
                 }
+            }
+        });
+    }
+
+    //TODO Fixed trendingmovies to show on start up.
+    private void populateTrendingMovies()
+    {
+        TmdbClient.getweektrendingmovies(null, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                JSONArray results = new JSONArray();
+                try {
+                    results = response.getJSONArray("results");
+
+                    for (int i = 0; i < 10; i++) {
+                        try {
+                            Log.e("Results:", results.get(i).toString());
+                            Globals.trendingMovie trendingMovie = new Globals.trendingMovie();
+                            BasicMovieDetails movie = new Gson().fromJson(results.get(i).toString(), BasicMovieDetails.class);
+
+
+                            trendingMovie.id = movie.getId();
+                            trendingMovie.poster_path = movie.getPoster_path();
+                            trendingMovie.vote_average = movie.getVote_average();
+
+                            Globals.addToTrendingMovies(trendingMovie);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                } catch (JSONException e) {
+                    Log.e("JSON Error", e.getMessage());
+
+                }
+
             }
         });
     }

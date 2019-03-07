@@ -18,7 +18,7 @@ import java.util.List;
 public class TrendingMoviesAdapter extends RecyclerView.Adapter<TrendingMoviesAdapter.MyViewHolder> {
 
     private Context mContext;
-    private List<BasicMovieDetails> movieList;
+    private List<Globals.trendingMovie> movieList;
     public FragmentManager manager;
 
     class MyViewHolder extends RecyclerView.ViewHolder
@@ -40,7 +40,7 @@ public class TrendingMoviesAdapter extends RecyclerView.Adapter<TrendingMoviesAd
         }
     }
 
-    TrendingMoviesAdapter(Context mContext, List<BasicMovieDetails> movieList, FragmentManager manager) {
+    TrendingMoviesAdapter(Context mContext, List<Globals.trendingMovie> movieList, FragmentManager manager) {
         this.mContext = mContext;
         this.movieList = movieList;
         this.manager = manager;
@@ -54,9 +54,9 @@ public class TrendingMoviesAdapter extends RecyclerView.Adapter<TrendingMoviesAd
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position)  {
-        BasicMovieDetails movie = movieList.get(position);
-        holder.id = movie.getId();
-        holder.rating.setRating(movie.getVote_average()/2);
+        Globals.trendingMovie movie = movieList.get(position);
+        holder.id = movie.id;
+        holder.rating.setRating(movie.vote_average/2);
         holder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -65,7 +65,7 @@ public class TrendingMoviesAdapter extends RecyclerView.Adapter<TrendingMoviesAd
             }
         });
 
-        TmdbClient.loadLargeImage(mContext, movie.getPoster_path(), holder.poster);
+        TmdbClient.loadLargeImage(mContext, movie.poster_path, holder.poster);
 
     }
 
