@@ -75,14 +75,21 @@ class TmdbClient {
      */
     static void loadImage(Context mContext, String path, ImageView holder, imageType type) {
         switch(type) {
+            case SMALLICON:
+                Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url_small) + path).into(holder);
+                break;
             case ICON:
                 Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url) + path).into(holder);
                 break;
+            case LARGEICON:
+                Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url_large) + path).into(holder);
+                break;
         }
-
     }
 
     public enum imageType {
-        ICON
+        SMALLICON,
+        ICON,
+        LARGEICON
     }
 }

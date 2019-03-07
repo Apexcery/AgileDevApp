@@ -11,7 +11,6 @@ public class Globals {
     //Lists
     private static SparseArray<String> genreTags = new SparseArray<>();
     private static List<trackedMovie> trackedMovies = new ArrayList<>();
-    private static List<recentMovie> recentMovies = new ArrayList<>();
 
     //Genres getter and setter
     public static SparseArray<String> getGenreTags() {
@@ -47,29 +46,6 @@ public class Globals {
         return false;
     }
     public static class trackedMovie {
-        String id;
-        Date date;
-        String poster_path;
-    }
-
-    //Recent movies configurators
-    public static List<recentMovie> getRecentMovies() {
-        return  recentMovies;
-    }
-    public static void setRecentMovies(List<recentMovie> recentMovies) {
-        Globals.recentMovies = recentMovies;
-    }
-    public static void addToRecentMovies(recentMovie movie) {
-        Globals.recentMovies.add(movie);
-    }
-    public static void removeFromRecentMovies(String id) {
-        for (int i = 0; i < Globals.recentMovies.size(); i++) {
-            if (Globals.recentMovies.get(i).id.equals(id)) {
-                Globals.recentMovies.remove(i);
-            }
-        }
-    }
-    public static class recentMovie {
         String id;
         Date date;
         String poster_path;

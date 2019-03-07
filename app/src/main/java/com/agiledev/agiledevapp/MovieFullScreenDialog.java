@@ -243,7 +243,7 @@ public class MovieFullScreenDialog extends DialogFragment {
         if (Globals.trackedMoviesContains(id))
             alreadyTracked = true;
 
-        final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, getContext(), "Track trackedMovie", "Are you sure you want to track this movie?");
+        final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, getContext(), "Track Movie", "Are you sure you want to track this movie?");
         dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
@@ -254,8 +254,9 @@ public class MovieFullScreenDialog extends DialogFragment {
                         if (task.isSuccessful()) {
                             DocumentSnapshot doc = task.getResult();
                             Map<String, Object> trackedMovie = new HashMap<>();
-                            Map<String, Date> trackData = new HashMap<>();
+                            Map<String, Object> trackData = new HashMap<>();
                             trackData.put("date", new Date());
+                            trackData.put("poster_path", poster_path);
                             trackedMovie.put(id, trackData);
                             if (!doc.exists()) {
                                 ref.set(trackedMovie);
@@ -270,7 +271,7 @@ public class MovieFullScreenDialog extends DialogFragment {
                         }
                     }
                 });
-                Toast.makeText(getContext(), "trackedMovie tracked!", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Movie tracked!", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -285,7 +286,7 @@ public class MovieFullScreenDialog extends DialogFragment {
 
                     Globals.removeFromTrackedMovies(id);
 
-                    Toast.makeText(getContext(), "trackedMovie untracked!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), "Movie untracked!", Toast.LENGTH_LONG).show();
                 }
             });
         }

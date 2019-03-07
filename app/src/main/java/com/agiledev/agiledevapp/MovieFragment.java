@@ -4,7 +4,6 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -13,18 +12,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
+
+import static java.lang.Math.min;
 
 public class MovieFragment extends Fragment {
 
@@ -43,16 +36,28 @@ public class MovieFragment extends Fragment {
         editor = sharedPref.edit();
 
         populateRecentMovies();
+        populateRecommendedForUser();
+        populateRecommendedInArea();
 
         return view;
+    }
+
+    private void populateRecommendedInArea() {
+        //TODO:Use GPS to pull user's area and show recommended movies based upon it.
+    }
+
+    private void populateRecommendedForUser() {
+        //TODO:Use the genres of what the user has tracked and show recommended movies based upon it.
     }
 
     public void populateRecentMovies() {
         List<Globals.trackedMovie> recentMovies = Globals.getTrackedMovies();
 
+        List<Globals.trackedMovie> tenRecentMovies = new ArrayList<>(recentMovies.subList(0, min(recentMovies.size(), 10)));
+
         RecyclerView recyclerView = view.findViewById(R.id.moviesHomeRecentlyWatchedRecycler);
 
-        RecentMoviesAdapter adapter = new RecentMoviesAdapter(getActivity(), recentMovies, ((FragmentActivity)getActivity()).getSupportFragmentManager());
+        RecentMoviesAdapter adapter = new RecentMoviesAdapter(getActivity(), tenRecentMovies, ((FragmentActivity)getActivity()).getSupportFragmentManager());
 
         recyclerView.setAdapter(adapter);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL,false);
