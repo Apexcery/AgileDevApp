@@ -36,6 +36,7 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
@@ -46,6 +47,8 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -66,6 +69,8 @@ public class MovieFullScreenDialog extends DialogFragment {
 
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
+
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     public static MovieFullScreenDialog newInstance(String id) {
         MovieFullScreenDialog fragment = new MovieFullScreenDialog();
@@ -274,6 +279,7 @@ public class MovieFullScreenDialog extends DialogFragment {
                             movie.date = new Date();
                             movie.poster_path = poster_path;
                             Globals.addToTrackedMovies(movie);
+                            Globals.sortTrackedMovies();
                         }
                     }
                 });

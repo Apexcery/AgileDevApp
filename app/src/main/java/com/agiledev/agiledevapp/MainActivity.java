@@ -1,17 +1,14 @@
 package com.agiledev.agiledevapp;
 
-import android.app.FragmentManager;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.app.AlertDialog;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
-import android.util.SparseArray;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -23,31 +20,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.loopj.android.http.JsonHttpResponseHandler;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-
-import cz.msebera.android.httpclient.Header;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    FragmentManager fragmentManager = getFragmentManager();
+    FragmentManager fragmentManager = getSupportFragmentManager();
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     SharedPreferences sharedPref;
@@ -65,7 +43,6 @@ public class MainActivity extends AppCompatActivity
         sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         editor = sharedPref.edit();
 
-        TmdbClient.key = getResources().getString(R.string.tmdb_api_key);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -92,10 +69,6 @@ public class MainActivity extends AppCompatActivity
         textView.setText(getString(R.string.nav_loggedin_as, sharedPref.getString(getString(R.string.prefs_loggedin_username),"Error, user not found!")));
 
         fragmentManager.beginTransaction().replace(R.id.content_frame,new HomeFragment()).commit();
-
-        populateTrackedMovies();
-        populateGenreTags();
-        getRecentMovies();
     }
 
     @Override
@@ -201,90 +174,5 @@ public class MainActivity extends AppCompatActivity
         dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", dialogClick);
         dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", dialogClick);
         dialog.show();
-    }
-
-    //TODO: Move this method to the splash screen activity.
-    public synchronized void populateGenreTags() {
-        TmdbClient.getGenres(null, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JSONArray results = new JSONArray();
-                try {
-                    results = response.getJSONArray("genres");
-                } catch (JSONException e) {
-                    Log.e("JSON Error", e.getMessage());
-                    e.printStackTrace();
-                }
-                SparseArray<String> genres = new SparseArray<>();
-                for (int i = 0; i < results.length(); i++) {
-                    try {
-                        JSONObject genre = results.getJSONObject(i);
-                        genres.put(genre.getInt("id"), genre.getString("name"));
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-                Globals.setGenreTags(genres);
-            }
-        });
-    }
-
-    public synchronized void populateTrackedMovies() {
-        DocumentReference trackedMoviesRef = FirebaseFirestore.getInstance().collection("TrackedMovies").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
-        trackedMoviesRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-                        Map<String, Object> movies = document.getData();
-                        List<Globals.trackedMovie> movieList = new ArrayList<>();
-                        for(Map.Entry<String, Object> entry : movies.entrySet()) {
-                            Globals.trackedMovie movie = new Globals.trackedMovie();
-                            movie.id = entry.getKey();
-                            Map<String, Object> field = (Map)entry.getValue();
-                            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-                            Timestamp timestamp = (Timestamp)field.get("date");
-                            movie.date = timestamp.toDate();
-                            movieList.add(movie);
-                        }
-                        Globals.setTrackedMovies(movieList);
-                    }
-                }
-            }
-        });
-    }
-
-    public void getRecentMovies() {
-        final ArrayList<Globals.trackedMovie> movieList = new ArrayList<>();
-        db.collection("TrackedMovies").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot doc = task.getResult();
-                    if (doc.exists()) {
-                        Map<String, Object> movies = doc.getData();
-                        for (Map.Entry<String, Object> entry : movies.entrySet()) {
-                            Globals.trackedMovie movie = new Globals.trackedMovie();
-                            movie.id = entry.getKey();
-                            Map<String, Object> field = (Map)entry.getValue();
-                            Timestamp timestamp = (Timestamp)field.get("date");
-                            movie.date = timestamp.toDate();
-                            movie.poster_path = (String)field.get("poster_path");
-                            movieList.add(movie);
-                        }
-                        if (movieList.size() > 0) {
-                            Collections.sort(movieList, new Comparator<Globals.trackedMovie>() {
-                                @Override
-                                public int compare(Globals.trackedMovie o1, Globals.trackedMovie o2) {
-                                    return o2.date.compareTo(o1.date);
-                                }
-                            });
-                        }
-                        Globals.setTrackedMovies(movieList);
-                    }
-                }
-            }
-        });
     }
 }

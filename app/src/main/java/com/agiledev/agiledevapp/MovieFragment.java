@@ -1,11 +1,13 @@
 package com.agiledev.agiledevapp;
 
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -39,6 +41,17 @@ public class MovieFragment extends Fragment {
         populateRecommendedForUser();
         populateRecommendedInArea();
 
+        final FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+        SwipeRefreshLayout refreshLayout = view.findViewById(R.id.moviesRefreshLayout);
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                fragmentManager.beginTransaction()
+                        .replace(R.id.content_frame
+                                ,new MovieFragment())
+                        .commit();
+            }
+        });
         return view;
     }
 
@@ -57,7 +70,7 @@ public class MovieFragment extends Fragment {
 
         RecyclerView recyclerView = view.findViewById(R.id.moviesHomeRecentlyWatchedRecycler);
 
-        RecentMoviesAdapter adapter = new RecentMoviesAdapter(getActivity(), tenRecentMovies, ((FragmentActivity)getActivity()).getSupportFragmentManager());
+        RecentMoviesAdapter adapter = new RecentMoviesAdapter(getActivity(), tenRecentMovies, getActivity().getSupportFragmentManager());
 
         recyclerView.setAdapter(adapter);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL,false);

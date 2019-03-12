@@ -1,8 +1,11 @@
 package com.agiledev.agiledevapp;
 
+import android.support.annotation.NonNull;
 import android.util.SparseArray;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -16,7 +19,7 @@ public class Globals {
     public static SparseArray<String> getGenreTags() {
         return genreTags;
     }
-    public static void setGenreTags(SparseArray<String> genres) {
+    public static synchronized void setGenreTags(SparseArray<String> genres) {
         genreTags = genres;
     }
 
@@ -24,13 +27,13 @@ public class Globals {
     public static List<trackedMovie> getTrackedMovies() {
         return trackedMovies;
     }
-    public static void setTrackedMovies(List<trackedMovie> trackedMovies) {
+    public static synchronized void setTrackedMovies(List<trackedMovie> trackedMovies) {
         Globals.trackedMovies = trackedMovies;
     }
-    public static void addToTrackedMovies(trackedMovie movie) {
+    public static synchronized void addToTrackedMovies(trackedMovie movie) {
         Globals.trackedMovies.add(movie);
     }
-    public static void removeFromTrackedMovies(String id) {
+    public static synchronized void removeFromTrackedMovies(String id) {
         for (int i = 0; i < Globals.trackedMovies.size(); i++) {
             if (Globals.trackedMovies.get(i).id.equals(id)) {
                 Globals.trackedMovies.remove(i);
@@ -45,9 +48,24 @@ public class Globals {
         }
         return false;
     }
-    public static class trackedMovie {
+    public static synchronized void sortTrackedMovies() {
+        if (Globals.trackedMovies.size() > 0) {
+            Collections.sort(Globals.trackedMovies, new Comparator<trackedMovie>() {
+                @Override
+                public int compare(Globals.trackedMovie o1, Globals.trackedMovie o2) {
+                    return o2.date.compareTo(o1.date);
+                }
+            });
+        }
+    }
+    public static class trackedMovie implements Comparable<trackedMovie> {
         String id;
         Date date;
         String poster_path;
+
+        @Override
+        public int compareTo(@NonNull trackedMovie o) {
+            return o.date.compareTo(date);
+        }
     }
 }
