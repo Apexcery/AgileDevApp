@@ -15,34 +15,58 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
+import com.loopj.android.http.JsonHttpResponseHandler;
+
+import org.json.JSONObject;
+
+import cz.msebera.android.httpclient.Header;
+
 /**
  * Created by glees on 20/02/2019.
  */
 
 public class CastDialog extends DialogFragment {
     public static String TAG = "CastDialog";
-    public static MovieCastAdapter.Person cast;
+    public static int personID;
+    public static MovieCastAdapter.Person person;
     public Toolbar toolbar;
     RelativeLayout pageContent;
 
-    public static CastDialog newInstance(MovieCastAdapter.Person person) {
+    public static CastDialog newInstance(int id) {
         CastDialog fragment = new CastDialog();
         Bundle args = new Bundle();
-        cast = person;
+        personID = id;
         fragment.setArguments(args);
         return fragment;
+    }
+
+    public synchronized void getPersonDetails(final View view){
+        TmdbClient.getPersonDetails(personID, null, new JsonHttpResponseHandler() {
+          @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+              person = new Gson().fromJson(response.toString(), MovieCastAdapter.Person.class);
+              displayCastDetails(view);
+          }
+
+        });
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setStyle(DialogFragment.STYLE_NORMAL, R.style.Theme_AppCompat_Dialog);
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
         super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.cast_dialog_layout, container, false);
+        getPersonDetails(view);
+
+
 
         pageContent = view.findViewById(R.id.castContent);
 
@@ -54,9 +78,6 @@ public class CastDialog extends DialogFragment {
                 dismiss();
             }
         });
-
-        displayCastDetails(view);
-
         return view;
     }
 
@@ -81,27 +102,27 @@ public class CastDialog extends DialogFragment {
         TextView personDied = view.findViewById(R.id.castPersonDied);
         TextView personBio = view.findViewById(R.id.castPersonBio);
 
-        toolbarTitle.setText(cast.getName());
+        toolbarTitle.setText(person.getName());
 
-        TmdbClient.loadImage(getContext(), cast.getProfile_path(), personImage, TmdbClient.imageType.ICON);
+        TmdbClient.loadImage(getContext(), person.getProfile_path(), personImage, TmdbClient.imageType.ICON);
 
-        SpannableString name = new SpannableString(cast.getName());
+        SpannableString name = new SpannableString(person.getName());
         name.setSpan(new UnderlineSpan(), 0, name.length(), 0);
         personName.setText(name);
 
-        personGender.setText(cast.getGender() == 1 ? "Female" : "Male");
+        personGender.setText(person.getGender() == 1 ? "Female" : "Male");
 
-        String knownForText = "Known For - " + cast.getKnown_for_department();
+        String knownForText = "Known For - " + person.getKnown_for_department();
         personKnownFor.setText(knownForText);
 
-        String bornText = "Born - " + cast.getBirthday();
+        String bornText = "Born - " + person.getBirthday();
         personDOB.setText(bornText);
 
-        if (cast.getDeathday() != null) {
-            String diedText = "Died - " + cast.getDeathday();
+        if (person.getDeathday() != null) {
+            String diedText = "Died - " + person.getDeathday();
             personDied.setText(diedText);
         }
 
-        personBio.setText(cast.getBiography());
+        personBio.setText(person.getBiography());
     }
 }

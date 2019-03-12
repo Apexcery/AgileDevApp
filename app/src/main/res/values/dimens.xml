@@ -9,4 +9,5 @@
     <dimen name="card_margin">5dp</dimen>
     <dimen name="card_movie_radius">5dp</dimen>
     <dimen name="movie_poster_width">92dp</dimen>
+
 </resources>
