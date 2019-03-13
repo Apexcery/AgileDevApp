@@ -18,7 +18,6 @@ public class Globals {
     //Lists
     private static SparseArray<String> genreTags = new SparseArray<>();
     private static List<trackedMovie> trackedMovies = new ArrayList<>();
-    private static List<Movie> trackedMovies = new ArrayList<>();
     private static List<trendingMovie> trendingMovies = new ArrayList<>();
 //    private static Map<String, Object> trackedMovies = new HashMap<>();
 
@@ -66,18 +65,6 @@ public class Globals {
         }
     }
     public static class trackedMovie implements Comparable<trackedMovie> {
-
-    public static List<trendingMovie> getTrendingMovies() {
-        return trendingMovies;
-    }
-    public static void setTrendingMovies(List<trendingMovie> trendingMovies) {
-        Globals.trendingMovies = trendingMovies;
-    }
-    public static void addToTrendingMovies(trendingMovie movie) {
-        Globals.trendingMovies.add(movie);
-    }
-
-    public static class Movie {
         String id;
         Date date;
         String poster_path;
@@ -92,4 +79,13 @@ public class Globals {
         String poster_path;
         Float vote_average;
     }
-}
+        public static List<trendingMovie> getTrendingMovies() {
+            return trendingMovies;
+        }
+        public static void setTrendingMovies(List<trendingMovie> trendingMovies) {
+            Globals.trendingMovies = trendingMovies;
+        }
+        public static void addToTrendingMovies(trendingMovie movie) {
+            Globals.trendingMovies.add(movie);
+        }
+    }

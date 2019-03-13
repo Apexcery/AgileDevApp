@@ -40,7 +40,7 @@
     <string name="poster_icon_base_url_small">http://image.tmdb.org/t/p/w92/</string>
     <string name="poster_icon_base_url">http://image.tmdb.org/t/p/w154/</string>
     <string name="poster_icon_base_url_large">http://image.tmdb.org/t/p/w500/</string>
-
+    <string name="poster_icon_large_base_url">http://image.tmdb.org/t/p/w500/</string>
     <string name="plot_overview"><u><b>Plot Overview</b></u></string>
     <string name="genres"><u><b>Genres</b></u></string>
     <string name="cast"><u><b>Cast</b></u></string>

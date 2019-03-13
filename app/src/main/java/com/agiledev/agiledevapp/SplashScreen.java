@@ -16,6 +16,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.gson.Gson;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONArray;
@@ -52,7 +53,7 @@ public class SplashScreen extends Activity {
         editor = sharedPref.edit();
 
         TmdbClient.key = getResources().getString(R.string.tmdb_api_key);
-
+        populateTrendingMovies();
         populateGenreTags();
         if (sharedPref.getBoolean(getString(R.string.prefs_loggedin_boolean), false)) {
             getRecentMovies();
@@ -118,6 +119,41 @@ public class SplashScreen extends Activity {
                         Collections.sort(Globals.getTrackedMovies());
                     }
                 }
+            }
+        });
+    }
+    //TODO Fixed trendingmovies to show on start up.
+    private void populateTrendingMovies()
+    {
+        TmdbClient.getweektrendingmovies(null, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                JSONArray results = new JSONArray();
+                try {
+                    results = response.getJSONArray("results");
+
+                    for (int i = 0; i < 10; i++) {
+                        try {
+                            Log.e("Results:", results.get(i).toString());
+                            Globals.trendingMovie trendingMovie = new Globals.trendingMovie();
+                            BasicMovieDetails movie = new Gson().fromJson(results.get(i).toString(), BasicMovieDetails.class);
+
+
+                            trendingMovie.id = movie.getId();
+                            trendingMovie.poster_path = movie.getPoster_path();
+                            trendingMovie.vote_average = movie.getVote_average();
+
+                            Globals.addToTrendingMovies(trendingMovie);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                } catch (JSONException e) {
+                    Log.e("JSON Error", e.getMessage());
+
+                }
+
             }
         });
     }

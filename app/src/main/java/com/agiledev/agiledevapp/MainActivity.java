@@ -1,6 +1,5 @@
 package com.agiledev.agiledevapp;
 
-import android.app.FragmentManager;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -40,6 +39,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.model.DocumentCollections;
 import com.google.gson.Gson;
 import com.loopj.android.http.JsonHttpResponseHandler;
+
+import org.json.JSONArray;
 
 import static android.view.Gravity.CENTER_VERTICAL;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
@@ -93,11 +94,6 @@ public class MainActivity extends AppCompatActivity
 
         TextView textView = navigationView.getHeaderView(0).findViewById(R.id.loggedInUser);
         textView.setText(getString(R.string.nav_loggedin_as, sharedPref.getString(getString(R.string.prefs_loggedin_username),"Error, user not found!")));
-
-        populateTrackedMovies();
-        populateGenreTags();
-        populateTrendingMovies();
-
 
         fragmentManager.beginTransaction().replace(R.id.content_frame,new HomeFragment()).commit();
 
@@ -215,93 +211,5 @@ public class MainActivity extends AppCompatActivity
         dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", dialogClick);
         dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", dialogClick);
         dialog.show();
-    }
-
-    //TODO: Move this method to the splash screen activity.
-    public synchronized void populateGenreTags() {
-        TmdbClient.getGenres(null, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JSONArray results = new JSONArray();
-                try {
-                    results = response.getJSONArray("genres");
-                } catch (JSONException e) {
-                    Log.e("JSON Error", e.getMessage());
-                    e.printStackTrace();
-                }
-                SparseArray<String> genres = new SparseArray<>();
-                for (int i = 0; i < results.length(); i++) {
-                    try {
-                        JSONObject genre = results.getJSONObject(i);
-                        genres.put(genre.getInt("id"), genre.getString("name"));
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-                Globals.setGenreTags(genres);
-            }
-        });
-    }
-
-    public synchronized void populateTrackedMovies() {
-        DocumentReference trackedMoviesRef = FirebaseFirestore.getInstance().collection("TrackedMovies").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
-        trackedMoviesRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-                        Map<String, Object> movies = document.getData();
-                        List<Globals.Movie> movieList = new ArrayList<>();
-                        for(Map.Entry<String, Object> entry : movies.entrySet()) {
-                            Globals.Movie movie = new Globals.Movie();
-                            movie.id = entry.getKey();
-                            Map<String, Object> field = (Map)entry.getValue();
-                            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-                            Timestamp timestamp = (Timestamp)field.get("date");
-                            movie.date = timestamp.toDate();
-                            movieList.add(movie);
-                        }
-                        Globals.setTrackedMovies(movieList);
-                    }
-                }
-            }
-        });
-    }
-
-    //TODO Fixed trendingmovies to show on start up.
-    private void populateTrendingMovies()
-    {
-        TmdbClient.getweektrendingmovies(null, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JSONArray results = new JSONArray();
-                try {
-                    results = response.getJSONArray("results");
-
-                    for (int i = 0; i < 10; i++) {
-                        try {
-                            Log.e("Results:", results.get(i).toString());
-                            Globals.trendingMovie trendingMovie = new Globals.trendingMovie();
-                            BasicMovieDetails movie = new Gson().fromJson(results.get(i).toString(), BasicMovieDetails.class);
-
-
-                            trendingMovie.id = movie.getId();
-                            trendingMovie.poster_path = movie.getPoster_path();
-                            trendingMovie.vote_average = movie.getVote_average();
-
-                            Globals.addToTrendingMovies(trendingMovie);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-
-                    }
-                } catch (JSONException e) {
-                    Log.e("JSON Error", e.getMessage());
-
-                }
-
-            }
-        });
     }
 }
