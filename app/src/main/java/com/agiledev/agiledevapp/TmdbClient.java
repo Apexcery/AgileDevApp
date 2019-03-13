@@ -74,6 +74,16 @@ class TmdbClient {
         client.get(url, params, responseHandler);
     }
 
+    static void getMovieImages(String movieId, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+        String url = getAbsoluteUrl("movie/" + movieId + "/images?api_key=" + key);
+        client.get(url, params, responseHandler);
+    }
+
+    static void getMovieCast(String movieID, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+        String url = getAbsoluteUrl("movie/" + movieID + "/credits?api_key=" + key);
+        client.get(url, params, responseHandler);
+    }
+
     /**
      * @param relativeUrl The specific part of the url after the BASE_URL that you want to request from.
      * @return The BASE_URL concatenated with the relative url that was passed as a parameter.
@@ -92,15 +102,22 @@ class TmdbClient {
      */
     static void loadImage(Context mContext, String path, ImageView holder, imageType type) {
         switch(type) {
+            case SMALLICON:
+                Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url_small) + path).into(holder);
+                break;
             case ICON:
                 Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url) + path).into(holder);
                 break;
+            case LARGEICON:
+                Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url_large) + path).into(holder);
+                break;
         }
-
     }
 
     public enum imageType {
-        ICON
+        SMALLICON,
+        ICON,
+        LARGEICON
     }
 
     static void loadLargeImage(Context mContext, String path, ImageView holder) {

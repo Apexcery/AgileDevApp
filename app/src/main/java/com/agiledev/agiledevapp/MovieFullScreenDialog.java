@@ -12,9 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -38,6 +36,7 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
@@ -47,8 +46,9 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONObject;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -59,7 +59,7 @@ import cz.msebera.android.httpclient.Header;
 public class MovieFullScreenDialog extends DialogFragment {
 
     public static String TAG = "MovieFullScreenDialog";
-    public String id;
+    public String id, poster_path;
     public FullMovieDetails movieDetails;
     public Toolbar toolbar;
     public ImageView trailerVideoImage, trailerVideoPlayImage;
@@ -69,6 +69,8 @@ public class MovieFullScreenDialog extends DialogFragment {
 
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
+
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     public static MovieFullScreenDialog newInstance(String id) {
         MovieFullScreenDialog fragment = new MovieFullScreenDialog();
@@ -134,6 +136,8 @@ public class MovieFullScreenDialog extends DialogFragment {
         }
     }
 
+
+
     protected synchronized void getMovieDetails(final View view) {
         TmdbClient.getMovieInfo(id, null, new JsonHttpResponseHandler() {
             @Override
@@ -142,6 +146,8 @@ public class MovieFullScreenDialog extends DialogFragment {
                 if (movieDetails == null)
                     return;
                 Uri uri = Uri.parse("https://image.tmdb.org/t/p/w1280" + movieDetails.getBackdrop_path());
+
+                poster_path = movieDetails.getPoster_path();
 
                 Glide.with(MovieFullScreenDialog.this).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
                     @Override
@@ -237,6 +243,10 @@ public class MovieFullScreenDialog extends DialogFragment {
 
     public void viewMoreCast() {
         //TODO: Show popup of viewing more cast with the ability to click each one for their summary.
+
+        FullCastDialog dialog = FullCastDialog.newInstance(id);
+//        dialog.show(getActivity().getSupportFragmentManager(), FullCastDialog.TAG);
+        dialog.show(getActivity().getFragmentManager(), FullCastDialog.TAG);
     }
 
     public void trackMovie() {
@@ -255,18 +265,21 @@ public class MovieFullScreenDialog extends DialogFragment {
                         if (task.isSuccessful()) {
                             DocumentSnapshot doc = task.getResult();
                             Map<String, Object> trackedMovie = new HashMap<>();
-                            Map<String, Date> trackData = new HashMap<>();
+                            Map<String, Object> trackData = new HashMap<>();
                             trackData.put("date", new Date());
+                            trackData.put("poster_path", poster_path);
                             trackedMovie.put(id, trackData);
                             if (!doc.exists()) {
                                 ref.set(trackedMovie);
                             } else {
                                 ref.update(trackedMovie);
                             }
-                            Globals.Movie movie = new Globals.Movie();
+                            Globals.trackedMovie movie = new Globals.trackedMovie();
                             movie.id = id;
                             movie.date = new Date();
+                            movie.poster_path = poster_path;
                             Globals.addToTrackedMovies(movie);
+                            Globals.sortTrackedMovies();
                         }
                     }
                 });

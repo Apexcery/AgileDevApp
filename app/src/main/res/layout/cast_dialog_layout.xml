@@ -44,7 +44,7 @@
         android:layout_below="@id/castDialogAppBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@color/background">
+        android:background="@color/darkBackground">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -52,7 +52,8 @@
             <android.support.v7.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp">
+                android:layout_margin="5dp"
+                style="@style/DarkCard">
                 <RelativeLayout
                     android:id="@+id/castProfileCard"
                     android:layout_width="match_parent"
@@ -124,7 +125,8 @@
             <android.support.v7.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp">
+                android:layout_margin="5dp"
+                style="@style/DarkCard">
                 <RelativeLayout
                     android:id="@+id/castBioCard"
                     android:layout_width="match_parent"
