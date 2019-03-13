@@ -54,7 +54,9 @@ public class SplashScreen extends Activity {
         TmdbClient.key = getResources().getString(R.string.tmdb_api_key);
 
         populateGenreTags();
-        getRecentMovies();
+        if (sharedPref.getBoolean(getString(R.string.prefs_loggedin_boolean), false)) {
+            getRecentMovies();
+        }
 
         /* New Handler to start the Menu-Activity
          * and close this Splash-Screen after some seconds.*/

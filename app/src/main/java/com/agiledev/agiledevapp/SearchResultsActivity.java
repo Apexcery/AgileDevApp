@@ -15,8 +15,10 @@ import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 
 import com.google.gson.Gson;
 import com.loopj.android.http.*;
@@ -29,6 +31,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
+
+import static android.view.Gravity.CENTER_VERTICAL;
 
 public class SearchResultsActivity extends AppCompatActivity {
 
@@ -67,9 +71,19 @@ public class SearchResultsActivity extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
 
+        Spinner spinner = (Spinner)menu.findItem(R.id.type).getActionView();
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.media_type, R.layout.app_bar_spinner);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+
         SearchManager searchManager = (SearchManager)getSystemService(Context.SEARCH_SERVICE);
         SearchView searchView = (SearchView)menu.findItem(R.id.search).getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+
+        LinearLayout layout = (LinearLayout)searchView.getChildAt(0);
+        layout.addView(spinner);
+        layout.setGravity(CENTER_VERTICAL);
+        layout.setOrientation(LinearLayout.HORIZONTAL);
 
         return true;
     }

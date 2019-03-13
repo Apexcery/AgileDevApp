@@ -1,6 +1,8 @@
 package com.agiledev.agiledevapp;
 
 import android.app.DatePickerDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -16,15 +18,21 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -39,9 +47,17 @@ public class RegisterFragment extends Fragment implements View.OnClickListener, 
     private View v;
     final Calendar calendar = Calendar.getInstance();
 
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+    SharedPreferences sharedPref;
+    SharedPreferences.Editor editor;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         v =  inflater.inflate(R.layout.fragment_register, container, false);
+
+        sharedPref = getActivity().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        editor = sharedPref.edit();
 
         Button button = v.findViewById(R.id.btnRegister);
         button.setOnClickListener(this);
@@ -103,6 +119,8 @@ public class RegisterFragment extends Fragment implements View.OnClickListener, 
                 registerUser(txtUsername.getText().toString(), user);
 
                 logIn(txtUsername.getText().toString().trim(), getContext());
+
+                getRecentMovies();
             }
         }
     }
@@ -164,11 +182,37 @@ public class RegisterFragment extends Fragment implements View.OnClickListener, 
             }
         }
     }
+//
+//    private class UserDetails {
+//        String username;
+//        String password;
+//        String email;
+//        String dob;
+//    }
 
-    private class UserDetails {
-        String username;
-        String password;
-        String email;
-        String dob;
+    public synchronized void getRecentMovies() {
+        final ArrayList<Globals.trackedMovie> movieList = new ArrayList<>();
+        db.collection("TrackedMovies").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot doc = task.getResult();
+                    if (doc.exists()) {
+                        Map<String, Object> movies = doc.getData();
+                        for (Map.Entry<String, Object> entry : movies.entrySet()) {
+                            Globals.trackedMovie movie = new Globals.trackedMovie();
+                            movie.id = entry.getKey();
+                            Map<String, Object> field = (Map)entry.getValue();
+                            Timestamp timestamp = (Timestamp)field.get("date");
+                            movie.date = timestamp.toDate();
+                            movie.poster_path = (String)field.get("poster_path");
+                            movieList.add(movie);
+                        }
+                        Globals.setTrackedMovies(movieList);
+                        Collections.sort(Globals.getTrackedMovies());
+                    }
+                }
+            }
+        });
     }
 }
