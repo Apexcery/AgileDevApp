@@ -11,13 +11,26 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.gson.Gson;
+import com.loopj.android.http.JsonHttpResponseHandler;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+
+import cz.msebera.android.httpclient.Header;
 
 import static java.lang.Math.min;
 
@@ -60,7 +73,66 @@ public class MovieFragment extends Fragment {
     }
 
     private void populateRecommendedForUser() {
-        //TODO:Use the genres of what the user has tracked and show recommended movies based upon it.
+    //TODO:Use the genres of what the user has tracked and show recommended movies based upon it.
+        if (Globals.getTrackedMovies().size() <= 0)
+            return;
+        List<Globals.trackedMovie> trackedMovies = Globals.getTrackedMovies();
+        trackedMovies = new ArrayList<>(trackedMovies.subList(0, min(trackedMovies.size(), 10)));
+        Globals.trackedMovie randomMovie = trackedMovies.get(new Random().nextInt(trackedMovies.size()));
+
+        String genreString = "";
+        for(int i = 0; i < randomMovie.genres.size(); i++)
+        {
+
+            genreString += randomMovie.genres.keyAt(i);
+            if (i < randomMovie.genres.size()){
+                genreString += ",";
+            }
+        }
+        TextView title = view.findViewById(R.id.moviesHomeRecommendedTitle);
+//        title.setText("Recommended because you watched: " + randomMovie.name);
+        TmdbClient.getRelatedMovies(genreString, null, new JsonHttpResponseHandler(){
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response){
+                JSONArray results = new JSONArray();
+                try {
+                    results = response.getJSONArray("results");
+                } catch (JSONException e) {
+                    Log.e("JSON Error", e.getMessage());
+                    e.printStackTrace();
+                }
+
+                List<Globals.trackedMovie> bmd = new ArrayList<>();
+                for (int i = 0; i < results.length(); i++) {
+                    try{
+                        BasicMovieDetails movie = new Gson().fromJson(results.getJSONObject(i).toString(), BasicMovieDetails.class);
+                        Globals.trackedMovie m = new Globals.trackedMovie();
+                        m.id = movie.getId();
+                        m.poster_path = movie.getPoster_path();
+//                        m.name = movie.getTitle();
+                        bmd.add(m);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                bmd = new ArrayList<>(bmd.subList(0, min(bmd.size(), 10)));
+                RecyclerView recyclerView = view.findViewById(R.id.moviesHomeRecommendedRecycler);
+
+                RecentMoviesAdapter adapter = new RecentMoviesAdapter(getActivity(), bmd, getActivity().getSupportFragmentManager());
+
+                recyclerView.setAdapter(adapter);
+                RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL,false);
+                recyclerView.setLayoutManager(mLayoutManager);
+                recyclerView.setItemAnimator(new DefaultItemAnimator());
+
+            }
+        } );
+
+
+
+
+
+
     }
 
     public void populateRecentMovies() {

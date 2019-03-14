@@ -62,6 +62,12 @@ class TmdbClient {
         client.get(url, params, responseHandler);
     }
 
+
+    static void getRelatedMovies(String genreString, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+        String url = getAbsoluteUrl("discover/movie?api_key=" + key + "&sort_by=popularity.desc&with_genres" + genreString);
+        client.get(url, params, responseHandler);
+    }
+
     /**
      * @param relativeUrl The specific part of the url after the BASE_URL that you want to request from.
      * @return The BASE_URL concatenated with the relative url that was passed as a parameter.
