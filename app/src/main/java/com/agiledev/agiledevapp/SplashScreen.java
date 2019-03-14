@@ -112,6 +112,7 @@ public class SplashScreen extends Activity {
                             Map<String, Object> field = (Map)entry.getValue();
                             Timestamp timestamp = (Timestamp)field.get("date");
                             movie.date = timestamp.toDate();
+                            movie.name = (String)field.get("name");
                             movie.poster_path = (String)field.get("poster_path");
                             HashMap<String, String> genreMap = (HashMap)field.get("genres");
                             for (HashMap.Entry<String, String> e : genreMap.entrySet()) {

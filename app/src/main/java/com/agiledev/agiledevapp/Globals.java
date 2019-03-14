@@ -59,7 +59,7 @@ public class Globals {
         }
     }
     public static class trackedMovie implements Comparable<trackedMovie> {
-        String id;
+        String id, name;
         Date date;
         String poster_path;
         SparseArray<String> genres = new SparseArray<>();

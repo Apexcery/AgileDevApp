@@ -205,6 +205,7 @@ public class RegisterFragment extends Fragment implements View.OnClickListener, 
                             Map<String, Object> field = (Map)entry.getValue();
                             Timestamp timestamp = (Timestamp)field.get("date");
                             movie.date = timestamp.toDate();
+                            movie.name = (String)field.get("name");
                             movie.poster_path = (String)field.get("poster_path");
                             movieList.add(movie);
                         }
