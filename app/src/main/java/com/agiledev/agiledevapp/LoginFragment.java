@@ -121,6 +121,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener, Vie
                             Timestamp timestamp = (Timestamp)field.get("date");
                             movie.date = timestamp.toDate();
                             movie.poster_path = (String)field.get("poster_path");
+                            movie.name = (String)field.get("name");
                             HashMap<String, String> genreMap = (HashMap)field.get("genres");
                             for (HashMap.Entry<String, String> e : genreMap.entrySet()) {
                                 movie.genres.put(Integer.parseInt(e.getKey()), e.getValue());
