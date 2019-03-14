@@ -10,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.Menu;
+import android.view.View;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -55,6 +56,7 @@ public class SplashScreen extends Activity {
         TmdbClient.key = getResources().getString(R.string.tmdb_api_key);
         populateTrendingMovies();
         populateGenreTags();
+        populateTrendingTvShows();
         if (sharedPref.getBoolean(getString(R.string.prefs_loggedin_boolean), false)) {
             getRecentMovies();
         }
@@ -122,8 +124,8 @@ public class SplashScreen extends Activity {
             }
         });
     }
-    //TODO Fixed trendingmovies to show on start up.
-    private void populateTrendingMovies()
+
+    private synchronized void populateTrendingMovies()
     {
         TmdbClient.getweektrendingmovies(null, new JsonHttpResponseHandler() {
             @Override
@@ -132,7 +134,7 @@ public class SplashScreen extends Activity {
                 try {
                     results = response.getJSONArray("results");
 
-                    for (int i = 0; i < 10; i++) {
+                    for (int i = 0; i < 16; i++) {
                         try {
                             Log.e("Results:", results.get(i).toString());
                             Globals.trendingMovie trendingMovie = new Globals.trendingMovie();
@@ -144,6 +146,39 @@ public class SplashScreen extends Activity {
                             trendingMovie.vote_average = movie.getVote_average();
 
                             Globals.addToTrendingMovies(trendingMovie);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                } catch (JSONException e) {
+                    Log.e("JSON Error", e.getMessage());
+
+                }
+
+            }
+        });
+    }
+    private synchronized void populateTrendingTvShows()
+    {
+        TmdbClient.getweektrendingtvshows(null, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                JSONArray results = new JSONArray();
+                try {
+                    results = response.getJSONArray("results");
+
+                    for (int i = 0; i < 16; i++) {
+                        try {
+                            Log.e("Results:", results.get(i).toString());
+                            Globals.trendingTvShow trendingTvshow = new Globals.trendingTvShow();
+                            BasicTvShowDetails tvshow = new Gson().fromJson(results.get(i).toString(), BasicTvShowDetails.class);
+
+                            trendingTvshow.id = tvshow.getId();
+                            trendingTvshow.poster_path = tvshow.getPoster_path();
+                            trendingTvshow.vote_average = tvshow.getVote_average();
+
+                            Globals.addToTrendingTvShows(trendingTvshow);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }

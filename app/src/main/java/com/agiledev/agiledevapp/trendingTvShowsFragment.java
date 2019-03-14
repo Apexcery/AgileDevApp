@@ -33,7 +33,6 @@ public class trendingTvShowsFragment extends Fragment
     ProgressBar spinner;
     RecyclerView recyclerView;
     TrendingTvShowsAdapter adapter;
-    List<BasicTvShowDetails> tvshows = new ArrayList<>();
     View v;
     LinearLayout trendingtvResults;
 
@@ -43,11 +42,9 @@ public class trendingTvShowsFragment extends Fragment
         v = inflater.inflate(R.layout.fragment_trendingtvshows, container, false);
 
         recyclerView = v.findViewById(R.id.tvtrending_recycler_view);
-        spinner = v.findViewById(R.id.Tvtrendingspinner);
         trendingtvResults = v.findViewById(R.id.tvtrendingresults);
 
         getTrendingTvShows();
-
         RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getActivity(), 2);
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -57,34 +54,8 @@ public class trendingTvShowsFragment extends Fragment
 
     private void getTrendingTvShows()
     {
-        TmdbClient.getweektrendingtvshows(null, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JSONArray results = new JSONArray();
-                try {
-                    results = response.getJSONArray("results");
-
-                    for (int i = 0; i < 10; i++) {
-                        try {
-                            Log.e("Results:", results.get(i).toString());
-                            BasicTvShowDetails tvshow = new Gson().fromJson(results.get(i).toString(), BasicTvShowDetails.class);
-                            tvshows.add(tvshow);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-
-                    }
-                    adapter = new TrendingTvShowsAdapter(getContext(), tvshows, getFragmentManager());
-                    spinner.setVisibility(View.GONE);
-                    recyclerView.setAdapter(adapter);
-                    trendingtvResults.setVisibility(View.VISIBLE);
-                } catch (JSONException e) {
-                    Log.e("JSON Error", e.getMessage());
-
-                }
-
-            }
-        });
+        adapter = new TrendingTvShowsAdapter(getContext(), Globals.getTrendingTvShows(), getFragmentManager());
+        recyclerView.setAdapter(adapter);
     }
 
 }

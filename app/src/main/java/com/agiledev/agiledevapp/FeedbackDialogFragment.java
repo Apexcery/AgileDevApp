@@ -22,7 +22,6 @@ public class FeedbackDialogFragment extends DialogFragment
     private Button mActionSubmit, mActionCancel;
     public EditText mName, mEmail, mMessage;
 
-    public ThankyouDialogFragment dialog = new ThankyouDialogFragment();
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState)
@@ -40,6 +39,9 @@ public class FeedbackDialogFragment extends DialogFragment
             public void onClick(View view)
             {
                 getDialog().dismiss();
+                mName.setText("");
+                mMessage.setText("");
+                mEmail.setText("");
             }
         });
 
@@ -51,6 +53,7 @@ public class FeedbackDialogFragment extends DialogFragment
                 String messageS = mMessage.getText().toString();
                 String nameS = mName.getText().toString();
                 String emailS = mEmail.getText().toString();
+
                 Intent email = new Intent(Intent.ACTION_SEND);
                 email.putExtra(Intent.EXTRA_EMAIL, new String[] { "s6104158@live.tees.ac.uk" });
                 email.putExtra(Intent.EXTRA_SUBJECT, "Feedback by: " + nameS);
@@ -60,6 +63,9 @@ public class FeedbackDialogFragment extends DialogFragment
                 startActivity(Intent.createChooser(email, "Choose app to send email"));
 
                 dismiss();
+                mName.setText("");
+                mMessage.setText("");
+                mEmail.setText("");
                 final AlertDialog dialog = SimpleDialog.create(DialogOption.OkOnlyDismiss, getActivity(), "Feedback sent", "Thank you for sending feedback");
                 dialog.show();
             }

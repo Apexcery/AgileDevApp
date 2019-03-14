@@ -32,7 +32,6 @@ public class TrendingMoviesAdapter extends RecyclerView.Adapter<TrendingMoviesAd
         MyViewHolder(View view) {
             super(view);
 
-
             poster = view.findViewById(R.id.trendingmoviesimg);
             rating = view.findViewById(R.id.trendingmovierating);
             layout = view.findViewById(R.id.trendingmovieslayout);
@@ -64,7 +63,6 @@ public class TrendingMoviesAdapter extends RecyclerView.Adapter<TrendingMoviesAd
                 dialog.show(manager, MovieFullScreenDialog.TAG);
             }
         });
-
         TmdbClient.loadLargeImage(mContext, movie.poster_path, holder.poster);
 
     }

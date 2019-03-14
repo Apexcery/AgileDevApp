@@ -10,12 +10,6 @@
     android:id="@+id/Tvtrendinglayout"
     android:orientation="vertical">
 
-    <ProgressBar
-        android:id="@+id/Tvtrendingspinner"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center" />
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

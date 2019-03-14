@@ -13,12 +13,14 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-public class Globals {
+public class Globals
+{
 
     //Lists
     private static SparseArray<String> genreTags = new SparseArray<>();
     private static List<trackedMovie> trackedMovies = new ArrayList<>();
     private static List<trendingMovie> trendingMovies = new ArrayList<>();
+    private static List<trendingTvShow> trendingTvShows = new ArrayList<>();
 //    private static Map<String, Object> trackedMovies = new HashMap<>();
 
     //Genres getter and setter
@@ -64,6 +66,8 @@ public class Globals {
             });
         }
     }
+
+
     public static class trackedMovie implements Comparable<trackedMovie> {
         String id;
         Date date;
@@ -74,18 +78,52 @@ public class Globals {
             return o.date.compareTo(date);
         }
     }
+
+    //-------Trending Movie--------
     public static class trendingMovie {
         String id;
         String poster_path;
         Float vote_average;
     }
-        public static List<trendingMovie> getTrendingMovies() {
+
+    public static List<trendingMovie> getTrendingMovies()
+    {
             return trendingMovies;
-        }
-        public static void setTrendingMovies(List<trendingMovie> trendingMovies) {
-            Globals.trendingMovies = trendingMovies;
-        }
-        public static void addToTrendingMovies(trendingMovie movie) {
-            Globals.trendingMovies.add(movie);
-        }
     }
+
+    public static void setTrendingMovies(List<trendingMovie> trendingMovies)
+    {
+            Globals.trendingMovies = trendingMovies;
+    }
+
+    public static void addToTrendingMovies(trendingMovie movie)
+    {
+            Globals.trendingMovies.add(movie);
+    }
+
+
+    //-------Trending TvShow--------
+    public static class trendingTvShow
+    {
+        String id;
+        String poster_path;
+        Float vote_average;
+    }
+
+    public static List<trendingTvShow> getTrendingTvShows()
+    {
+        return trendingTvShows;
+    }
+
+    public static void setTrendingTvShows(List<trendingTvShow> trendingTvShows)
+    {
+        Globals.trendingTvShows = trendingTvShows;
+    }
+
+    public static void addToTrendingTvShows(trendingTvShow tvshow)
+    {
+        Globals.trendingTvShows.add(tvshow);
+    }
+
+
+}

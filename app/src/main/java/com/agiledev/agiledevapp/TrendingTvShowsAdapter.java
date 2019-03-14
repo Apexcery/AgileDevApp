@@ -18,12 +18,11 @@ import java.util.List;
 public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShowsAdapter.MyViewHolder> {
 
     private Context mContext;
-    private List<BasicTvShowDetails> tvshowList;
+    private List<Globals.trendingTvShow> tvshowList;
     public FragmentManager manager;
 
     class MyViewHolder extends RecyclerView.ViewHolder
     {
-        TextView name, genres;
         ImageView poster;
         String id;
         TrendingTvShowsAdapter adapter;
@@ -40,7 +39,7 @@ public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShows
         }
     }
 
-    TrendingTvShowsAdapter(Context mContext, List<BasicTvShowDetails> tvshowList, FragmentManager manager) {
+    TrendingTvShowsAdapter(Context mContext, List<Globals.trendingTvShow> tvshowList, FragmentManager manager) {
         this.mContext = mContext;
         this.tvshowList = tvshowList;
         this.manager = manager;
@@ -54,9 +53,9 @@ public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShows
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position)  {
-        BasicTvShowDetails tvshow = tvshowList.get(position);
-        holder.id = tvshow.getId();
-        holder.rating.setRating(tvshow.getVote_average()/2);
+        Globals.trendingTvShow tvshow = tvshowList.get(position);
+        holder.id = tvshow.id;
+        holder.rating.setRating(tvshow.vote_average/2);
         holder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -64,8 +63,7 @@ public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShows
                 dialog.show(manager, TvShowFullScreenDialog.TAG);
             }
         });
-        //TODO create a Tv show fullscreen dialog
-        TmdbClient.loadLargeImage(mContext, tvshow.getPoster_path(), holder.poster);
+        TmdbClient.loadLargeImage(mContext, tvshow.poster_path, holder.poster);
 
     }
 
