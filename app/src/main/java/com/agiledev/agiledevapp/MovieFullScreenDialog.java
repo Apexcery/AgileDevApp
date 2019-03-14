@@ -290,8 +290,7 @@ public class MovieFullScreenDialog extends DialogFragment {
                             movie.date = new Date();
                             movie.poster_path = poster_path;
                             movie.name = name;
-                            HashMap<String, String> genreMap = new HashMap<>();
-                            for (HashMap.Entry<String, String> e : genreMap.entrySet()) {
+                            for (HashMap.Entry<String, String> e : genres.entrySet()) {
                                 movie.genres.put(Integer.parseInt(e.getKey()), e.getValue());
                             }
                             Globals.addToTrackedMovies(movie);

@@ -40,6 +40,7 @@ public class MovieFragment extends Fragment {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
+    String genreString;
 
 
     @Nullable
@@ -80,17 +81,16 @@ public class MovieFragment extends Fragment {
         trackedMovies = new ArrayList<>(trackedMovies.subList(0, min(trackedMovies.size(), 10)));
         Globals.trackedMovie randomMovie = trackedMovies.get(new Random().nextInt(trackedMovies.size()));
 
-        String genreString = "";
+        genreString = "";
         for(int i = 0; i < randomMovie.genres.size(); i++)
         {
-
             genreString += randomMovie.genres.keyAt(i);
             if (i < randomMovie.genres.size()){
                 genreString += ",";
             }
         }
         TextView title = view.findViewById(R.id.moviesHomeRecommendedTitle);
-//        title.setText("Recommended because you watched: " + randomMovie.name);
+        title.setText("Recommended because you watched: " + randomMovie.name);
         TmdbClient.getRelatedMovies(genreString, null, new JsonHttpResponseHandler(){
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response){
@@ -109,7 +109,7 @@ public class MovieFragment extends Fragment {
                         Globals.trackedMovie m = new Globals.trackedMovie();
                         m.id = movie.getId();
                         m.poster_path = movie.getPoster_path();
-//                        m.name = movie.getTitle();
+                        m.name = movie.getTitle();
                         bmd.add(m);
                     } catch (JSONException e) {
                         e.printStackTrace();
