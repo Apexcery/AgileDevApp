@@ -113,7 +113,7 @@ public class FullTvShowDetails
 
     public String getType() { return type; }
 
-    public Float getVote_average() { return vote_average; }
+    public Float getVote_average() { return vote_average/2; }
 
     public ArrayList<Video> getVideos() {
         return videos.getResults();

@@ -31,5 +31,15 @@
         android:stepSize="0.01"
         android:progressTint="@color/yellow"
         android:progressBackgroundTint="@color/white"/>
+    <TextView
+        android:id="@+id/trendingtvshowratingnum"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="15dp"
+        android:textSize="15dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_alignTop="@id/trendingmovierating"
+        android:textColor="@color/yellow"/>
 
 </RelativeLayout>

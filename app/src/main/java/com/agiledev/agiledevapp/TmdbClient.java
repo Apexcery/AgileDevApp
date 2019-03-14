@@ -79,8 +79,15 @@ class TmdbClient {
         client.get(url, params, responseHandler);
     }
 
+
     static void getMovieCast(String movieID, RequestParams params, AsyncHttpResponseHandler responseHandler) {
         String url = getAbsoluteUrl("movie/" + movieID + "/credits?api_key=" + key);
+        client.get(url, params, responseHandler);
+    }
+
+    static void getTvCast(String tvshowID, RequestParams params, AsyncHttpResponseHandler responseHandler)
+    {
+        String url = getAbsoluteUrl("tv/" + tvshowID + "/credits?api_key=" + key);
         client.get(url, params, responseHandler);
     }
 

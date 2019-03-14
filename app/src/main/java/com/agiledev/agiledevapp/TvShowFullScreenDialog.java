@@ -90,6 +90,8 @@ public class TvShowFullScreenDialog extends DialogFragment {
         trailerVideoImage = view.findViewById(R.id.tvshowTrailerImage);
         trailerVideoPlayImage = view.findViewById(R.id.tvshowTrailerPlayIcon);
 
+        //TODO add floating action button to track tvshows
+
         this.id = getArguments().getString("id", "No Title Found");
 
         getTvShowDetails(view);
@@ -151,7 +153,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
                 TextView tvshowReleaseDate = view.findViewById(R.id.tvshowInfoReleaseDate);
                 TextView tvshowNextEpisode = view.findViewById(R.id.tvshowNextEp);
                 TextView tvshowGenres = view.findViewById(R.id.tvshowInfoGenres);
-                //Button tvshowCastMore = view.findViewById(R.id.tvshowInfoCastMore);
+                Button tvshowCastMore = view.findViewById(R.id.tvshowInfoCastMore);
 
                 String nextEpString;
                 String firstReleased = getResources().getString(R.string.first_released) + " <font color='#ffffff'>" + tvshowDetails.getFirst_air_date() + "</font>";
@@ -171,6 +173,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
 
                 tvshowName.setText(tvshowDetails.getName());
                 tvshowPlot.setText(tvshowDetails.getOverview());
+
                 if (tvshowDetails.getNext_episode_to_air() == null)
                 {
                     tvshowNextEpisode.setText(" ");
@@ -191,12 +194,12 @@ public class TvShowFullScreenDialog extends DialogFragment {
 
                 tvshowGenres.setText(tvshowDetails.getGenresString());
                 addCastToLayout(tvshowDetails.getCast(), getActivity().getSupportFragmentManager());
-                /*tvshowCastMore.setOnClickListener(new View.OnClickListener() {
+                tvshowCastMore.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         viewMoreCast();
                     }
-                }*/
+                });
             }
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
@@ -213,6 +216,12 @@ public class TvShowFullScreenDialog extends DialogFragment {
         } catch (ActivityNotFoundException e) {
             context.startActivity(webIntent);
         }
+    }
+
+    public void viewMoreCast()
+    {
+        FullCastDialog dialog = FullCastDialog.newInstance(id, FullCastDialog.mediatype.TV);
+        dialog.show(getActivity().getFragmentManager(), FullCastDialog.TAG);
     }
 
     public void addCastToLayout(ArrayList<FullTvShowDetails.Cast> castList, FragmentManager fragmentManager) {

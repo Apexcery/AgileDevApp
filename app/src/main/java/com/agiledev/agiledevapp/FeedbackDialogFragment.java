@@ -4,13 +4,22 @@ import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static android.app.PendingIntent.getActivity;
 
@@ -68,6 +77,14 @@ public class FeedbackDialogFragment extends DialogFragment
                 mEmail.setText("");
                 final AlertDialog dialog = SimpleDialog.create(DialogOption.OkOnlyDismiss, getActivity(), "Feedback sent", "Thank you for sending feedback");
                 dialog.show();
+
+
+                /*Map<String, Object> feedback = new HashMap<>();
+                feedback.put("Feedback", mMessage.getText().toString());
+                feedback.put("email", mEmail.getText().toString());
+
+                sendFeedback(txtUsername.getText().toString(), user);*/
+
             }
 
         });
@@ -75,9 +92,25 @@ public class FeedbackDialogFragment extends DialogFragment
         return view;
     }
 
-    public boolean onTouch(View v, MotionEvent event) {
+    public boolean onTouch(View v, MotionEvent event)
+    {
         CloseKeyboard.hideKeyboard(getActivity());
         return true;
+    }
+    private void sendFeedback(String username, Map<String, Object> user)
+    {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("Feedback").document(username).set(user).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d("Success", "Feedback sent successfully!");
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.w("Error", "Error sending feedback", e);
+            }
+        });
     }
 
 }

@@ -40,8 +40,6 @@ public class TvShowCastAdapter extends RecyclerView.Adapter<TvShowCastAdapter.My
             charName = view.findViewById(R.id.tvshowCastCardCharacter);
             gender = view.findViewById(R.id.tvshowCastCardGender);
             image = view.findViewById(R.id.tvshowCastCardImage);
-            DOB = view.findViewById(R.id.tvshowCastCardDOB);
-            died = view.findViewById(R.id.tvshowCastCardDied);
             layout = view.findViewById(R.id.tvshowCastCard);
         }
     }
@@ -61,24 +59,17 @@ public class TvShowCastAdapter extends RecyclerView.Adapter<TvShowCastAdapter.My
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position)  {
-        FullTvShowDetails.Cast cast = castList.get(position);
+        final FullTvShowDetails.Cast cast = castList.get(position);
 
         holder.realName.setText(cast.getName());
         holder.charName.setText(cast.getCharacter());
         holder.gender.setText(cast.getGender() == 1 ? "Female" : "Male");
 
-        TmdbClient.getPersonDetails(cast.getId(), null, new JsonHttpResponseHandler() {
+        holder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onSuccess(int statusCode, Header[] headers,  JSONObject response) {
-                person = new Gson().fromJson(response.toString(), Person.class);
-                if (person == null)
-                    return;
-                String DOBString = holder.DOB.getText().toString() + " " + person.birthday;
-                holder.DOB.setText(DOBString);
-                if (person.deathday != null) {
-                    String diedString = "Died - " + person.deathday;
-                    holder.died.setText(diedString);
-                }
+            public void onClick(View v) {
+                CastDialog dialog = CastDialog.newInstance(cast.getId());
+                dialog.show(manager, CastDialog.TAG);
             }
         });
 

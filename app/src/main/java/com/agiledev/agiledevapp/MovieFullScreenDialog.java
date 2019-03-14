@@ -241,11 +241,10 @@ public class MovieFullScreenDialog extends DialogFragment {
         recyclerView.setAdapter(adapter);
     }
 
-    public void viewMoreCast() {
+    public void viewMoreCast()
+    {
         //TODO: Show popup of viewing more cast with the ability to click each one for their summary.
-
-        FullCastDialog dialog = FullCastDialog.newInstance(id);
-//        dialog.show(getActivity().getSupportFragmentManager(), FullCastDialog.TAG);
+        FullCastDialog dialog = FullCastDialog.newInstance(id, FullCastDialog.mediatype.MOVIE);
         dialog.show(getActivity().getFragmentManager(), FullCastDialog.TAG);
     }
 
@@ -311,5 +310,11 @@ public class MovieFullScreenDialog extends DialogFragment {
         });
 
         dialog.show();
+    }
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        dismiss();
     }
 }

@@ -39,8 +39,7 @@ public class BasicMovieDetails {
         return id;
     }
 
-    public Float getVote_average() { return vote_average; }
-
+    public Float getVote_average() { return vote_average/2; }
 
     public ArrayList<Integer> getGenre_ids() {
         return genre_ids;
