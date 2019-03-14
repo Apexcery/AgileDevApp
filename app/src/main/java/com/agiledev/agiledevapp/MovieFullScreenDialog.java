@@ -63,6 +63,7 @@ public class MovieFullScreenDialog extends DialogFragment {
     public FullMovieDetails movieDetails;
     public Toolbar toolbar;
     public ImageView trailerVideoImage, trailerVideoPlayImage;
+    public ArrayList<FullMovieDetails.Genre> genreList;
     NestedScrollView pageContent;
     RecyclerView recyclerView;
     MovieCastAdapter adapter;
@@ -148,6 +149,7 @@ public class MovieFullScreenDialog extends DialogFragment {
                 Uri uri = Uri.parse("https://image.tmdb.org/t/p/w1280" + movieDetails.getBackdrop_path());
 
                 poster_path = movieDetails.getPoster_path();
+                genreList = movieDetails.getGenres();
 
                 Glide.with(MovieFullScreenDialog.this).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
                     @Override
@@ -268,6 +270,13 @@ public class MovieFullScreenDialog extends DialogFragment {
                             Map<String, Object> trackData = new HashMap<>();
                             trackData.put("date", new Date());
                             trackData.put("poster_path", poster_path);
+
+                            Map<String, String> genres = new HashMap<>();
+                            for (FullMovieDetails.Genre g : genreList) {
+                                genres.put(String.valueOf(g.id), g.name);
+                            }
+                            trackData.put("genres", genres);
+
                             trackedMovie.put(id, trackData);
                             if (!doc.exists()) {
                                 ref.set(trackedMovie);
@@ -278,6 +287,10 @@ public class MovieFullScreenDialog extends DialogFragment {
                             movie.id = id;
                             movie.date = new Date();
                             movie.poster_path = poster_path;
+                            HashMap<String, String> genreMap = new HashMap<>();
+                            for (HashMap.Entry<String, String> e : genreMap.entrySet()) {
+                                movie.genres.put(Integer.parseInt(e.getKey()), e.getValue());
+                            }
                             Globals.addToTrackedMovies(movie);
                             Globals.sortTrackedMovies();
                         }

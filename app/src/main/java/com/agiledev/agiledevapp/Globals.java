@@ -62,6 +62,7 @@ public class Globals {
         String id;
         Date date;
         String poster_path;
+        SparseArray<String> genres = new SparseArray<>();
 
         @Override
         public int compareTo(@NonNull trackedMovie o) {

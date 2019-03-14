@@ -25,6 +25,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Map;
 
 import cz.msebera.android.httpclient.Header;
@@ -112,6 +113,10 @@ public class SplashScreen extends Activity {
                             Timestamp timestamp = (Timestamp)field.get("date");
                             movie.date = timestamp.toDate();
                             movie.poster_path = (String)field.get("poster_path");
+                            HashMap<String, String> genreMap = (HashMap)field.get("genres");
+                            for (HashMap.Entry<String, String> e : genreMap.entrySet()) {
+                                movie.genres.put(Integer.parseInt(e.getKey()), e.getValue());
+                            }
                             movieList.add(movie);
                         }
                         Globals.setTrackedMovies(movieList);
