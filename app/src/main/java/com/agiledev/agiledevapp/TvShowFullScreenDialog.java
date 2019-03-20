@@ -1,12 +1,17 @@
 package com.agiledev.agiledevapp;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -23,19 +28,29 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.Gson;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import cz.msebera.android.httpclient.Header;
 
@@ -44,7 +59,7 @@ import static java.lang.Math.min;
 public class TvShowFullScreenDialog extends DialogFragment {
 
     public static String TAG = "TvShowFullScreenDialog";
-    public String id;
+    public String id, poster_path;
     public FullTvShowDetails tvshowDetails;
     public TextView toolbarTitle;
     public Toolbar toolbar;
@@ -53,6 +68,10 @@ public class TvShowFullScreenDialog extends DialogFragment {
     TvShowCastAdapter adapter;
     RecyclerView recyclerView;
     private FragmentActivity mContext;
+    SharedPreferences sharedPref;
+    SharedPreferences.Editor editor;
+
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     public static TvShowFullScreenDialog newInstance(String id) {
         TvShowFullScreenDialog fragment = new TvShowFullScreenDialog();
@@ -91,8 +110,18 @@ public class TvShowFullScreenDialog extends DialogFragment {
         trailerVideoPlayImage = view.findViewById(R.id.tvshowTrailerPlayIcon);
 
         //TODO add floating action button to track tvshows
+        sharedPref = getContext().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        editor = sharedPref.edit();
 
         this.id = getArguments().getString("id", "No Title Found");
+
+        FloatingActionButton fab = view.findViewById(R.id.fabTrackMovie);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                trackTV();
+            }
+        });
 
         getTvShowDetails(view);
 
@@ -234,6 +263,70 @@ public class TvShowFullScreenDialog extends DialogFragment {
 
         adapter = new TvShowCastAdapter(mContext, top3Cast, fragmentManager);
         recyclerView.setAdapter(adapter);
+    }
+
+    public void trackTV() {
+        boolean alreadyTracked = false;
+        if (Globals.trackedTVContains(id))
+            alreadyTracked = true;
+
+        final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, getContext(), "Track TvShow", "Are you sure you want to track this TvShow?");
+        dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                final DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedTV").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
+                ref.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            DocumentSnapshot doc = task.getResult();
+                            Map<String, Object> trackedTV = new HashMap<>();
+                            Map<String, Object> trackData = new HashMap<>();
+                            trackData.put("date", new Date());
+                            trackData.put("poster_path", poster_path);
+                            trackedTV.put(id, trackData);
+                            if (!doc.exists()) {
+                                ref.set(trackedTV);
+                            } else {
+                                ref.update(trackedTV);
+                            }
+                            Globals.trackedTV TV = new Globals.trackedTV();
+                            TV.id = id;
+                            TV.date = new Date();
+                            TV.poster_path = poster_path;
+                            Globals.addToTrackedTvShows(TV);
+                            Globals.sortTrackedTvShows();
+                        }
+                    }
+                });
+                Toast.makeText(getContext(), "Tv Show tracked!", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        if (alreadyTracked) {
+            dialog.setTitle("Untrack TvShow");
+            dialog.setMessage("Are you sure you want to untrack this TvShow?");
+            dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedMovies").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
+                    ref.update(id, FieldValue.delete());
+
+                    Globals.removeFromTrackedMovies(id);
+
+                    Toast.makeText(getContext(), "Movie untracked!", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+
+        dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
     }
 
 }
