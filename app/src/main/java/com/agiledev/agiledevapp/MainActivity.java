@@ -159,7 +159,6 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_home) {
-            //finish();
             fragmentManager.beginTransaction()
                     .replace(R.id.content_frame
                             ,new HomeFragment())
@@ -174,7 +173,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_tv) {
             fragmentManager.beginTransaction()
                     .replace(R.id.content_frame
-                            ,new TrackedTvshowsFragment())
+                            ,new TvShowFragment())
                     .commit();
 
         } else if (id == R.id.nav_help) {
