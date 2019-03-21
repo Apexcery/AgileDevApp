@@ -52,7 +52,6 @@ public class MainActivity extends AppCompatActivity
         sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         editor = sharedPref.edit();
 
-
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -140,7 +139,7 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_home) {
-            //finish();
+            finish();
             fragmentManager.beginTransaction()
                     .replace(R.id.content_frame
                             ,new HomeFragment())
@@ -164,8 +163,12 @@ public class MainActivity extends AppCompatActivity
                             ,new HelpFragment())
                     .commit();
 
-        } else if (id == R.id.nav_settings) {
-
+        } else if (id == R.id.nav_settings)
+        {
+            fragmentManager.beginTransaction()
+                    .replace(R.id.content_frame
+                            ,new SettingsFragment())
+                    .commit();
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
