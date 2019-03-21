@@ -51,6 +51,7 @@ public class Globals
         Globals.trackedTV = trackedTvShows;
     }
 
+
     //----------- Adding ------------
     public static synchronized void addToTrackedMovies(trackedMovie movie) {
         Globals.trackedMovies.add(movie);
@@ -58,6 +59,7 @@ public class Globals
     public static synchronized void addToTrackedTvShows(trackedTV TV) {
         Globals.trackedTV.add(TV);
     }
+
 
     //----------- Removing ------------
     public static synchronized void removeFromTrackedMovies(String id) {
@@ -76,6 +78,7 @@ public class Globals
             }
         }
     }
+
 
     //----------- Contains ------------
     public static boolean trackedMoviesContains(String id) {

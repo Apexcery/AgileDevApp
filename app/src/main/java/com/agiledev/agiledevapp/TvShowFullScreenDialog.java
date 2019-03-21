@@ -61,13 +61,12 @@ public class TvShowFullScreenDialog extends DialogFragment {
     public static String TAG = "TvShowFullScreenDialog";
     public String id, poster_path;
     public FullTvShowDetails tvshowDetails;
-    public TextView toolbarTitle;
     public Toolbar toolbar;
     public ImageView trailerVideoImage, trailerVideoPlayImage;
     NestedScrollView pageContent;
-    TvShowCastAdapter adapter;
     RecyclerView recyclerView;
-    private FragmentActivity mContext;
+    TvShowCastAdapter adapter;
+
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
 
@@ -115,7 +114,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
 
         this.id = getArguments().getString("id", "No Title Found");
 
-        FloatingActionButton fab = view.findViewById(R.id.fabTrackMovie);
+        FloatingActionButton fab = view.findViewById(R.id.fabTrackTV);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -147,6 +146,8 @@ public class TvShowFullScreenDialog extends DialogFragment {
                 if (tvshowDetails == null)
                     return;
                 Uri uri = Uri.parse("https://image.tmdb.org/t/p/w1280" + tvshowDetails.getBackdrop_path());
+
+                poster_path = tvshowDetails.getPoster_path();
 
                 Glide.with(TvShowFullScreenDialog.this).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
                     @Override
@@ -309,12 +310,12 @@ public class TvShowFullScreenDialog extends DialogFragment {
             dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-                    DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedMovies").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
+                    DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedTV").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
                     ref.update(id, FieldValue.delete());
 
-                    Globals.removeFromTrackedMovies(id);
+                    Globals.removeFromTrackedTvShows(id);
 
-                    Toast.makeText(getContext(), "Movie untracked!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), "TvShow untracked!", Toast.LENGTH_LONG).show();
                 }
             });
         }

@@ -27,7 +27,7 @@ import static java.lang.Math.min;
 
 public class TvShowFragment extends Fragment {
 
-        View view;
+    View view;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
@@ -45,7 +45,7 @@ public class TvShowFragment extends Fragment {
         //populateRecommendedInArea();
 
         final FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-        SwipeRefreshLayout refreshLayout = view.findViewById(R.id.moviesRefreshLayout);
+        SwipeRefreshLayout refreshLayout = view.findViewById(R.id.tvShowsRefreshLayout);
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -58,13 +58,20 @@ public class TvShowFragment extends Fragment {
         return view;
     }
 
+    private void populateRecommendedInArea() {
+        //TODO:Use GPS to pull user's area and show recommended TvShows based upon it.
+    }
+
+    private void populateRecommendedForUser() {
+        //TODO:Use the genres of what the user has tracked and show recommended TvShows based upon it.
+    }
+
     public void populateRecentTvShows() {
         List<Globals.trackedTV> recentTvShows = Globals.getTrackedTvShows();
 
         List<Globals.trackedTV> tenRecentTvShows = new ArrayList<>(recentTvShows.subList(0, min(recentTvShows.size(), 10)));
 
-        RecyclerView recyclerView = view.findViewById(R.id.moviesHomeRecentlyWatchedRecycler);
-//        RecentMoviesAdapter adapter = new RecentMoviesAdapter(getActivity(), , ((FragmentActivity)getActivity()).getSupportFragmentManager());
+        RecyclerView recyclerView = view.findViewById(R.id.tvShowsHomeRecentlyWatchedRecycler);
 
         RecentTvShowsAdapter adapter = new RecentTvShowsAdapter(getActivity(), tenRecentTvShows, getActivity().getSupportFragmentManager());
 

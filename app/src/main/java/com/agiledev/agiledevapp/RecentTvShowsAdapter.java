@@ -23,8 +23,8 @@ public class RecentTvShowsAdapter extends RecyclerView.Adapter<RecentTvShowsAdap
 
         MyViewHolder(View view) {
             super(view);
-            poster = view.findViewById(R.id.movieRecentCardPoster);
-            layout = view.findViewById(R.id.movieVerticalCard);
+            poster = view.findViewById(R.id.tvRecentCardPoster);
+            layout = view.findViewById(R.id.tvVerticalCard);
         }
     }
 
@@ -36,7 +36,7 @@ public class RecentTvShowsAdapter extends RecyclerView.Adapter<RecentTvShowsAdap
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.movie_vertical_card, parent, false);
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.tvshow_vertical_card, parent, false);
         return new MyViewHolder(itemView);
     }
 
