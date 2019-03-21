@@ -9,6 +9,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -48,6 +49,8 @@ public class MovieFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_movies, container, false);
 
+        view.findViewById(R.id.movieFragmentSpinner).setVisibility(View.VISIBLE);
+
         sharedPref = getActivity().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         editor = sharedPref.edit();
 
@@ -69,12 +72,24 @@ public class MovieFragment extends Fragment {
         return view;
     }
 
-    private void populateRecommendedInArea() {
-        //TODO:Use GPS to pull user's area and show recommended movies based upon it.
+    public void populateRecentMovies() {
+        List<Globals.trackedMovie> recentMovies = Globals.getTrackedMovies();
+        List<Globals.trackedMovie> tenRecentMovies = new ArrayList<>(recentMovies.subList(0, min(recentMovies.size(), 10)));
+
+        RecyclerView recyclerView = view.findViewById(R.id.moviesHomeRecentlyWatchedRecycler);
+
+        RecentMoviesAdapter adapter = new RecentMoviesAdapter(getActivity(), tenRecentMovies, getActivity().getSupportFragmentManager());
+
+        recyclerView.setAdapter(adapter);
+
+        RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getActivity(), 2);
+        recyclerView.setLayoutManager(mLayoutManager);
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+
+        recyclerView.setVisibility(View.VISIBLE);
     }
 
     private void populateRecommendedForUser() {
-    //TODO:Use the genres of what the user has tracked and show recommended movies based upon it.
         if (Globals.getTrackedMovies().size() <= 0)
             return;
         List<Globals.trackedMovie> trackedMovies = Globals.getTrackedMovies();
@@ -90,7 +105,7 @@ public class MovieFragment extends Fragment {
             }
         }
         TextView title = view.findViewById(R.id.moviesHomeRecommendedTitle);
-        title.setText("Recommended because you watched: " + randomMovie.name);
+        title.setText(getResources().getString(R.string.recommended_because_watched, randomMovie.name));
         TmdbClient.getRelatedMovies(genreString, null, new JsonHttpResponseHandler(){
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response){
@@ -115,38 +130,24 @@ public class MovieFragment extends Fragment {
                         e.printStackTrace();
                     }
                 }
-                bmd = new ArrayList<>(bmd.subList(0, min(bmd.size(), 10)));
+                bmd = new ArrayList<>(bmd.subList(0, min(bmd.size(), 6)));
                 RecyclerView recyclerView = view.findViewById(R.id.moviesHomeRecommendedRecycler);
 
                 RecentMoviesAdapter adapter = new RecentMoviesAdapter(getActivity(), bmd, getActivity().getSupportFragmentManager());
 
                 recyclerView.setAdapter(adapter);
-                RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL,false);
+
+                RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getActivity(), 2);
                 recyclerView.setLayoutManager(mLayoutManager);
                 recyclerView.setItemAnimator(new DefaultItemAnimator());
 
+                view.findViewById(R.id.movieFragmentSpinner).setVisibility(View.GONE);
+                recyclerView.setVisibility(View.VISIBLE);
             }
-        } );
-
-
-
-
-
-
+        });
     }
 
-    public void populateRecentMovies() {
-        List<Globals.trackedMovie> recentMovies = Globals.getTrackedMovies();
-
-        List<Globals.trackedMovie> tenRecentMovies = new ArrayList<>(recentMovies.subList(0, min(recentMovies.size(), 10)));
-
-        RecyclerView recyclerView = view.findViewById(R.id.moviesHomeRecentlyWatchedRecycler);
-
-        RecentMoviesAdapter adapter = new RecentMoviesAdapter(getActivity(), tenRecentMovies, getActivity().getSupportFragmentManager());
-
-        recyclerView.setAdapter(adapter);
-        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL,false);
-        recyclerView.setLayoutManager(mLayoutManager);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
+    private void populateRecommendedInArea() {
+        //TODO:Use GPS to pull user's area and show recommended movies based upon it.
     }
 }

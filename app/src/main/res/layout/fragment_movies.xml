@@ -6,6 +6,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background">
+    <ProgressBar
+        android:id="@+id/movieFragmentSpinner"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@color/background"/>
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/moviesRefreshLayout"
         android:layout_width="match_parent"
@@ -24,7 +31,6 @@
                 <android.support.v7.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
                     style="@style/DarkCard">
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -36,22 +42,26 @@
                             android:layout_height="wrap_content"
                             android:text="@string/recently_watched"
                             android:textColor="@color/colorAccent"
-                            android:textSize="15sp"/>
+                            android:textSize="16sp"/>
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@android:color/darker_gray"
+                            android:layout_marginBottom="2dp"/>
                         <android.support.v7.widget.RecyclerView
                             android:id="@+id/moviesHomeRecentlyWatchedRecycler"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:nestedScrollingEnabled="false"
+                            android:overScrollMode="never"
                             android:clipToPadding="false"
-                            android:scrollbars="horizontal"
-                            android:orientation="horizontal"/>
+                            android:visibility="gone"/>
                     </LinearLayout>
                 </android.support.v7.widget.CardView>
                 <!--Recommended Movies-->
-                <!--Recently Watched-->
                 <android.support.v7.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
                     style="@style/DarkCard">
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -62,19 +72,23 @@
                             android:id="@+id/moviesHomeRecommendedTitle"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text=""
                             android:textColor="@color/colorAccent"
-                            android:textSize="15sp"/>
+                            android:textSize="16sp"/>
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@android:color/darker_gray"
+                            android:layout_marginBottom="2dp"/>
                         <android.support.v7.widget.RecyclerView
                             android:id="@+id/moviesHomeRecommendedRecycler"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:nestedScrollingEnabled="false"
+                            android:overScrollMode="never"
                             android:clipToPadding="false"
-                            android:scrollbars="horizontal"
-                            android:orientation="horizontal"/>
+                            android:visibility="gone"/>
                     </LinearLayout>
                 </android.support.v7.widget.CardView>
-
             </LinearLayout>
         </android.support.v4.widget.NestedScrollView>
     </android.support.v4.widget.SwipeRefreshLayout>

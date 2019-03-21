@@ -13,6 +13,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <!--<activity-->
+            <!--android:name=".SettingsActivity"-->
+            <!--android:label="@string/title_activity_settings"-->
+            <!--android:parentActivityName=".MainActivity">-->
+            <!--<meta-data-->
+                <!--android:name="android.support.PARENT_ACTIVITY"-->
+                <!--android:value="com.agiledev.agiledevapp.MainActivity" />-->
+        <!--</activity>-->
+
         <provider
             android:name=".SuggestionProvider"
             android:authorities="com.agiledev.agiledevapp.SuggestionProvider" />
@@ -30,7 +39,7 @@
             android:name=".LoginRegisterActivity"
             android:noHistory="true"
             android:screenOrientation="sensorPortrait"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".SearchResultsActivity"
             android:parentActivityName=".MainActivity"
@@ -56,4 +65,5 @@
             </intent-filter>
         </activity>
     </application>
+
 </manifest>
