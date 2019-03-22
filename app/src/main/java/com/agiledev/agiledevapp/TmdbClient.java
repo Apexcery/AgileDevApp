@@ -133,8 +133,4 @@ class TmdbClient {
         ICON,
         LARGEICON
     }
-
-    static void loadLargeImage(Context mContext, String path, ImageView holder) {
-        Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_large_base_url) + path).into(holder);
-    }
 }
