@@ -59,6 +59,7 @@ public class SplashScreen extends Activity {
         populateTrendingTvShows();
         if (sharedPref.getBoolean(getString(R.string.prefs_loggedin_boolean), false)) {
             getRecentMovies();
+            getRecentTvShows();
         }
 
         /* New Handler to start the Menu-Activity
@@ -119,6 +120,32 @@ public class SplashScreen extends Activity {
                         }
                         Globals.setTrackedMovies(movieList);
                         Collections.sort(Globals.getTrackedMovies());
+                    }
+                }
+            }
+        });
+    }
+
+    public void getRecentTvShows() {
+        final ArrayList<Globals.trackedTV> tvList = new ArrayList<>();
+        db.collection("TrackedTV").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot doc = task.getResult();
+                    if (doc.exists()) {
+                        Map<String, Object> tvshows = doc.getData();
+                        for (Map.Entry<String, Object> entry : tvshows.entrySet()) {
+                            Globals.trackedTV tv = new Globals.trackedTV();
+                            tv.id = entry.getKey();
+                            Map<String, Object> field = (Map)entry.getValue();
+                            Timestamp timestamp = (Timestamp)field.get("date");
+                            tv.date = timestamp.toDate();
+                            tv.poster_path = (String)field.get("poster_path");
+                            tvList.add(tv);
+                        }
+                        Globals.setTrackedTvShows(tvList);
+                        Collections.sort(Globals.getTrackedTvShows());
                     }
                 }
             }
