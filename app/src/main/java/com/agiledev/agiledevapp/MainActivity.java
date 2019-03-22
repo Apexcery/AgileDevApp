@@ -55,8 +55,6 @@ public class MainActivity extends AppCompatActivity
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
 
-    Spinner spinner;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

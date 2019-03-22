@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -25,6 +26,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import static com.agiledev.agiledevapp.LoginRegisterActivity.logIn;
@@ -119,6 +121,11 @@ public class LoginFragment extends Fragment implements View.OnClickListener, Vie
                             Timestamp timestamp = (Timestamp)field.get("date");
                             movie.date = timestamp.toDate();
                             movie.poster_path = (String)field.get("poster_path");
+                            movie.name = (String)field.get("name");
+                            HashMap<String, String> genreMap = (HashMap)field.get("genres");
+                            for (HashMap.Entry<String, String> e : genreMap.entrySet()) {
+                                movie.genres.put(Integer.parseInt(e.getKey()), e.getValue());
+                            }
                             movieList.add(movie);
                         }
                         Globals.setTrackedMovies(movieList);

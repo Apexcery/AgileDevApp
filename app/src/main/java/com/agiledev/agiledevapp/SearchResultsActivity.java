@@ -40,7 +40,7 @@ public class SearchResultsActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     MoviesAdapter adapter;
     List<BasicMovieDetails> movies = new ArrayList<>();
-    String searchPhrase;
+    String searchPhrase = "";
     View v;
     LinearLayout searchResults;
 

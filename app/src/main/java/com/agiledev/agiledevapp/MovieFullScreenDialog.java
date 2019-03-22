@@ -59,10 +59,11 @@ import cz.msebera.android.httpclient.Header;
 public class MovieFullScreenDialog extends DialogFragment {
 
     public static String TAG = "MovieFullScreenDialog";
-    public String id, poster_path;
+    public String id, name, poster_path;
     public FullMovieDetails movieDetails;
     public Toolbar toolbar;
     public ImageView trailerVideoImage, trailerVideoPlayImage;
+    public ArrayList<FullMovieDetails.Genre> genreList;
     NestedScrollView pageContent;
     RecyclerView recyclerView;
     MovieCastAdapter adapter;
@@ -147,7 +148,9 @@ public class MovieFullScreenDialog extends DialogFragment {
                     return;
                 Uri uri = Uri.parse("https://image.tmdb.org/t/p/w1280" + movieDetails.getBackdrop_path());
 
+                name = movieDetails.getTitle();
                 poster_path = movieDetails.getPoster_path();
+                genreList = movieDetails.getGenres();
 
                 Glide.with(MovieFullScreenDialog.this).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
                     @Override
@@ -266,7 +269,15 @@ public class MovieFullScreenDialog extends DialogFragment {
                             Map<String, Object> trackedMovie = new HashMap<>();
                             Map<String, Object> trackData = new HashMap<>();
                             trackData.put("date", new Date());
+                            trackData.put("name", name);
                             trackData.put("poster_path", poster_path);
+
+                            Map<String, String> genres = new HashMap<>();
+                            for (FullMovieDetails.Genre g : genreList) {
+                                genres.put(String.valueOf(g.id), g.name);
+                            }
+                            trackData.put("genres", genres);
+
                             trackedMovie.put(id, trackData);
                             if (!doc.exists()) {
                                 ref.set(trackedMovie);
@@ -277,6 +288,10 @@ public class MovieFullScreenDialog extends DialogFragment {
                             movie.id = id;
                             movie.date = new Date();
                             movie.poster_path = poster_path;
+                            movie.name = name;
+                            for (HashMap.Entry<String, String> e : genres.entrySet()) {
+                                movie.genres.put(Integer.parseInt(e.getKey()), e.getValue());
+                            }
                             Globals.addToTrackedMovies(movie);
                             Globals.sortTrackedMovies();
                         }

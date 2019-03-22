@@ -6,4 +6,5 @@
     android:hint="@string/text_search"
     android:searchSuggestAuthority="com.agiledev.agiledevapp.SuggestionProvider"
     android:searchSuggestSelection=" ?"
+    android:voiceSearchMode="showVoiceSearchButton|launchRecognizer"
     android:searchSuggestThreshold="3" />
