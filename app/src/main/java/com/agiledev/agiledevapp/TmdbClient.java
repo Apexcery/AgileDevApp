@@ -94,7 +94,7 @@ class TmdbClient {
                 Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url) + path).into(holder);
                 break;
             case LARGEICON:
-                Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url_large) + path).into(holder);
+                Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url_large) + path).placeholder(R.drawable.login_background).into(holder);
                 break;
         }
     }

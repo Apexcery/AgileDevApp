@@ -20,5 +20,6 @@
         android:layout_alignParentTop="true"
         android:adjustViewBounds="true"
         android:cropToPadding="false"
+        android:src="@drawable/login_background"
         android:layout_margin="0dp"/>
 </RelativeLayout>

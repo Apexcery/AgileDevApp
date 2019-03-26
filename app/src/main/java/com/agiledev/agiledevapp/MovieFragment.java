@@ -1,5 +1,6 @@
 package com.agiledev.agiledevapp;
 
+import android.os.Build;
 import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -12,6 +13,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -74,15 +76,15 @@ public class MovieFragment extends Fragment {
 
     public void populateRecentMovies() {
         List<Globals.trackedMovie> recentMovies = Globals.getTrackedMovies();
-        List<Globals.trackedMovie> tenRecentMovies = new ArrayList<>(recentMovies.subList(0, min(recentMovies.size(), 10)));
+        List<Globals.trackedMovie> nineRecentMovies = new ArrayList<>(recentMovies.subList(0, min(recentMovies.size(), 9)));
 
         RecyclerView recyclerView = view.findViewById(R.id.moviesHomeRecentlyWatchedRecycler);
 
-        RecentMoviesAdapter adapter = new RecentMoviesAdapter(getActivity(), tenRecentMovies, getActivity().getSupportFragmentManager());
+        RecentMoviesAdapter adapter = new RecentMoviesAdapter(getActivity(), nineRecentMovies, getActivity().getSupportFragmentManager());
 
         recyclerView.setAdapter(adapter);
 
-        RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getActivity(), 2);
+        RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getActivity(), 3);
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
@@ -105,7 +107,14 @@ public class MovieFragment extends Fragment {
             }
         }
         TextView title = view.findViewById(R.id.moviesHomeRecommendedTitle);
-        title.setText(getResources().getString(R.string.recommended_because_watched, randomMovie.name));
+        String recTitle = "Recommended because you watched: <font color='#ec2734'>" + randomMovie.name + "</color>";
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            title.setText(Html.fromHtml(recTitle, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
+        } else {
+            title.setText(Html.fromHtml(recTitle), TextView.BufferType.SPANNABLE);
+        }
+
         TmdbClient.getRelatedMovies(genreString, null, new JsonHttpResponseHandler(){
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response){
@@ -130,14 +139,14 @@ public class MovieFragment extends Fragment {
                         e.printStackTrace();
                     }
                 }
-                bmd = new ArrayList<>(bmd.subList(0, min(bmd.size(), 6)));
+                bmd = new ArrayList<>(bmd.subList(0, min(bmd.size(), 9)));
                 RecyclerView recyclerView = view.findViewById(R.id.moviesHomeRecommendedRecycler);
 
                 RecentMoviesAdapter adapter = new RecentMoviesAdapter(getActivity(), bmd, getActivity().getSupportFragmentManager());
 
                 recyclerView.setAdapter(adapter);
 
-                RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getActivity(), 2);
+                RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getActivity(), 3);
                 recyclerView.setLayoutManager(mLayoutManager);
                 recyclerView.setItemAnimator(new DefaultItemAnimator());
 
