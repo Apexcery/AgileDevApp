@@ -76,6 +76,11 @@ public class MainActivity extends AppCompatActivity
         TextView textView = navigationView.getHeaderView(0).findViewById(R.id.loggedInUser);
         textView.setText(getString(R.string.nav_loggedin_as, sharedPref.getString(getString(R.string.prefs_loggedin_username),"Error, user not found!")));
 
+
+
+
+
+
         fragmentManager.beginTransaction().replace(R.id.content_frame,new HomeFragment()).commit();
     }
 
