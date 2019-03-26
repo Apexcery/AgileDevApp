@@ -21,6 +21,7 @@ public class FullMovieDetails {
     private String status;
     private String tagline;
     private String title;
+    private String id;
 
     private Videos videos;
 
@@ -28,7 +29,7 @@ public class FullMovieDetails {
 
     public FullMovieDetails() {}
 
-    public FullMovieDetails(boolean adult, String backdrop_path, ArrayList<Genre> genres, String imdb_id, String original_language, String overview, String poster_path, ArrayList<ProductionCompanies> production_companies, String release_date, int runtime, String status, String tagline, String title, Videos videos) {
+    public FullMovieDetails(boolean adult, String backdrop_path, ArrayList<Genre> genres, String imdb_id, String original_language, String overview, String poster_path, ArrayList<ProductionCompanies> production_companies, String release_date, int runtime, String status, String tagline, String title, Videos videos, String id) {
         this.adult = adult;
         this.backdrop_path = backdrop_path;
         this.genres = genres;
@@ -43,6 +44,7 @@ public class FullMovieDetails {
         this.tagline = tagline;
         this.title = title;
         this.videos = videos;
+        this.id = id;
     }
 
     public boolean isAdult() {
@@ -100,6 +102,8 @@ public class FullMovieDetails {
     public ArrayList<Video> getVideos() {
         return videos.getResults();
     }
+
+    public String getId() { return id; }
 
     public ArrayList<Cast> getCast() {
         return credits.getCast();

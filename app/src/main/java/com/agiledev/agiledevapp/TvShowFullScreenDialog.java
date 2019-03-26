@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -36,7 +37,6 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
@@ -47,8 +47,6 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -56,25 +54,26 @@ import java.util.Map;
 
 import cz.msebera.android.httpclient.Header;
 
-public class MovieFullScreenDialog extends DialogFragment {
+import static java.lang.Math.min;
 
-    public static String TAG = "MovieFullScreenDialog";
-    public String id, name, poster_path;
-    public FullMovieDetails movieDetails;
+public class TvShowFullScreenDialog extends DialogFragment {
+
+    public static String TAG = "TvShowFullScreenDialog";
+    public String id, poster_path;
+    public FullTvShowDetails tvshowDetails;
     public Toolbar toolbar;
     public ImageView trailerVideoImage, trailerVideoPlayImage;
-    public ArrayList<FullMovieDetails.Genre> genreList;
     NestedScrollView pageContent;
     RecyclerView recyclerView;
-    MovieCastAdapter adapter;
+    TvShowCastAdapter adapter;
 
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    public static MovieFullScreenDialog newInstance(String id) {
-        MovieFullScreenDialog fragment = new MovieFullScreenDialog();
+    public static TvShowFullScreenDialog newInstance(String id) {
+        TvShowFullScreenDialog fragment = new TvShowFullScreenDialog();
         Bundle args = new Bundle();
         args.putString("id", id);
         fragment.setArguments(args);
@@ -90,11 +89,11 @@ public class MovieFullScreenDialog extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        View view = inflater.inflate(R.layout.movie_dialog_layout, container, false);
+        View view = inflater.inflate(R.layout.tvshow_dialog_layout, container, false);
 
-        pageContent = view.findViewById(R.id.movieContent);
+        pageContent = view.findViewById(R.id.tvshowContent);
 
-        toolbar = view.findViewById(R.id.movieDialogTool_Bar);
+        toolbar = view.findViewById(R.id.tvshowDialogTool_Bar);
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_white);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,25 +102,27 @@ public class MovieFullScreenDialog extends DialogFragment {
             }
         });
 
-        recyclerView = view.findViewById(R.id.cast_recycler_view);
+        recyclerView = view.findViewById(R.id.tvshowcast_recycler_view);
 
-        trailerVideoImage = view.findViewById(R.id.movieTrailerImage);
-        trailerVideoPlayImage = view.findViewById(R.id.movieTrailerPlayIcon);
 
+        trailerVideoImage = view.findViewById(R.id.tvshowTrailerImage);
+        trailerVideoPlayImage = view.findViewById(R.id.tvshowTrailerPlayIcon);
+
+        //TODO add floating action button to track tvshows
         sharedPref = getContext().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         editor = sharedPref.edit();
 
         this.id = getArguments().getString("id", "No Title Found");
 
-        FloatingActionButton fab = view.findViewById(R.id.fabTrackMovie);
+        FloatingActionButton fab = view.findViewById(R.id.fabTrackTV);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                trackMovie();
+                trackTV();
             }
         });
 
-        getMovieDetails(view);
+        getTvShowDetails(view);
 
         return view;
     }
@@ -137,22 +138,18 @@ public class MovieFullScreenDialog extends DialogFragment {
         }
     }
 
-
-
-    protected synchronized void getMovieDetails(final View view) {
-        TmdbClient.getMovieInfo(id, null, new JsonHttpResponseHandler() {
+    protected synchronized void getTvShowDetails(final View view) {
+        TmdbClient.getTvShowInfo(id, null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                movieDetails = new Gson().fromJson(response.toString(), FullMovieDetails.class);
-                if (movieDetails == null)
+                tvshowDetails = new Gson().fromJson(response.toString(), FullTvShowDetails.class);
+                if (tvshowDetails == null)
                     return;
-                Uri uri = Uri.parse("https://image.tmdb.org/t/p/w1280" + movieDetails.getBackdrop_path());
+                Uri uri = Uri.parse("https://image.tmdb.org/t/p/w1280" + tvshowDetails.getBackdrop_path());
 
-                name = movieDetails.getTitle();
-                poster_path = movieDetails.getPoster_path();
-                genreList = movieDetails.getGenres();
+                poster_path = tvshowDetails.getPoster_path();
 
-                Glide.with(MovieFullScreenDialog.this).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
+                Glide.with(TvShowFullScreenDialog.this).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
                     @Override
                     public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
                         return false;
@@ -162,7 +159,7 @@ public class MovieFullScreenDialog extends DialogFragment {
                     public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
                         trailerVideoPlayImage.setVisibility(View.VISIBLE);
 
-                        final FullMovieDetails.Video tempVideo = movieDetails.getVideos().get(0);
+                        final FullTvShowDetails.Video tempVideo = tvshowDetails.getVideos().get(0);
 
                         trailerVideoPlayImage.setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -171,7 +168,7 @@ public class MovieFullScreenDialog extends DialogFragment {
                             }
                         });
 
-                        view.findViewById(R.id.movieLoadingSpinner).setVisibility(View.GONE);
+                        view.findViewById(R.id.tvshowLoadingSpinner).setVisibility(View.GONE);
                         pageContent.setVisibility(View.VISIBLE);
                         return false;
                     }
@@ -181,34 +178,53 @@ public class MovieFullScreenDialog extends DialogFragment {
                 recyclerView.setLayoutManager(mLayoutManager);
                 recyclerView.setItemAnimator(new DefaultItemAnimator());
 
-                TextView movieTitle = view.findViewById(R.id.movieTitle);
-                TextView moviePlot = view.findViewById(R.id.movieInfoPlot);
-                TextView movieReleaseDate = view.findViewById(R.id.movieInfoReleaseDate);
-                TextView movieRuntime = view.findViewById(R.id.movieInfoRuntime);
-                TextView movieGenres = view.findViewById(R.id.movieInfoGenres);
-                Button movieCastMore = view.findViewById(R.id.movieInfoCastMore);
+                TextView tvshowName = view.findViewById(R.id.tvshowTitle);
+                TextView tvshowPlot = view.findViewById(R.id.tvshowInfoPlot);
+                TextView tvshowReleaseDate = view.findViewById(R.id.tvshowInfoReleaseDate);
+                TextView tvshowNextEpisode = view.findViewById(R.id.tvshowNextEp);
+                TextView tvshowGenres = view.findViewById(R.id.tvshowInfoGenres);
+                Button tvshowCastMore = view.findViewById(R.id.tvshowInfoCastMore);
 
-
-                String releaseDateString = getResources().getString(R.string.release_date) + " <font color='#ffffff'>" + movieDetails.getRelease_date() + "</font>";
-
-                int runtimeMins = movieDetails.getRuntime();
-                int hours = runtimeMins / 60, minutes = runtimeMins % 60;
-                String runtimeString = String.format("%s %s", getResources().getString(R.string.runtime), String.format(" <font color='#ffffff'>%s</font>", String.format("%dhrs %02dmins", hours, minutes)));
-
-                movieTitle.setText(movieDetails.getTitle());
-                moviePlot.setText(movieDetails.getOverview());
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    movieReleaseDate.setText(Html.fromHtml(releaseDateString, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
-                    movieRuntime.setText(Html.fromHtml(runtimeString, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
-                } else {
-                    movieReleaseDate.setText(Html.fromHtml(releaseDateString), TextView.BufferType.SPANNABLE);
-                    movieRuntime.setText(Html.fromHtml(runtimeString), TextView.BufferType.SPANNABLE);
+                String nextEpString;
+                String firstReleased = getResources().getString(R.string.first_released) + " <font color='#ffffff'>" + tvshowDetails.getFirst_air_date() + "</font>";
+                if(tvshowDetails.getNext_episode_to_air() == null)
+                {
+                    nextEpString = getResources().getString(R.string.nextep) + " <font color='#ffffff'>N/A</font>";
+                }
+                else
+                {
+                    nextEpString = getResources().getString(R.string.nextep) + " <font color='#ffffff'>" + tvshowDetails.getNext_episode_to_air().air_date + "</font>";
                 }
 
-                movieGenres.setText(movieDetails.getGenresString());
-                addCastToLayout(movieDetails.getCast(), getActivity().getSupportFragmentManager());
-                movieCastMore.setOnClickListener(new View.OnClickListener() {
+                //TODO implement runtime per episode
+                //int runtimeMins = tvshowDetails.getRuntime();
+                //int hours = runtimeMins / 60, minutes = runtimeMins % 60;
+                //String runtimeString = String.format("%s %s", getResources().getString(R.string.runtime), String.format(" <font color='#ffffff'>%s</font>", String.format("%dhrs %02dmins", hours, minutes)));
+
+                tvshowName.setText(tvshowDetails.getName());
+                tvshowPlot.setText(tvshowDetails.getOverview());
+
+                if (tvshowDetails.getNext_episode_to_air() == null)
+                {
+                    tvshowNextEpisode.setText(" ");
+                }
+                else
+                {
+                    tvshowNextEpisode.setText(tvshowDetails.getNext_episode_to_air().air_date);
+
+                }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    tvshowReleaseDate.setText(Html.fromHtml(firstReleased, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
+                    tvshowNextEpisode.setText(Html.fromHtml(nextEpString, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
+                } else {
+                    tvshowReleaseDate.setText(Html.fromHtml(firstReleased), TextView.BufferType.SPANNABLE);
+                    tvshowNextEpisode.setText(Html.fromHtml(nextEpString), TextView.BufferType.SPANNABLE);
+                }
+
+                tvshowGenres.setText(tvshowDetails.getGenresString());
+                addCastToLayout(tvshowDetails.getCast(), getActivity().getSupportFragmentManager());
+                tvshowCastMore.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         viewMoreCast();
@@ -232,87 +248,74 @@ public class MovieFullScreenDialog extends DialogFragment {
         }
     }
 
-    public void addCastToLayout(ArrayList<FullMovieDetails.Cast> castList, FragmentManager fragmentManager) {
-        Context mContext = getContext();
-        List<FullMovieDetails.Cast> top3Cast = new ArrayList<>();
-
-        for (int i = 0; i < 3; i++) {
-            top3Cast.add(castList.get(i));
-        }
-
-        adapter = new MovieCastAdapter(mContext, top3Cast, fragmentManager);
-        recyclerView.setAdapter(adapter);
-    }
-
     public void viewMoreCast()
     {
-        //TODO: Show popup of viewing more cast with the ability to click each one for their summary.
-        FullCastDialog dialog = FullCastDialog.newInstance(id, FullCastDialog.mediatype.MOVIE);
+        FullCastDialog dialog = FullCastDialog.newInstance(id, FullCastDialog.mediatype.TV);
         dialog.show(getActivity().getFragmentManager(), FullCastDialog.TAG);
     }
 
-    public void trackMovie() {
+    public void addCastToLayout(ArrayList<FullTvShowDetails.Cast> castList, FragmentManager fragmentManager) {
+        Context mContext = getContext();
+        List<FullTvShowDetails.Cast> top3Cast = new ArrayList<>();
+
+        for (int i = 0; i < min(3,castList.size()); i++) {
+            top3Cast.add(castList.get(i));
+        }
+
+        adapter = new TvShowCastAdapter(mContext, top3Cast, fragmentManager);
+        recyclerView.setAdapter(adapter);
+    }
+
+    public void trackTV() {
         boolean alreadyTracked = false;
-        if (Globals.trackedMoviesContains(id))
+        if (Globals.trackedTVContains(id))
             alreadyTracked = true;
 
-        final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, getContext(), "Track Movie", "Are you sure you want to track this movie?");
+        final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, getContext(), "Track TvShow", "Are you sure you want to track this TvShow?");
         dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                final DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedMovies").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
+                final DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedTV").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
                 ref.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         if (task.isSuccessful()) {
                             DocumentSnapshot doc = task.getResult();
-                            Map<String, Object> trackedMovie = new HashMap<>();
+                            Map<String, Object> trackedTV = new HashMap<>();
                             Map<String, Object> trackData = new HashMap<>();
                             trackData.put("date", new Date());
-                            trackData.put("name", name);
                             trackData.put("poster_path", poster_path);
-
-                            Map<String, String> genres = new HashMap<>();
-                            for (FullMovieDetails.Genre g : genreList) {
-                                genres.put(String.valueOf(g.id), g.name);
-                            }
-                            trackData.put("genres", genres);
-
-                            trackedMovie.put(id, trackData);
+                            trackedTV.put(id, trackData);
                             if (!doc.exists()) {
-                                ref.set(trackedMovie);
+                                ref.set(trackedTV);
                             } else {
-                                ref.update(trackedMovie);
+                                ref.update(trackedTV);
                             }
-                            Globals.trackedMovie movie = new Globals.trackedMovie();
-                            movie.id = id;
-                            movie.date = new Date();
-                            movie.poster_path = poster_path;
-                            movie.name = name;
-                            for (HashMap.Entry<String, String> e : genres.entrySet()) {
-                                movie.genres.put(Integer.parseInt(e.getKey()), e.getValue());
-                            }
-                            Globals.addToTrackedMovies(movie);
-                            Globals.sortTrackedMovies();
+                            Globals.trackedTV TV = new Globals.trackedTV();
+                            TV.id = id;
+                            TV.date = new Date();
+                            TV.poster_path = poster_path;
+                            Globals.addToTrackedTvShows(TV);
+                            Globals.sortTrackedTvShows();
                         }
                     }
                 });
-                Toast.makeText(getContext(), "Movie tracked!", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Tv Show tracked!", Toast.LENGTH_LONG).show();
             }
         });
 
         if (alreadyTracked) {
-            dialog.setTitle("Untrack Movie");
-            dialog.setMessage("Are you sure you want to untrack this movie?");
+            dialog.setTitle("Untrack TvShow");
+            dialog.setMessage("Are you sure you want to untrack this TvShow?");
             dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-                    DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedMovies").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
+                    DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedTV").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
                     ref.update(id, FieldValue.delete());
 
-                    Globals.removeFromTrackedMovies(id);
+                    Globals.removeFromTrackedTvShows(id);
 
-                    Toast.makeText(getContext(), "Movie untracked!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), "TvShow untracked!", Toast.LENGTH_LONG).show();
                 }
             });
         }
@@ -326,10 +329,5 @@ public class MovieFullScreenDialog extends DialogFragment {
 
         dialog.show();
     }
-    @Override
-    public void onDestroy()
-    {
-        super.onDestroy();
-        dismiss();
-    }
+
 }

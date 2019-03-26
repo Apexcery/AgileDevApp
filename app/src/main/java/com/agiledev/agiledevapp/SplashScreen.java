@@ -10,12 +10,14 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.Menu;
+import android.view.View;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.gson.Gson;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONArray;
@@ -53,10 +55,12 @@ public class SplashScreen extends Activity {
         editor = sharedPref.edit();
 
         TmdbClient.key = getResources().getString(R.string.tmdb_api_key);
-
+        populateTrendingMovies();
         populateGenreTags();
+        populateTrendingTvShows();
         if (sharedPref.getBoolean(getString(R.string.prefs_loggedin_boolean), false)) {
             getRecentMovies();
+            getRecentTvShows();
         }
 
         /* New Handler to start the Menu-Activity
@@ -114,16 +118,112 @@ public class SplashScreen extends Activity {
                             movie.date = timestamp.toDate();
                             movie.name = (String)field.get("name");
                             movie.poster_path = (String)field.get("poster_path");
-                            HashMap<String, String> genreMap = (HashMap)field.get("genres");
+                            //TODO this causes a crash, commented out to push
+                            // java.lang.NullPointerException: Attempt to invoke virtual method 'java.util.Set java.util.HashMap.entrySet()' on a null object reference
+                            /*HashMap<String, String> genreMap = (HashMap)field.get("genres");
                             for (HashMap.Entry<String, String> e : genreMap.entrySet()) {
                                 movie.genres.put(Integer.parseInt(e.getKey()), e.getValue());
-                            }
+                            }*/
                             movieList.add(movie);
                         }
                         Globals.setTrackedMovies(movieList);
                         Collections.sort(Globals.getTrackedMovies());
                     }
                 }
+            }
+        });
+    }
+
+    public void getRecentTvShows() {
+        final ArrayList<Globals.trackedTV> tvList = new ArrayList<>();
+        db.collection("TrackedTV").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot doc = task.getResult();
+                    if (doc.exists()) {
+                        Map<String, Object> tvshows = doc.getData();
+                        for (Map.Entry<String, Object> entry : tvshows.entrySet()) {
+                            Globals.trackedTV tv = new Globals.trackedTV();
+                            tv.id = entry.getKey();
+                            Map<String, Object> field = (Map)entry.getValue();
+                            Timestamp timestamp = (Timestamp)field.get("date");
+                            tv.date = timestamp.toDate();
+                            tv.poster_path = (String)field.get("poster_path");
+                            tvList.add(tv);
+                        }
+                        Globals.setTrackedTvShows(tvList);
+                        Collections.sort(Globals.getTrackedTvShows());
+                    }
+                }
+            }
+        });
+    }
+
+    private synchronized void populateTrendingMovies()
+    {
+        TmdbClient.getweektrendingmovies(null, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                JSONArray results = new JSONArray();
+                try {
+                    results = response.getJSONArray("results");
+
+                    for (int i = 0; i < 16; i++) {
+                        try {
+                            Log.e("Results:", results.get(i).toString());
+                            Globals.trendingMovie trendingMovie = new Globals.trendingMovie();
+                            BasicMovieDetails movie = new Gson().fromJson(results.get(i).toString(), BasicMovieDetails.class);
+
+
+                            trendingMovie.id = movie.getId();
+                            trendingMovie.poster_path = movie.getPoster_path();
+                            trendingMovie.vote_average = movie.getVote_average();
+
+                            Globals.addToTrendingMovies(trendingMovie);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                } catch (JSONException e) {
+                    Log.e("JSON Error", e.getMessage());
+
+                }
+
+            }
+        });
+    }
+    private synchronized void populateTrendingTvShows()
+    {
+        TmdbClient.getweektrendingtvshows(null, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                JSONArray results = new JSONArray();
+                try {
+                    results = response.getJSONArray("results");
+
+                    for (int i = 0; i < 16; i++) {
+                        try {
+                            Log.e("Results:", results.get(i).toString());
+                            Globals.trendingTvShow trendingTvshow = new Globals.trendingTvShow();
+                            BasicTvShowDetails tvshow = new Gson().fromJson(results.get(i).toString(), BasicTvShowDetails.class);
+
+                            trendingTvshow.id = tvshow.getId();
+                            trendingTvshow.poster_path = tvshow.getPoster_path();
+                            trendingTvshow.vote_average = tvshow.getVote_average();
+
+                            Globals.addToTrendingTvShows(trendingTvshow);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                } catch (JSONException e) {
+                    Log.e("JSON Error", e.getMessage());
+
+                }
+
             }
         });
     }

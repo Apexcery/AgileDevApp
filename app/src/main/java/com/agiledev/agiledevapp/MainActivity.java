@@ -6,9 +6,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.app.AlertDialog;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
+import android.util.SparseArray;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -23,7 +29,18 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.model.DocumentCollections;
+import com.google.gson.Gson;
+import com.loopj.android.http.JsonHttpResponseHandler;
+
+import org.json.JSONArray;
 
 import static android.view.Gravity.CENTER_VERTICAL;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
@@ -50,6 +67,7 @@ public class MainActivity extends AppCompatActivity
         sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         editor = sharedPref.edit();
 
+        TmdbClient.key = getResources().getString(R.string.tmdb_api_key);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -76,6 +94,7 @@ public class MainActivity extends AppCompatActivity
         textView.setText(getString(R.string.nav_loggedin_as, sharedPref.getString(getString(R.string.prefs_loggedin_username),"Error, user not found!")));
 
         fragmentManager.beginTransaction().replace(R.id.content_frame,new HomeFragment()).commit();
+
     }
 
     @Override
@@ -138,7 +157,6 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_home) {
-            //finish();
             fragmentManager.beginTransaction()
                     .replace(R.id.content_frame
                             ,new HomeFragment())
@@ -157,10 +175,9 @@ public class MainActivity extends AppCompatActivity
                     .commit();
 
         } else if (id == R.id.nav_help) {
-            fragmentManager.beginTransaction()
-                    .replace(R.id.content_frame
-                            ,new HelpFragment())
-                    .commit();
+            removeAllFragments(fragmentManager);
+            Intent intent = new Intent(this, ActivityHelp.class);
+            startActivity(intent);
 
         } else if (id == R.id.nav_settings) {
 //            Intent intent = new Intent(this, SettingsActivity.class);

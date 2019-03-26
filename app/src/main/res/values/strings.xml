@@ -1,12 +1,17 @@
 <resources>
     <string name="app_name">Media Tracker</string>
 
+    <string name="Trending_name">Trending</string>
+    <string name="movies_name">Movies</string>
+    <string name="tvshows_name">TV Shows</string>
+
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
 
     <string name="text_search">Search</string>
+    <string name="Feedback_button">Give Feedback</string>
 
     <string name="preference_file_key">com.agiledev.agiledevapp.sharedprefs</string>
     <string name="prefs_loggedin_boolean">loggedIn</string>
@@ -25,18 +30,32 @@
     <string name="nav_item_settings">Settings</string>
     <string name="nav_log_out">Log Out</string>
     <string name="logout_caps">LOGOUT</string>
+    <string name="about_text">This app is used to track movies and TV shows that you watch.
+        Allowing you to see information about the cast/crew/director etc. When you search for a movie,
+        you can watch the movies trailer and see the plot of it.
+        once you have some TV shows saved you can get notifications about upcoming episodes of those TV shows when they air.
+        You can also see movie recommendations based on the movies and TV shows you have watch/saved in the app.
+    </string>
 
     <string name="poster_icon_base_url_small">http://image.tmdb.org/t/p/w92/</string>
     <string name="poster_icon_base_url">http://image.tmdb.org/t/p/w154/</string>
     <string name="poster_icon_base_url_large">http://image.tmdb.org/t/p/w500/</string>
-
+    <string name="poster_icon_large_base_url">http://image.tmdb.org/t/p/w500/</string>
     <string name="plot_overview"><u><b>Plot Overview</b></u></string>
     <string name="genres"><u><b>Genres</b></u></string>
     <string name="cast"><u><b>Cast</b></u></string>
     <string name="see_more">See More</string>
     <string name="born">Born -</string>
     <string name="release_date">Release Date:</string>
+    <string name="first_released">First Release:</string>
     <string name="runtime">Runtime:</string>
+    <string name="nextep">Next Episode:</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_feedback">Feedback</string>
+    <string name="title_activity_help">activity_help</string>
+
+    <string name="About"><u>About</u></string>
     <string name="biography"><u>Biography</u></string>
     <string name="username">Username</string>
     <string name="password">Password</string>

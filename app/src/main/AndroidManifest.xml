@@ -64,6 +64,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".FullCastDialog"></activity>
+        <activity
+            android:name=".ActivityHelp"
+            android:label="Help"
+            android:theme="@style/AppTheme" />
     </application>
 
 </manifest>
