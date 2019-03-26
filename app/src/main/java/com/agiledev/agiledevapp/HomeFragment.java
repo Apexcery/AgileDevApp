@@ -26,7 +26,7 @@ public class HomeFragment extends Fragment {
 
         ViewPager viewPager = myView.findViewById(R.id.viewPager);
         TabLayout tabLayout = myView.findViewById(R.id.tabLayout);
-        TabAdapter Adapter = new TabAdapter(((FragmentActivity) getActivity()).getSupportFragmentManager());
+        TabAdapter Adapter = new TabAdapter((getActivity()).getSupportFragmentManager());
         Adapter.addFragment(new trendingMoviesFragment(), "Movies");
         Adapter.addFragment(new trendingTvShowsFragment(), "Tv Shows");
         viewPager.setAdapter(Adapter);
