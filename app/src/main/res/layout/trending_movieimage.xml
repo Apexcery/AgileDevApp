@@ -11,13 +11,12 @@
 
     <ImageView
         android:id="@+id/trendingmoviesimg"
-        android:layout_width="wrap_content"
+        android:layout_width="210dp"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:adjustViewBounds="true"
         android:cropToPadding="false"
-        android:layout_weight="1"
         android:layout_margin="0dp"/>
 
     <RatingBar
@@ -29,8 +28,9 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_margin="0dp"
-        android:progressTint="@color/yellow"
-        android:progressBackgroundTint="@color/white"/>
+        android:stepSize="0.01"
+        android:progressTint="@android:color/white"
+        android:backgroundTint="@color/textOnWhite"/>
     <TextView
         android:id="@+id/trendingmovieratingnum"
         android:layout_width="wrap_content"
@@ -40,6 +40,6 @@
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
         android:layout_alignTop="@id/trendingmovierating"
-        android:textColor="@color/yellow"/>
+        android:textColor="@android:color/holo_orange_light"/>
 
 </RelativeLayout>

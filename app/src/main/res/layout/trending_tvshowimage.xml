@@ -29,8 +29,8 @@
         android:layout_centerHorizontal="true"
         android:layout_margin="0dp"
         android:stepSize="0.01"
-        android:progressTint="@color/yellow"
-        android:progressBackgroundTint="@color/white"/>
+        android:progressTint="@android:color/holo_orange_dark"
+        android:progressBackgroundTint="@android:color/white"/>
     <TextView
         android:id="@+id/trendingtvshowratingnum"
         android:layout_width="wrap_content"
@@ -40,6 +40,6 @@
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
         android:layout_alignTop="@id/trendingmovierating"
-        android:textColor="@color/yellow"/>
+        android:textColor="@android:color/holo_orange_light"/>
 
 </RelativeLayout>
