@@ -56,7 +56,8 @@ public class SplashScreen extends Activity {
 
         TmdbClient.key = getResources().getString(R.string.tmdb_api_key);
         populateTrendingMovies();
-        populateGenreTags();
+        populateMovieGenreTags();
+        populateTvGenreTags();
         populateTrendingTvShows();
         if (sharedPref.getBoolean(getString(R.string.prefs_loggedin_boolean), false)) {
             getRecentMovies();
@@ -76,8 +77,8 @@ public class SplashScreen extends Activity {
         }, SPLASH_DISPLAY_LENGTH);
     }
 
-    public synchronized void populateGenreTags() {
-        TmdbClient.getGenres(null, new JsonHttpResponseHandler() {
+    public synchronized void populateMovieGenreTags() {
+        TmdbClient.getMovieGenres(null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 JSONArray results = new JSONArray();
@@ -96,7 +97,31 @@ public class SplashScreen extends Activity {
                         e.printStackTrace();
                     }
                 }
-                Globals.setGenreTags(genres);
+                Globals.setMovieGenreTags(genres);
+            }
+        });
+    }
+    public synchronized void populateTvGenreTags() {
+        TmdbClient.getTvGenres(null, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                JSONArray results = new JSONArray();
+                try {
+                    results = response.getJSONArray("genres");
+                } catch (JSONException e) {
+                    Log.e("JSON Error", e.getMessage());
+                    e.printStackTrace();
+                }
+                SparseArray<String> genres = new SparseArray<>();
+                for (int i = 0; i < results.length(); i++) {
+                    try {
+                        JSONObject genre = results.getJSONObject(i);
+                        genres.put(genre.getInt("id"), genre.getString("name"));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                Globals.setTvGenreTags(genres);
             }
         });
     }

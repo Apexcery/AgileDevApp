@@ -49,7 +49,7 @@ public class BasicMovieDetails {
         ArrayList<Integer> ids = getGenre_ids();
         ArrayList<String> names = new ArrayList<>();
         for (int i : ids) {
-            names.add(Globals.getGenreTags().get(i));
+            names.add(Globals.getMovieGenreTags().get(i));
         }
         String returnString = names.toString();
         returnString = returnString.replace("[","");

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class BasicTvShowDetails {
 
     private String name;
-    private String release_date;
+    private String first_air_date;
     private String poster_path;
     private ArrayList<Integer> genre_ids;
     private ArrayList<String> genre_names;
@@ -15,9 +15,9 @@ public class BasicTvShowDetails {
     public BasicTvShowDetails() {
     }
 
-    public BasicTvShowDetails(String name, String releasedate, String poster_path, String id, Float vote_average) {
+    public BasicTvShowDetails(String name, String firstairdate, String poster_path, String id, Float vote_average) {
         this.name = name;
-        this.release_date = releasedate;
+        this.first_air_date = firstairdate;
         this.poster_path = poster_path;
         this.id = id;
         this.vote_average = vote_average;
@@ -27,8 +27,8 @@ public class BasicTvShowDetails {
         return name;
     }
 
-    public String getRelease_date() {
-        return release_date;
+    public String getFirst_air_date() {
+        return first_air_date;
     }
 
     public String getPoster_path() {
@@ -49,7 +49,7 @@ public class BasicTvShowDetails {
         ArrayList<Integer> ids = getGenre_ids();
         ArrayList<String> names = new ArrayList<>();
         for (int i : ids) {
-            names.add(Globals.getGenreTags().get(i));
+            names.add(Globals.getTvGenreTags().get(i));
         }
         String returnString = names.toString();
         returnString = returnString.replace("[","");

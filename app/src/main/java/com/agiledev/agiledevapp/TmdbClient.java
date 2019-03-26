@@ -17,8 +17,13 @@ class TmdbClient {
     /**
      * This method is used to return a JSONArray of duration from the API.
      */
-    static void getGenres(RequestParams params, AsyncHttpResponseHandler responseHandler) {
+    static void getMovieGenres(RequestParams params, AsyncHttpResponseHandler responseHandler) {
         String url = getAbsoluteUrl("genre/movie/list?api_key=" + key);
+        client.get(url, params, responseHandler);
+    }
+
+    static void getTvGenres(RequestParams params, AsyncHttpResponseHandler responseHandler) {
+        String url = getAbsoluteUrl("genre/tv/list?api_key=" + key);
         client.get(url, params, responseHandler);
     }
 
@@ -49,6 +54,16 @@ class TmdbClient {
      */
     static void searchMoviesByQuery(String query, RequestParams params, AsyncHttpResponseHandler responseHandler) {
         String url = getAbsoluteUrl("search/movie?api_key=" + key + "&query=" + query);
+        client.get(url, params, responseHandler);
+    }
+
+    /**
+     * This method is used to search the API for tv shows that have the specified query in their name.
+     *
+     * @param query The query to search for, usually the tv show title.
+     */
+    static void searchTvByQuery(String query, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+        String url = getAbsoluteUrl("search/tv?api_key=" + key + "&query=" + query);
         client.get(url, params, responseHandler);
     }
 

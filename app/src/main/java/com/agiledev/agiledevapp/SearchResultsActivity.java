@@ -15,6 +15,7 @@ import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -40,6 +41,7 @@ public class SearchResultsActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     MoviesAdapter adapter;
     List<BasicMovieDetails> movies = new ArrayList<>();
+    List<BasicTvShowDetails> tvshows = new ArrayList<>();
     String searchPhrase = "";
     View v;
     LinearLayout searchResults;
@@ -59,7 +61,11 @@ public class SearchResultsActivity extends AppCompatActivity {
 
         handleIntent(getIntent());
 
-        searchMovieByTitle(searchPhrase);
+        if (Globals.getLastSearchType() == Globals.SearchType.Movie) {
+            searchMovieByTitle(searchPhrase);
+        } else if (Globals.getLastSearchType() == Globals.SearchType.TV) {
+            searchTvByTitle(searchPhrase);
+        }
 
         RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(this, 1);
         recyclerView.setLayoutManager(mLayoutManager);
@@ -71,10 +77,18 @@ public class SearchResultsActivity extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
 
-        Spinner spinner = (Spinner)menu.findItem(R.id.type).getActionView();
+        final Spinner spinner = (Spinner)menu.findItem(R.id.type).getActionView();
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.media_type, R.layout.app_bar_spinner);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Globals.setLastSearchType(Globals.SearchType.valueOf(spinner.getSelectedItem().toString()));
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
 
         SearchManager searchManager = (SearchManager)getSystemService(Context.SEARCH_SERVICE);
         SearchView searchView = (SearchView)menu.findItem(R.id.search).getActionView();
@@ -129,7 +143,44 @@ public class SearchResultsActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }
-                adapter = new MoviesAdapter(getBaseContext(), movies, getSupportFragmentManager());
+                adapter = new MoviesAdapter(getBaseContext(), movies, getSupportFragmentManager(), "Movie");
+                spinner.setVisibility(View.GONE);
+                recyclerView.setAdapter(adapter);
+                searchResults.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    protected synchronized void searchTvByTitle(String title) {
+        TmdbClient.searchTvByQuery(title, null, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                JSONArray results = new JSONArray();
+                try {
+                    results = response.getJSONArray("results");
+                } catch (JSONException e) {
+                    Log.e("JSON Error", e.getMessage());
+                    if (e.getMessage().equals("No value for Search")) {
+                        final Snackbar noResults = Snackbar.make(findViewById(R.id.searchResultsLayout), "No results found.", Snackbar.LENGTH_INDEFINITE);
+                        noResults.setActionTextColor(ContextCompat.getColor(getBaseContext(),R.color.colorPrimary)).setAction("Dismiss", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                noResults.dismiss();
+                            }
+                        });
+                        noResults.show();
+                    }
+                }
+                for (int i = 0; i < results.length(); i++) {
+                    try {
+                        Log.e("Results:", results.get(i).toString());
+                        BasicTvShowDetails tv = new Gson().fromJson(results.get(i).toString(), BasicTvShowDetails.class);
+                        tvshows.add(tv);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                adapter = new MoviesAdapter(getBaseContext(), tvshows, getSupportFragmentManager(), "TV");
                 spinner.setVisibility(View.GONE);
                 recyclerView.setAdapter(adapter);
                 searchResults.setVisibility(View.VISIBLE);
