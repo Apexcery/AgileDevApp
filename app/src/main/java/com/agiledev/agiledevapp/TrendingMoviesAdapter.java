@@ -66,7 +66,7 @@ public class TrendingMoviesAdapter extends RecyclerView.Adapter<TrendingMoviesAd
                 dialog.show(manager, MovieFullScreenDialog.TAG);
             }
         });
-        TmdbClient.loadImage(mContext, movie.poster_path, holder.poster, TmdbClient.imageType.LARGEICON);
+        TmdbClient.loadImage(mContext, movie.poster_path, holder.poster, TmdbClient.imageType.LARGEICON, "movie");
 
     }
 

@@ -12,11 +12,11 @@ import android.widget.TextView;
 
 import java.util.List;
 
-public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHolder> {
+public class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdapter.MyViewHolder> {
 
     private Context mContext;
     private List mediaList;
-    public FragmentManager manager;
+    private FragmentManager manager;
     private String type;
 
     class MyViewHolder extends RecyclerView.ViewHolder {
@@ -35,7 +35,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHold
         }
     }
 
-    MoviesAdapter(Context mContext, List mediaList, FragmentManager manager, String type) {
+    SearchResultsAdapter(Context mContext, List mediaList, FragmentManager manager, String type) {
         this.mContext = mContext;
         this.mediaList = mediaList;
         this.manager = manager;
@@ -52,10 +52,8 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHold
     public void onBindViewHolder(final MyViewHolder holder, int position)  {
         if (type.equals("Movie")) {
             BasicMovieDetails movie = (BasicMovieDetails)mediaList.get(position);
-
             holder.title.setText(movie.getTitle());
             holder.genres.setText(movie.getGenreNames());
-
             holder.release_date.setText((movie.getRelease_date().equals("") ? "No Release" : mContext.getString(R.string.movie_card_released, movie.getRelease_date())));
             holder.id = movie.getId();
             holder.layout.setOnClickListener(new View.OnClickListener() {
@@ -65,14 +63,12 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHold
                     dialog.show(manager, MovieFullScreenDialog.TAG);
                 }
             });
+            TmdbClient.loadImage(mContext, movie.getPoster_path(), holder.poster, TmdbClient.imageType.ICON, "movie");
 
-            TmdbClient.loadImage(mContext, movie.getPoster_path(), holder.poster, TmdbClient.imageType.ICON);
         } else if (type.equals("TV")) {
             BasicTvShowDetails tv = (BasicTvShowDetails) mediaList.get(position);
-
             holder.title.setText(tv.getName());
             holder.genres.setText(tv.getGenreNames());
-
             holder.release_date.setText((tv.getFirst_air_date().equals("") ? "No Release" : mContext.getString(R.string.movie_card_released, tv.getFirst_air_date())));
             holder.id = tv.getId();
             holder.layout.setOnClickListener(new View.OnClickListener() {
@@ -82,8 +78,8 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHold
                     dialog.show(manager, TvShowFullScreenDialog.TAG);
                 }
             });
+            TmdbClient.loadImage(mContext, tv.getPoster_path(), holder.poster, TmdbClient.imageType.ICON, "movie");
 
-            TmdbClient.loadImage(mContext, tv.getPoster_path(), holder.poster, TmdbClient.imageType.ICON);
         }
 
     }

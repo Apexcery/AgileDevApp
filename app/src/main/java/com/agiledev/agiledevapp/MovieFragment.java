@@ -53,7 +53,7 @@ public class MovieFragment extends Fragment {
 
         view.findViewById(R.id.movieFragmentSpinner).setVisibility(View.VISIBLE);
 
-        getActivity().setTitle(getString(R.string.Movies_name));
+        getActivity().setTitle(getString(R.string.movies_name));
         sharedPref = getActivity().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         editor = sharedPref.edit();
 

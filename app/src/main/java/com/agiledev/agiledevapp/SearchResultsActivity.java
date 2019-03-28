@@ -39,7 +39,7 @@ public class SearchResultsActivity extends AppCompatActivity {
 
     ProgressBar spinner;
     RecyclerView recyclerView;
-    MoviesAdapter adapter;
+    SearchResultsAdapter adapter;
     List<BasicMovieDetails> movies = new ArrayList<>();
     List<BasicTvShowDetails> tvshows = new ArrayList<>();
     String searchPhrase = "";
@@ -74,13 +74,17 @@ public class SearchResultsActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
 
         final Spinner spinner = (Spinner)menu.findItem(R.id.type).getActionView();
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.media_type, R.layout.app_bar_spinner);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
+        if (Globals.getLastSearchType() == Globals.SearchType.Movie) {
+            spinner.setSelection(adapter.getPosition("Movie"));
+        } else if (Globals.getLastSearchType() == Globals.SearchType.TV) {
+            spinner.setSelection(adapter.getPosition("TV"));
+        }
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -143,7 +147,7 @@ public class SearchResultsActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }
-                adapter = new MoviesAdapter(getBaseContext(), movies, getSupportFragmentManager(), "Movie");
+                adapter = new SearchResultsAdapter(getBaseContext(), movies, getSupportFragmentManager(), "Movie");
                 spinner.setVisibility(View.GONE);
                 recyclerView.setAdapter(adapter);
                 searchResults.setVisibility(View.VISIBLE);
@@ -180,7 +184,7 @@ public class SearchResultsActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }
-                adapter = new MoviesAdapter(getBaseContext(), tvshows, getSupportFragmentManager(), "TV");
+                adapter = new SearchResultsAdapter(getBaseContext(), tvshows, getSupportFragmentManager(), "TV");
                 spinner.setVisibility(View.GONE);
                 recyclerView.setAdapter(adapter);
                 searchResults.setVisibility(View.VISIBLE);

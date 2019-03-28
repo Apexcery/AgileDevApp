@@ -104,7 +104,7 @@ public class CastDialog extends DialogFragment {
 
         toolbarTitle.setText(person.getName());
 
-        TmdbClient.loadImage(getContext(), person.getProfile_path(), personImage, TmdbClient.imageType.ICON);
+        TmdbClient.loadImage(getContext(), person.getProfile_path(), personImage, TmdbClient.imageType.ICON, "cast");
 
         SpannableString name = new SpannableString(person.getName());
         name.setSpan(new UnderlineSpan(), 0, name.length(), 0);
