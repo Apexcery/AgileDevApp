@@ -1,6 +1,13 @@
 package com.agiledev.agiledevapp;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
 import android.os.Build;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -20,7 +27,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.Gson;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -29,8 +41,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
 import cz.msebera.android.httpclient.Header;
@@ -44,6 +58,7 @@ public class MovieFragment extends Fragment {
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
     String genreString;
+    private FusedLocationProviderClient fusedLocationClient;
 
 
     @Nullable
@@ -57,6 +72,8 @@ public class MovieFragment extends Fragment {
         sharedPref = getActivity().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         editor = sharedPref.edit();
 
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(getContext());
+
         populateRecentMovies();
         populateRecommendedForUser();
         populateRecommendedInArea();
@@ -68,14 +85,14 @@ public class MovieFragment extends Fragment {
             public void onRefresh() {
                 fragmentManager.beginTransaction()
                         .replace(R.id.content_frame
-                                ,new MovieFragment())
+                                , new MovieFragment())
                         .commit();
             }
         });
         return view;
     }
 
-    public void populateRecentMovies() {
+    public synchronized void populateRecentMovies() {
         List<Globals.trackedMovie> recentMovies = Globals.getTrackedMovies();
         List<Globals.trackedMovie> nineRecentMovies = new ArrayList<>(recentMovies.subList(0, min(recentMovies.size(), 9)));
 
@@ -92,7 +109,7 @@ public class MovieFragment extends Fragment {
         recyclerView.setVisibility(View.VISIBLE);
     }
 
-    private void populateRecommendedForUser() {
+    private synchronized void populateRecommendedForUser() {
         if (Globals.getTrackedMovies().size() <= 0)
             return;
         List<Globals.trackedMovie> trackedMovies = Globals.getTrackedMovies();
@@ -100,25 +117,24 @@ public class MovieFragment extends Fragment {
         Globals.trackedMovie randomMovie = trackedMovies.get(new Random().nextInt(trackedMovies.size()));
 
         genreString = "";
-        for(int i = 0; i < randomMovie.genres.size(); i++)
-        {
+        for (int i = 0; i < randomMovie.genres.size(); i++) {
             genreString += randomMovie.genres.keyAt(i);
-            if (i < randomMovie.genres.size()){
+            if (i < randomMovie.genres.size()) {
                 genreString += ",";
             }
         }
         TextView title = view.findViewById(R.id.moviesHomeRecommendedTitle);
         String recTitle = "Recommended because you watched: <font color='#ec2734'>" + randomMovie.name + "</color>";
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             title.setText(Html.fromHtml(recTitle, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
         } else {
             title.setText(Html.fromHtml(recTitle), TextView.BufferType.SPANNABLE);
         }
 
-        TmdbClient.getRelatedMovies(genreString, null, new JsonHttpResponseHandler(){
+        TmdbClient.getRelatedMovies(genreString, null, new JsonHttpResponseHandler() {
             @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response){
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 JSONArray results = new JSONArray();
                 try {
                     results = response.getJSONArray("results");
@@ -129,7 +145,7 @@ public class MovieFragment extends Fragment {
 
                 List<Globals.trackedMovie> bmd = new ArrayList<>();
                 for (int i = 0; i < results.length(); i++) {
-                    try{
+                    try {
                         BasicMovieDetails movie = new Gson().fromJson(results.getJSONObject(i).toString(), BasicMovieDetails.class);
                         Globals.trackedMovie m = new Globals.trackedMovie();
                         m.id = movie.getId();
@@ -157,7 +173,30 @@ public class MovieFragment extends Fragment {
         });
     }
 
-    private void populateRecommendedInArea() {
-        //TODO:Use GPS to pull user's area and show recommended movies based upon it.
+    private synchronized void populateRecommendedInArea() {
+        //TODO:Add permission check for location, request permission, if not allowed, use locale.
+        fusedLocationClient.getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                if (location != null) {
+                    //Put stuff using location here.
+                    Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
+                    try {
+                        List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                        Address obj = addresses.get(0);
+                        String countryCode = obj.getCountryCode();
+                        System.out.println(countryCode);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        }).addOnFailureListener(getActivity(), new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                System.out.println(e);
+            }
+        });
     }
 }

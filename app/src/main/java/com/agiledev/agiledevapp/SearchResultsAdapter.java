@@ -79,7 +79,6 @@ public class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdap
                 }
             });
             TmdbClient.loadImage(mContext, tv.getPoster_path(), holder.poster, TmdbClient.imageType.ICON, "movie");
-
         }
 
     }

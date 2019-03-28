@@ -130,26 +130,28 @@ class TmdbClient {
      * @param holder The ImageView to load the image into.
      */
     static void loadImage(Context mContext, String path, ImageView holder, imageType type, String usage) {
+        //TODO: Re-add placeholder images after they've been converted to svg and scaled.
         switch(type) {
             case SMALLICON:
                 if (usage.equals("cast")) {
-                    Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url_small) + path).placeholder(R.drawable.placeholder_cast).into(holder);
+                    Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url_small) + path).into(holder);
                 } else if (usage.equals("movie")) {
-                    Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url_small) + path).placeholder(R.drawable.placeholder_movie).into(holder);
+                    Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url_small) + path).into(holder);
                 }
                 break;
             case ICON:
                 if (usage.equals("cast")) {
-                    Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url) + path).placeholder(R.drawable.placeholder_cast).into(holder);
+                    Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url) + path).into(holder);
                 } else if (usage.equals("movie")) {
-                    Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url) + path).placeholder(R.drawable.placeholder_movie).into(holder);
+                    Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url) + path).into(holder);
+                    System.out.println("test");
                 }
                 break;
             case LARGEICON:
                 if (usage.equals("cast")) {
-                    Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url_large) + path).placeholder(R.drawable.placeholder_cast).into(holder);
+                    Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url_large) + path).into(holder);
                 } else if (usage.equals("movie")) {
-                    Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url_large) + path).placeholder(R.drawable.placeholder_movie).into(holder);
+                    Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url_large) + path).into(holder);
                 }
                 break;
         }
