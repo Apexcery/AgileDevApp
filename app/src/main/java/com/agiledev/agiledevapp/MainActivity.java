@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
-
+        System.out.println();
         final TextView logout = findViewById(R.id.nav_logout);
         logout.setOnClickListener(new View.OnClickListener() {
             @Override
