@@ -139,4 +139,5 @@
 
     <string name="pref_title_vibrate">Vibrate</string>
     <string name="Movies_name">Movies</string>
+    <string name="report_issue">Report Issue</string>
 </resources>
