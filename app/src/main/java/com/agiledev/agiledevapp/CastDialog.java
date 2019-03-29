@@ -115,7 +115,7 @@ public class CastDialog extends DialogFragment {
         String knownForText = "Known For - " + person.getKnown_for_department();
         personKnownFor.setText(knownForText);
 
-        String bornText = "Born - " + person.getBirthday();
+        String bornText = "Born - " + (person.getBirthday().isEmpty() ? person.getBirthday() : "Unknown");
         personDOB.setText(bornText);
 
         if (person.getDeathday() != null) {

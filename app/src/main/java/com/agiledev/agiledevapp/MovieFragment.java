@@ -1,28 +1,27 @@
 package com.agiledev.agiledevapp;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -49,9 +48,10 @@ import java.util.Random;
 
 import cz.msebera.android.httpclient.Header;
 
+import static com.agiledev.agiledevapp.MainActivity.PERMS_LOCATION;
 import static java.lang.Math.min;
 
-public class MovieFragment extends Fragment {
+public class MovieFragment extends Fragment implements MainActivity.PermissionCallback {
 
     View view;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -59,7 +59,8 @@ public class MovieFragment extends Fragment {
     SharedPreferences.Editor editor;
     String genreString;
     private FusedLocationProviderClient fusedLocationClient;
-
+    public static Boolean locationBool = null;
+    String countryCode = "";
 
     @Nullable
     @Override
@@ -76,7 +77,7 @@ public class MovieFragment extends Fragment {
 
         populateRecentMovies();
         populateRecommendedForUser();
-        populateRecommendedInArea();
+        permsCheck();
 
         final FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
         SwipeRefreshLayout refreshLayout = view.findViewById(R.id.moviesRefreshLayout);
@@ -114,7 +115,7 @@ public class MovieFragment extends Fragment {
             return;
         List<Globals.trackedMovie> trackedMovies = Globals.getTrackedMovies();
         trackedMovies = new ArrayList<>(trackedMovies.subList(0, min(trackedMovies.size(), 10)));
-        Globals.trackedMovie randomMovie = trackedMovies.get(new Random().nextInt(trackedMovies.size()));
+        final Globals.trackedMovie randomMovie = trackedMovies.get(new Random().nextInt(trackedMovies.size()));
 
         genreString = "";
         for (int i = 0; i < randomMovie.genres.size(); i++) {
@@ -148,6 +149,8 @@ public class MovieFragment extends Fragment {
                     try {
                         BasicMovieDetails movie = new Gson().fromJson(results.getJSONObject(i).toString(), BasicMovieDetails.class);
                         Globals.trackedMovie m = new Globals.trackedMovie();
+                        if (movie.getId().equals(randomMovie.id))
+                            continue;
                         m.id = movie.getId();
                         m.poster_path = movie.getPoster_path();
                         m.name = movie.getTitle();
@@ -173,19 +176,51 @@ public class MovieFragment extends Fragment {
         });
     }
 
-    private synchronized void populateRecommendedInArea() {
-        //TODO:Add permission check for location, request permission, if not allowed, use locale.
+    private synchronized void permsCheck() {
+        if ((locationBool == null || !locationBool) && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMS_LOCATION);
+            ((MainActivity) getActivity()).setCallback(this);
+        } else {
+            locationBool = true;
+        }
+
+        if (locationBool != null && !locationBool) {
+            getCountryCodeFromLocale();
+            populateRecommendedInArea();
+        }
+        else if (locationBool != null && locationBool) {
+            getCountryCodeFromGPS();
+        }
+    }
+
+    public void populateRecommendedInArea() {
+        //TODO: Actual populate stuff with code goes here.
+        Toast.makeText(getActivity(), countryCode, Toast.LENGTH_LONG).show(); //TODO: Remove this after logic is implemented.
+    }
+
+    @Override
+    public void onPermissionGranted() {
+        getCountryCodeFromGPS();
+    }
+
+    @Override
+    public void onPermissionDenied() {
+        countryCode = getCountryCodeFromLocale();
+        populateRecommendedInArea();
+    }
+
+    @SuppressLint("MissingPermission")
+    private void getCountryCodeFromGPS() {
         fusedLocationClient.getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
                 if (location != null) {
-                    //Put stuff using location here.
                     Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
                     try {
                         List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
                         Address obj = addresses.get(0);
-                        String countryCode = obj.getCountryCode();
-                        System.out.println(countryCode);
+                        countryCode = obj.getCountryCode();
+                        populateRecommendedInArea();
                     } catch (IOException e) {
                         e.printStackTrace();
                         Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -195,8 +230,12 @@ public class MovieFragment extends Fragment {
         }).addOnFailureListener(getActivity(), new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                System.out.println(e);
+                System.err.println(e);
             }
         });
+    }
+
+    private String getCountryCodeFromLocale() {
+        return Locale.getDefault().getCountry();
     }
 }

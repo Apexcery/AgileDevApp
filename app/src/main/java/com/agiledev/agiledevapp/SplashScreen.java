@@ -143,12 +143,12 @@ public class SplashScreen extends Activity {
                             movie.date = timestamp.toDate();
                             movie.name = (String)field.get("name");
                             movie.poster_path = (String)field.get("poster_path");
-                            //TODO this causes a crash, commented out to push
-                            // java.lang.NullPointerException: Attempt to invoke virtual method 'java.util.Set java.util.HashMap.entrySet()' on a null object reference
-                            /*HashMap<String, String> genreMap = (HashMap)field.get("genres");
-                            for (HashMap.Entry<String, String> e : genreMap.entrySet()) {
-                                movie.genres.put(Integer.parseInt(e.getKey()), e.getValue());
-                            }*/
+                            HashMap<String, String> genreMap = (HashMap)field.get("genres");
+                            if (genreMap != null) {
+                                for (HashMap.Entry<String, String> e : genreMap.entrySet()) {
+                                    movie.genres.put(Integer.parseInt(e.getKey()), e.getValue());
+                                }
+                            }
                             movieList.add(movie);
                         }
                         Globals.setTrackedMovies(movieList);
