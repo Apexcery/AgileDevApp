@@ -58,7 +58,7 @@ public class TrendingMoviesAdapter extends RecyclerView.Adapter<TrendingMoviesAd
         Globals.trendingMovie movie = movieList.get(position);
         holder.id = movie.id;
         holder.rating.setRating(movie.vote_average);
-        holder.ratingNum.setText(String.format("%.1f",movie.vote_average));
+        holder.ratingNum.setText((movie.vote_average > 0) ? (String.format("%.1f",movie.vote_average)) : "Not Rated");;
         holder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
