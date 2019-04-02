@@ -246,7 +246,6 @@ public class MovieFullScreenDialog extends DialogFragment {
 
     public void viewMoreCast()
     {
-        //TODO: Show popup of viewing more cast with the ability to click each one for their summary.
         FullCastDialog dialog = FullCastDialog.newInstance(id, FullCastDialog.mediatype.MOVIE);
         dialog.show(getActivity().getFragmentManager(), FullCastDialog.TAG);
     }

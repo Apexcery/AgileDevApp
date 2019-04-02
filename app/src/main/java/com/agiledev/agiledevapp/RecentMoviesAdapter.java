@@ -54,7 +54,7 @@ public class RecentMoviesAdapter extends RecyclerView.Adapter<RecentMoviesAdapte
             }
         });
 
-        TmdbClient.loadImage(mContext, movie.poster_path, holder.poster, TmdbClient.imageType.LARGEICON);
+        TmdbClient.loadImage(mContext, movie.poster_path, holder.poster, TmdbClient.imageType.LARGEICON, "movie");
     }
 
     @Override

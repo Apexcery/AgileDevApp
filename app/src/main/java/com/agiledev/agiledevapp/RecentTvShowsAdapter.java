@@ -52,7 +52,7 @@ public class RecentTvShowsAdapter extends RecyclerView.Adapter<RecentTvShowsAdap
             }
         });
 
-        TmdbClient.loadImage(mContext, TV.poster_path, holder.poster, TmdbClient.imageType.ICON);
+        TmdbClient.loadImage(mContext, TV.poster_path, holder.poster, TmdbClient.imageType.ICON, "movie");
     }
 
     @Override

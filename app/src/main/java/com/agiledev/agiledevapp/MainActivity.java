@@ -5,16 +5,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.app.AlertDialog;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
-import android.util.SparseArray;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -24,27 +20,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.model.DocumentCollections;
-import com.google.gson.Gson;
-import com.loopj.android.http.JsonHttpResponseHandler;
-
-import org.json.JSONArray;
 
 import static android.view.Gravity.CENTER_VERTICAL;
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+import static com.agiledev.agiledevapp.MovieFragment.locationBool;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -54,6 +40,8 @@ public class MainActivity extends AppCompatActivity
 
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
+
+    public static final int PERMS_LOCATION = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,15 +95,65 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    public PermissionCallback callback;
+
+    public void setCallback(PermissionCallback callback) {
+        this.callback = callback;
+    }
+
+    public interface PermissionCallback {
+        void onPermissionGranted();
+        void onPermissionDenied();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case PERMS_LOCATION: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //Granted
+                    Toast.makeText(this,"Location Permission Granted", Toast.LENGTH_LONG).show();
+                    locationBool = false;
+
+                    if (callback != null) {
+                        callback.onPermissionGranted();
+                        callback = null;
+                    }
+                } else {
+                    //Denied
+                    Toast.makeText(this,"Location Permission Denied", Toast.LENGTH_LONG).show();
+                    locationBool = true;
+
+                    if (callback != null) {
+                        callback.onPermissionDenied();
+                        callback = null;
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
 
-        Spinner spinner = (Spinner)menu.findItem(R.id.type).getActionView();
+        final Spinner spinner = (Spinner)menu.findItem(R.id.type).getActionView();
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.media_type, R.layout.app_bar_spinner);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (spinner.getSelectedItem().equals("TV Show")) {
+                    Globals.setLastSearchType(Globals.SearchType.TV);
+                } else if (spinner.getSelectedItem().equals("Movie")) {
+                    Globals.setLastSearchType(Globals.SearchType.Movie);
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
 
         SearchManager searchManager = (SearchManager)getSystemService(Context.SEARCH_SERVICE);
         SearchView searchView = (SearchView)menu.findItem(R.id.search).getActionView();

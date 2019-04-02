@@ -18,7 +18,20 @@
         android:adjustViewBounds="true"
         android:cropToPadding="false"
         android:layout_margin="0dp" />
-
+    <TextView
+        android:id="@+id/trendingtvshowratingnum"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="15dp"
+        android:textSize="15dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_alignTop="@id/trendingmovierating"
+        android:textColor="@color/colorAccent"
+        android:shadowColor="@color/darkBackground"
+        android:shadowDx="1.5"
+        android:shadowDy="1.5"
+        android:shadowRadius="1" />
     <RatingBar
         android:id="@+id/trendingtvshowrating"
         style="?android:attr/ratingBarStyleSmall"
@@ -31,15 +44,4 @@
         android:stepSize="0.01"
         android:progressTint="@android:color/holo_orange_light"
         android:progressBackgroundTint="@android:color/white"/>
-    <TextView
-        android:id="@+id/trendingtvshowratingnum"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingBottom="15dp"
-        android:textSize="15dp"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true"
-        android:layout_alignTop="@id/trendingmovierating"
-        android:textColor="@android:color/holo_orange_light" />
-
 </RelativeLayout>

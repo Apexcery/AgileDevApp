@@ -66,7 +66,7 @@ public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShows
                 dialog.show(manager, TvShowFullScreenDialog.TAG);
             }
         });
-        TmdbClient.loadImage(mContext, tvshow.poster_path, holder.poster, TmdbClient.imageType.LARGEICON);
+        TmdbClient.loadImage(mContext, tvshow.poster_path, holder.poster, TmdbClient.imageType.LARGEICON, "movie");
 
     }
 

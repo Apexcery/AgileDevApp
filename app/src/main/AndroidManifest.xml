@@ -3,6 +3,7 @@
     package="com.agiledev.agiledevapp">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <uses-feature android:name="android.hardware.screen.portrait" />
 
@@ -64,7 +65,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".FullCastDialog"></activity>
+
         <activity
             android:name=".ActivityHelp"
             android:label="Help"

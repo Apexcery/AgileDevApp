@@ -17,8 +17,13 @@ class TmdbClient {
     /**
      * This method is used to return a JSONArray of duration from the API.
      */
-    static void getGenres(RequestParams params, AsyncHttpResponseHandler responseHandler) {
+    static void getMovieGenres(RequestParams params, AsyncHttpResponseHandler responseHandler) {
         String url = getAbsoluteUrl("genre/movie/list?api_key=" + key);
+        client.get(url, params, responseHandler);
+    }
+
+    static void getTvGenres(RequestParams params, AsyncHttpResponseHandler responseHandler) {
+        String url = getAbsoluteUrl("genre/tv/list?api_key=" + key);
         client.get(url, params, responseHandler);
     }
 
@@ -49,6 +54,16 @@ class TmdbClient {
      */
     static void searchMoviesByQuery(String query, RequestParams params, AsyncHttpResponseHandler responseHandler) {
         String url = getAbsoluteUrl("search/movie?api_key=" + key + "&query=" + query);
+        client.get(url, params, responseHandler);
+    }
+
+    /**
+     * This method is used to search the API for tv shows that have the specified query in their name.
+     *
+     * @param query The query to search for, usually the tv show title.
+     */
+    static void searchTvByQuery(String query, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+        String url = getAbsoluteUrl("search/tv?api_key=" + key + "&query=" + query);
         client.get(url, params, responseHandler);
     }
 
@@ -114,16 +129,29 @@ class TmdbClient {
      * @param path The relative path of the image to load.
      * @param holder The ImageView to load the image into.
      */
-    static void loadImage(Context mContext, String path, ImageView holder, imageType type) {
+    static void loadImage(Context mContext, String path, ImageView holder, imageType type, String usage) {
         switch(type) {
             case SMALLICON:
-                Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url_small) + path).into(holder);
+                if (usage.equals("cast")) {
+                    Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url_small) + path).placeholder(R.drawable.placeholder_med_cast).into(holder);
+                } else if (usage.equals("movie")) {
+                    Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url_small) + path).placeholder(R.drawable.placeholder_med_movie).into(holder);
+                }
                 break;
             case ICON:
-                Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url) + path).into(holder);
+                if (usage.equals("cast")) {
+                    Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url) + path).placeholder(R.drawable.placeholder_med_cast).into(holder);
+                } else if (usage.equals("movie")) {
+                    Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url) + path).placeholder(R.drawable.placeholder_med_movie).into(holder);
+                    System.out.println("test");
+                }
                 break;
             case LARGEICON:
-                Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url_large) + path).placeholder(R.drawable.login_background).into(holder);
+                if (usage.equals("cast")) {
+                    Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url_large) + path).placeholder(R.drawable.placeholder_large_cast).into(holder);
+                } else if (usage.equals("movie")) {
+                    Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url_large) + path).placeholder(R.drawable.placeholder_large_movie).into(holder);
+                }
                 break;
         }
     }

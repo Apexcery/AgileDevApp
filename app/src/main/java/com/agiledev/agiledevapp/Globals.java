@@ -17,19 +17,26 @@ public class Globals
 {
 
     //Lists
-    private static SparseArray<String> genreTags = new SparseArray<>();
+    private static SparseArray<String> movieGenreTags = new SparseArray<>();
+    private static SparseArray<String> tvGenreTags = new SparseArray<>();
     private static List<trackedMovie> trackedMovies = new ArrayList<>();
     private static List<trackedTV> trackedTV = new ArrayList<>();
     private static List<trendingMovie> trendingMovies = new ArrayList<>();
     private static List<trendingTvShow> trendingTvShows = new ArrayList<>();
-//    private static Map<String, Object> trackedMovies = new HashMap<>();
+    private static SearchType lastSearchType = SearchType.Movie;
 
     //Genres getter and setter
-    public static SparseArray<String> getGenreTags() {
-        return genreTags;
+    public static SparseArray<String> getMovieGenreTags() {
+        return movieGenreTags;
     }
-    public static synchronized void setGenreTags(SparseArray<String> genres) {
-        genreTags = genres;
+    public static synchronized void setMovieGenreTags(SparseArray<String> genres) {
+        movieGenreTags = genres;
+    }
+    public static SparseArray<String> getTvGenreTags() {
+        return tvGenreTags;
+    }
+    public static synchronized void setTvGenreTags(SparseArray<String> genres) {
+        tvGenreTags = genres;
     }
 
 
@@ -50,6 +57,30 @@ public class Globals
     public static synchronized void setTrackedTvShows(List<trackedTV> trackedTvShows) {
         Globals.trackedTV = trackedTvShows;
     }
+    public static synchronized void setLastSearchType(SearchType searchType) {
+        Globals.lastSearchType = searchType;
+    }
+    public static void setTrendingMovies(List<trendingMovie> trendingMovies)
+    {
+        Globals.trendingMovies = trendingMovies;
+    }
+    public static void setTrendingTvShows(List<trendingTvShow> trendingTvShows)
+    {
+        Globals.trendingTvShows = trendingTvShows;
+    }
+
+    //----------- Getters ------------
+    public static SearchType getLastSearchType() {
+        return lastSearchType;
+    }
+    public static List<trendingMovie> getTrendingMovies()
+    {
+        return trendingMovies;
+    }
+    public static List<trendingTvShow> getTrendingTvShows()
+    {
+        return trendingTvShows;
+    }
 
 
     //----------- Adding ------------
@@ -58,6 +89,14 @@ public class Globals
     }
     public static synchronized void addToTrackedTvShows(trackedTV TV) {
         Globals.trackedTV.add(TV);
+    }
+    public static void addToTrendingMovies(trendingMovie movie)
+    {
+        Globals.trendingMovies.add(movie);
+    }
+    public static void addToTrendingTvShows(trendingTvShow tvshow)
+    {
+        Globals.trendingTvShows.add(tvshow);
     }
 
 
@@ -154,22 +193,6 @@ public class Globals
         Float vote_average;
     }
 
-    public static List<trendingMovie> getTrendingMovies()
-    {
-            return trendingMovies;
-    }
-
-    public static void setTrendingMovies(List<trendingMovie> trendingMovies)
-    {
-            Globals.trendingMovies = trendingMovies;
-    }
-
-    public static void addToTrendingMovies(trendingMovie movie)
-    {
-            Globals.trendingMovies.add(movie);
-    }
-
-
     //-------Trending TvShow--------
     public static class trendingTvShow
     {
@@ -178,20 +201,9 @@ public class Globals
         Float vote_average;
     }
 
-    public static List<trendingTvShow> getTrendingTvShows()
-    {
-        return trendingTvShows;
+    //-------Last Search Type--------
+    public static enum SearchType {
+        Movie,
+        TV
     }
-
-    public static void setTrendingTvShows(List<trendingTvShow> trendingTvShows)
-    {
-        Globals.trendingTvShows = trendingTvShows;
-    }
-
-    public static void addToTrendingTvShows(trendingTvShow tvshow)
-    {
-        Globals.trendingTvShows.add(tvshow);
-    }
-
-
 }

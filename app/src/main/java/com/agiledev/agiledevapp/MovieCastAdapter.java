@@ -72,7 +72,7 @@ public class MovieCastAdapter extends RecyclerView.Adapter<MovieCastAdapter.MyVi
             }
         });
 
-        TmdbClient.loadImage(mContext, cast.getProfile_path(), holder.image, TmdbClient.imageType.ICON);
+        TmdbClient.loadImage(mContext, cast.getProfile_path(), holder.image, TmdbClient.imageType.ICON, "cast");
     }
 
     @Override
