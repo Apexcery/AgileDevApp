@@ -109,7 +109,6 @@ class TmdbClient {
 
     static void getRelatedMovies(String genreString, RequestParams params, AsyncHttpResponseHandler responseHandler) {
         String url = getAbsoluteUrl("discover/movie?api_key=" + key + "&sort_by=popularity.desc&with_genres=" + genreString);
-
         client.get(url, params, responseHandler);
     }
 
