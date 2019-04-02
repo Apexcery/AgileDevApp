@@ -180,13 +180,33 @@ public class TvShowFullScreenDialog extends DialogFragment {
 
                 TextView tvshowName = view.findViewById(R.id.tvshowTitle);
                 TextView tvshowPlot = view.findViewById(R.id.tvshowInfoPlot);
-                TextView tvshowReleaseDate = view.findViewById(R.id.tvshowInfoReleaseDate);
+                TextView tvshowLatestEpisode = view.findViewById(R.id.tvshowInfoReleaseDate);
                 TextView tvshowNextEpisode = view.findViewById(R.id.tvshowNextEp);
                 TextView tvshowGenres = view.findViewById(R.id.tvshowInfoGenres);
                 Button tvshowCastMore = view.findViewById(R.id.tvshowInfoCastMore);
+                TextView tvshowFirstRelease = view.findViewById(R.id.tvshowfirstrelease);
 
                 String nextEpString;
-                String firstReleased = getResources().getString(R.string.first_released) + " <font color='#ffffff'>" + tvshowDetails.getFirst_air_date() + "</font>";
+                String latestEpisode;
+                String firstRelease;
+                if(tvshowDetails.getFirst_air_date() == null)
+                {
+                    firstRelease = getResources().getString(R.string.initial_release) + " <font color='#ffffff'>N/A</font>";
+                }
+                else
+                {
+                    firstRelease = getResources().getString(R.string.initial_release) + " <font color='#ffffff'>" + tvshowDetails.getFirst_air_date() + "</font>";
+                }
+
+                if(tvshowDetails.getLast_air_date() == null)
+                {
+                    latestEpisode = getResources().getString(R.string.latest_episode) + " <font color='#ffffff'>N/A</font>";
+                }
+                else
+                {
+                    latestEpisode = getResources().getString(R.string.latest_episode) + " <font color='#ffffff'>" + tvshowDetails.getLast_air_date() + "</font>";
+                }
+
                 if(tvshowDetails.getNext_episode_to_air() == null)
                 {
                     nextEpString = getResources().getString(R.string.nextep) + " <font color='#ffffff'>N/A</font>";
@@ -196,6 +216,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
                     nextEpString = getResources().getString(R.string.nextep) + " <font color='#ffffff'>" + tvshowDetails.getNext_episode_to_air().air_date + "</font>";
                 }
 
+
                 //TODO implement runtime per episode
                 //int runtimeMins = tvshowDetails.getRuntime();
                 //int hours = runtimeMins / 60, minutes = runtimeMins % 60;
@@ -203,6 +224,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
 
                 tvshowName.setText(tvshowDetails.getName());
                 tvshowPlot.setText(tvshowDetails.getOverview());
+                tvshowFirstRelease.setText(tvshowDetails.getFirst_air_date());
 
                 if (tvshowDetails.getNext_episode_to_air() == null)
                 {
@@ -215,11 +237,13 @@ public class TvShowFullScreenDialog extends DialogFragment {
                 }
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    tvshowReleaseDate.setText(Html.fromHtml(firstReleased, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
+                    tvshowLatestEpisode.setText(Html.fromHtml(latestEpisode, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
                     tvshowNextEpisode.setText(Html.fromHtml(nextEpString, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
+                    tvshowFirstRelease.setText(Html.fromHtml(firstRelease, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
                 } else {
-                    tvshowReleaseDate.setText(Html.fromHtml(firstReleased), TextView.BufferType.SPANNABLE);
+                    tvshowLatestEpisode.setText(Html.fromHtml(latestEpisode), TextView.BufferType.SPANNABLE);
                     tvshowNextEpisode.setText(Html.fromHtml(nextEpString), TextView.BufferType.SPANNABLE);
+                    tvshowFirstRelease.setText(Html.fromHtml(firstRelease), TextView.BufferType.SPANNABLE);
                 }
 
                 tvshowGenres.setText(tvshowDetails.getGenresString());

@@ -99,7 +99,7 @@
                     android:padding="5dp">
                     <TextView
                         android:id="@+id/tvshowInfoReleaseDate"
-                        android:text="@string/first_released"
+                        android:text="@string/latest_episode"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_columnSpan="4"
@@ -172,6 +172,30 @@
                         android:layout_height="wrap_content"
                         android:textColor="@color/colorAccent"
                         android:textSize="14sp"
+                        android:layout_marginBottom="5dp"/>
+                </LinearLayout>
+            </android.support.v7.widget.CardView>
+
+            <!--Initial Release-->
+            <android.support.v7.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                style="@style/DarkCard">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="5dp">
+                    <TextView
+                        android:id="@+id/tvshowfirstrelease"
+                        android:text="@string/initial_release"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_columnSpan="4"
+                        android:layout_gravity="start|fill"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="15sp"
                         android:layout_marginBottom="5dp"/>
                 </LinearLayout>
             </android.support.v7.widget.CardView>

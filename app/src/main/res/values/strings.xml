@@ -47,7 +47,9 @@
     <string name="see_more">See More</string>
     <string name="born">Born -</string>
     <string name="release_date">Release Date:</string>
-    <string name="first_released">First Release:</string>
+    <string name="initial_release">Initial Release Date:</string>
+    <string name="latest_episode">Latest Episode:</string>
+
     <string name="runtime">Runtime:</string>
     <string name="nextep">Next Episode:</string>
     <!-- TODO: Remove or change this placeholder text -->

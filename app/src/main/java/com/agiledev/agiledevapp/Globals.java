@@ -136,9 +136,10 @@ public class Globals
     //-------Tracked TV Shows--------
     public static class trackedTV implements Comparable<trackedTV>
     {
-        String id;
+        String id, title;
         Date date;
         String poster_path;
+        SparseArray<String> genres = new SparseArray<>();
 
         @Override
         public int compareTo(@NonNull trackedTV o) {
