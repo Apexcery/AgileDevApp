@@ -62,6 +62,7 @@ public class SplashScreen extends Activity {
         if (sharedPref.getBoolean(getString(R.string.prefs_loggedin_boolean), false)) {
             getRecentMovies();
             getRecentTvShows();
+            //TODO: If logged in bool is true, but user has been removed from firebase, log out user.
         }
 
         /* New Handler to start the Menu-Activity

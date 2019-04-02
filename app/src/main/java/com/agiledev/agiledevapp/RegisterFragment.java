@@ -115,6 +115,7 @@ public class RegisterFragment extends Fragment implements View.OnClickListener, 
                 user.put("dob", txtDoB.getText().toString());
                 user.put("email", txtEmail.getText().toString());
                 user.put("password", hashedPass);
+                user.put("join_date", new Timestamp(new Date()));
 
                 registerUser(txtUsername.getText().toString(), user);
 
@@ -182,13 +183,6 @@ public class RegisterFragment extends Fragment implements View.OnClickListener, 
             }
         }
     }
-//
-//    private class UserDetails {
-//        String username;
-//        String password;
-//        String email;
-//        String dob;
-//    }
 
     public synchronized void getRecentMovies() {
         final ArrayList<Globals.trackedMovie> movieList = new ArrayList<>();
