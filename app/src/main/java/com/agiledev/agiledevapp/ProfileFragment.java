@@ -128,6 +128,22 @@ public class ProfileFragment extends Fragment {
 
         populateLastWatched(rcyLastMovies, rcyLastShows);
 
+        TextView viewMoreMovies = view.findViewById(R.id.profile_view_more_movies);
+        viewMoreMovies.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DialogProfileViewMore dialog = DialogProfileViewMore.newInstance(DialogProfileViewMore.mediatype.MOVIE);
+                dialog.show(getActivity().getSupportFragmentManager(), DialogProfileViewMore.TAG);
+            }
+        });
+        TextView viewMoreTV = view.findViewById(R.id.profile_view_more_tv);
+        viewMoreTV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
         return view;
     }
 
