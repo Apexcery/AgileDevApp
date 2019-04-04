@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.app.AlertDialog;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.SearchView;
 import android.view.View;
@@ -198,6 +199,12 @@ public class MainActivity extends AppCompatActivity
             fragmentManager.beginTransaction()
                     .replace(R.id.content_frame
                             ,new HomeFragment())
+                    .commit();
+
+        } else if (id == R.id.nav_profile) {
+            fragmentManager.beginTransaction()
+                    .replace(R.id.content_frame
+                            ,new ProfileFragment())
                     .commit();
 
         } else if (id == R.id.nav_movies) {

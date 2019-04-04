@@ -8,6 +8,11 @@
         android:icon="@drawable/ic_menu_home"
         android:title="@string/nav_item_home"
         android:checkable="true" />
+    <item
+        android:id="@+id/nav_profile"
+        android:icon="@drawable/ic_account_circle"
+        android:title="@string/nav_item_profile"
+        android:checkable="true" />
 
     <group>
         <item android:title="@string/nav_tracked">
