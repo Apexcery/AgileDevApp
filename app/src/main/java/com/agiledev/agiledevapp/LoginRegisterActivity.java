@@ -117,6 +117,7 @@ public class LoginRegisterActivity extends AppCompatActivity {
 
         editor.putBoolean("loggedIn", true);
         editor.putString("loggedInUsername", username);
+
         editor.apply();
 
         Intent intent = new Intent(mContext, MainActivity.class);
