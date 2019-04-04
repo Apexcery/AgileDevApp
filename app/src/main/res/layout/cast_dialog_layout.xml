@@ -5,7 +5,8 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:id="@+id/castContent">
+    android:id="@+id/castContent"
+    android:background="@color/darkBackground">
     <android.support.design.widget.AppBarLayout
         android:id="@+id/castDialogAppBar"
         android:layout_width="match_parent"
@@ -43,8 +44,7 @@
     <ScrollView
         android:layout_below="@id/castDialogAppBar"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@color/darkBackground">
+        android:layout_height="wrap_content">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

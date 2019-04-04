@@ -34,17 +34,22 @@ public class FullCastDialog extends DialogFragment {
     MovieCredits credits;
     RecyclerView recyclerView;
     FullCastAdapter adapter;
+    public static mediatype mediaT;
 
     ArrayList<MovieCredits.Cast> castList;
 
 
+    public static enum mediatype{
+        MOVIE,
+        TV
+    }
 
 
-
-    public static FullCastDialog newInstance(String movieID) {
+    public static FullCastDialog newInstance(String movieID, mediatype mt) {
         FullCastDialog fragment = new FullCastDialog();
         Bundle args = new Bundle();
         id = movieID;
+        mediaT = mt;
         fragment.setArguments(args);
         return fragment;
     }
@@ -87,21 +92,33 @@ public class FullCastDialog extends DialogFragment {
     }
 
     protected synchronized void getFullCast(View view){
-        TmdbClient.getMovieCast(id, null, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+        if (mediaT == mediatype.MOVIE)
+        {
+            TmdbClient.getMovieCast(id, null, new JsonHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
 
-                credits = new Gson().fromJson(response.toString(), MovieCredits.class);
-                if (credits == null)
-                    return;
-                addCastToLayout(credits.getCast(), ((FragmentActivity) getActivity()).getSupportFragmentManager());
-            }
-            @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                System.out.println("SICK OF THIS ");
-            }
+                    credits = new Gson().fromJson(response.toString(), MovieCredits.class);
+                    if (credits == null)
+                        return;
+                    addCastToLayout(credits.getCast(), ((FragmentActivity) getActivity()).getSupportFragmentManager());
+                }
+            });
+        }
+        else if (mediaT == mediatype.TV)
+        {
+            TmdbClient.getTvCast(id, null, new JsonHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
 
-        });
+                    credits = new Gson().fromJson(response.toString(), MovieCredits.class);
+                    if (credits == null)
+                        return;
+                    addCastToLayout(credits.getCast(), ((FragmentActivity) getActivity()).getSupportFragmentManager());
+                }
+            });
+        }
+
 
     }
 

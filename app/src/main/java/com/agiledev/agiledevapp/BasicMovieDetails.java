@@ -10,15 +10,17 @@ public class BasicMovieDetails {
     private ArrayList<Integer> genre_ids;
     private ArrayList<String> genre_names;
     private String id;
+    private Float vote_average;
 
     public BasicMovieDetails() {
     }
 
-    public BasicMovieDetails(String title, String releasedate, String poster_path, String id) {
+    public BasicMovieDetails(String title, String releasedate, String poster_path, String id, Float vote_average) {
         this.title = title;
         this.release_date = releasedate;
         this.poster_path = poster_path;
         this.id = id;
+        this.vote_average = vote_average;
     }
 
     public String getTitle() {
@@ -37,6 +39,8 @@ public class BasicMovieDetails {
         return id;
     }
 
+    public Float getVote_average() { return vote_average/2; }
+
     public ArrayList<Integer> getGenre_ids() {
         return genre_ids;
     }
@@ -45,7 +49,7 @@ public class BasicMovieDetails {
         ArrayList<Integer> ids = getGenre_ids();
         ArrayList<String> names = new ArrayList<>();
         for (int i : ids) {
-            names.add(Globals.getGenreTags().get(i));
+            names.add(Globals.getMovieGenreTags().get(i));
         }
         String returnString = names.toString();
         returnString = returnString.replace("[","");

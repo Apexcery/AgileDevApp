@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -19,13 +20,13 @@ public class RecentMoviesAdapter extends RecyclerView.Adapter<RecentMoviesAdapte
     public FragmentManager manager;
 
     class MyViewHolder extends RecyclerView.ViewHolder {
-        ImageView poster;
         RelativeLayout layout;
+        ImageView poster;
 
         MyViewHolder(View view) {
             super(view);
-            poster = view.findViewById(R.id.movieRecentCardPoster);
-            layout = view.findViewById(R.id.movieVerticalCard);
+            layout = view.findViewById(R.id.movieImageView);
+            poster = view.findViewById(R.id.movieImageViewPoster);
         }
     }
 
@@ -53,7 +54,7 @@ public class RecentMoviesAdapter extends RecyclerView.Adapter<RecentMoviesAdapte
             }
         });
 
-        TmdbClient.loadImage(mContext, movie.poster_path, holder.poster, TmdbClient.imageType.ICON);
+        TmdbClient.loadImage(mContext, movie.poster_path, holder.poster, TmdbClient.imageType.LARGEICON, "movie");
     }
 
     @Override
