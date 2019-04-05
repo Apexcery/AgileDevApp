@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.NestedScrollView;
@@ -68,6 +69,7 @@ public class MovieFullScreenDialog extends DialogFragment {
     NestedScrollView pageContent;
     RecyclerView recyclerView;
     MovieCastAdapter adapter;
+    View view;
 
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
@@ -91,7 +93,7 @@ public class MovieFullScreenDialog extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        View view = inflater.inflate(R.layout.movie_dialog_layout, container, false);
+        view = inflater.inflate(R.layout.movie_dialog_layout, container, false);
 
         pageContent = view.findViewById(R.id.movieContent);
 
@@ -257,102 +259,15 @@ public class MovieFullScreenDialog extends DialogFragment {
         if (Globals.trackedMoviesContains(id))
             alreadyTracked = true;
 
-        final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, getContext(), "Track Movie", "Are you sure you want to track this movie?");
-        dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                final DocumentReference movieRef = FirebaseFirestore.getInstance().collection("TrackedMovies").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
-                movieRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            DocumentSnapshot doc = task.getResult();
-                            Map<String, Object> trackedMovie = new HashMap<>();
-                            Map<String, Object> trackData = new HashMap<>();
-                            trackData.put("date", new Date());
-                            trackData.put("name", name);
-                            trackData.put("poster_path", poster_path);
+        if (!alreadyTracked) {
+            MediaTracking.trackMovie(getActivity(), view, sharedPref.getString(getString(R.string.prefs_loggedin_username), null), id).show();
 
-                            Map<String, String> genres = new HashMap<>();
-                            for (FullMovieDetails.Genre g : genreList) {
-                                genres.put(String.valueOf(g.id), g.name);
-                            }
-                            trackData.put("genres", genres);
+        } else {
+            MediaTracking.untrackMovie(getActivity(), view, sharedPref.getString(getString(R.string.prefs_loggedin_username), null), id).show();
 
-                            trackedMovie.put(id, trackData);
-                            if (!doc.exists()) {
-                                movieRef.set(trackedMovie);
-                            } else {
-                                movieRef.update(trackedMovie);
-                            }
-                            Globals.trackedMovie movie = new Globals.trackedMovie();
-                            movie.id = id;
-                            movie.date = new Date();
-                            movie.poster_path = poster_path;
-                            movie.name = name;
-                            for (HashMap.Entry<String, String> e : genres.entrySet()) {
-                                movie.genres.put(Integer.parseInt(e.getKey()), e.getValue());
-                            }
-                            Globals.addToTrackedMovies(movie);
-                            Globals.sortTrackedMovies();
-                        }
-                    }
-                });
-                final DocumentReference userRef = FirebaseFirestore.getInstance().collection("UserDetails").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
-                userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            DocumentSnapshot doc = task.getResult();
-                            Map<String, Object> userData = new HashMap<>();
-                            userData.put("timeWatched", Integer.valueOf(doc.get("timeWatched").toString()) + runtime);
-                            userRef.update(userData);
-                        }
-                    }
-                });
-
-                Toast.makeText(getContext(), "Movie tracked!", Toast.LENGTH_LONG).show();
-            }
-        });
-
-        if (alreadyTracked) {
-            dialog.setTitle("Untrack Movie");
-            dialog.setMessage("Are you sure you want to untrack this movie?");
-            dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedMovies").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
-                    ref.update(id, FieldValue.delete());
-
-                    Globals.removeFromTrackedMovies(id);
-
-                    final DocumentReference userRef = FirebaseFirestore.getInstance().collection("UserDetails").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
-                    userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            if (task.isSuccessful()) {
-                                DocumentSnapshot doc = task.getResult();
-                                Map<String, Object> userData = new HashMap<>();
-                                userData.put("timeWatched", Integer.valueOf(doc.get("timeWatched").toString()) - runtime);
-                                userRef.update(userData);
-                            }
-                        }
-                    });
-
-                    Toast.makeText(getContext(), "Movie untracked!", Toast.LENGTH_LONG).show();
-                }
-            });
         }
-
-        dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialog.dismiss();
-            }
-        });
-
-        dialog.show();
     }
+
     @Override
     public void onDestroy()
     {
