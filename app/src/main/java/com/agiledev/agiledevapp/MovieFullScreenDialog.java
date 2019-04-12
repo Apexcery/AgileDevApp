@@ -248,8 +248,7 @@ public class MovieFullScreenDialog extends DialogFragment {
         recyclerView.setAdapter(adapter);
     }
 
-    public void viewMoreCast()
-    {
+    public void viewMoreCast() {
         FullCastDialog dialog = FullCastDialog.newInstance(id, FullCastDialog.mediatype.MOVIE);
         dialog.show(getActivity().getFragmentManager(), FullCastDialog.TAG);
     }
@@ -261,16 +260,13 @@ public class MovieFullScreenDialog extends DialogFragment {
 
         if (!alreadyTracked) {
             MediaTracking.trackMovie(getActivity(), view, sharedPref.getString(getString(R.string.prefs_loggedin_username), null), id).show();
-
         } else {
             MediaTracking.untrackMovie(getActivity(), view, sharedPref.getString(getString(R.string.prefs_loggedin_username), null), id).show();
-
         }
     }
 
     @Override
-    public void onDestroy()
-    {
+    public void onDestroy() {
         super.onDestroy();
         dismiss();
     }

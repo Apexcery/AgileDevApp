@@ -17,6 +17,19 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.Description;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.formatter.IValueFormatter;
+import com.github.mikephil.charting.utils.ColorTemplate;
+import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -29,11 +42,16 @@ import com.google.firebase.storage.StorageReference;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static java.lang.Math.min;
 
 
 /**
@@ -46,8 +64,10 @@ public class ProfileFragment extends Fragment {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private StorageReference avatarRef = FirebaseStorage.getInstance().getReference().child("avatars");
 
+    String username;
     String imgExt;
-    static Uri imageUri;
+
+    boolean viewingSelf = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -59,22 +79,37 @@ public class ProfileFragment extends Fragment {
 
         getActivity().setTitle("Profile");
 
-        TextView txtUsername = view.findViewById(R.id.profile_username);
+        username = getArguments().getString("username");
+
+        ((TextView)view.findViewById(R.id.profile_username)).setText(username);
+
         final TextView txtJoined = view.findViewById(R.id.profile_joined);
         TextView txtNoMoviesWatched = view.findViewById(R.id.profile_num_movies_watched);
         TextView txtNoTVShowsWatched = view.findViewById(R.id.profile_num_shows_watched);
         final CircleImageView imgAvatar = view.findViewById(R.id.profile_avatar);
+        CircleImageView imgAvatarEdit = view.findViewById(R.id.profile_avatar_edit);
         final TextView txtTimeWatched = view.findViewById(R.id.profile_time_watched);
         RecyclerView rcyLastMovies = view.findViewById(R.id.profile_last_movies_recycler);
         RecyclerView rcyLastShows = view.findViewById(R.id.profile_last_shows_recycler);
+        final BarChart chart = view.findViewById(R.id.profile_genre_chart);
 
-        txtUsername.setText(sharedPref.getString(getString(R.string.prefs_loggedin_username), "Not Logged In"));
-
-        if (imageUri != null) {
-            Glide.with(getActivity()).load(imageUri).placeholder(R.drawable.placeholder_med_cast).dontAnimate().into(imgAvatar);
+        if (username.equals(sharedPref.getString(getString(R.string.prefs_loggedin_username), null))) {
+            viewingSelf = true;
+            imgAvatar.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    changeAvatar();
+                }
+            });
+            imgAvatarEdit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    changeAvatar();
+                }
+            });
         }
 
-        db.collection("UserDetails").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), "Not Logged In"))
+        db.collection("UserDetails").document(username)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
@@ -88,10 +123,9 @@ public class ProfileFragment extends Fragment {
 
                                 imgExt = doc.getString("avatarExt");
                                 if (imgExt != null && !imgExt.isEmpty()) {
-                                    avatarRef.child(sharedPref.getString(getString(R.string.prefs_loggedin_username), null) + imgExt).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                    avatarRef.child(username + imgExt).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                                         @Override
                                         public void onSuccess(Uri uri) {
-                                            imageUri = uri;
                                             Glide.with(getActivity()).load(uri).placeholder(R.drawable.placeholder_med_cast).dontAnimate().into(imgAvatar);
                                         }
                                     }).addOnFailureListener(new OnFailureListener() {
@@ -111,7 +145,62 @@ public class ProfileFragment extends Fragment {
 
                                 long minutes = TimeUnit.MINUTES.toMinutes(minsWatched);
 
-                                txtTimeWatched.setText(days + " Days | " + hours + " Hours | " + minutes + " Minutes");
+                                String timeWatchedString = days + " Days | " + hours + " Hours | " + minutes + " Minutes";
+                                txtTimeWatched.setText(timeWatchedString);
+
+                                Map<String, Long> genresWatched = (HashMap<String, Long>)doc.get("genresWatched");
+                                //TODO: Sort list of genres watched by number of times watched, trim list to 5 values.
+                                //TODO: Track watched genres when user tracks movie/tv
+                                final ArrayList<String> labels = new ArrayList<>();
+                                ArrayList<BarEntry> entries = new ArrayList<>();
+
+                                int i = 0;
+                                for (Map.Entry<String, Long> e : genresWatched.entrySet()) {
+                                    labels.add(e.getKey());
+                                    BarEntry entry = new BarEntry(i, e.getValue().intValue());
+                                    entries.add(entry);
+                                    i++;
+                                }
+
+                                BarDataSet barDataSet = new BarDataSet(entries, "Genres");
+                                barDataSet.setColors(ColorTemplate.MATERIAL_COLORS);
+                                barDataSet.setValueTextSize(15f);
+                                BarData data = new BarData(barDataSet);
+                                data.setBarWidth(0.9f);
+                                data.setValueFormatter(new IValueFormatter() {
+                                    @Override
+                                    public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
+                                        return String.valueOf(value).substring(0, String.valueOf(value).indexOf('.'));
+                                    }
+                                });
+                                chart.setData(data);
+                                chart.setFitBars(true);
+                                chart.setDrawValueAboveBar(false);
+                                chart.getAxisLeft().setAxisMinimum(0);
+                                chart.getAxisLeft().setDrawGridLines(false);
+                                chart.getAxisLeft().setDrawLabels(false);
+                                chart.getAxisRight().setDrawGridLines(false);
+                                chart.getAxisRight().setDrawLabels(false);
+                                chart.getXAxis().setDrawGridLines(false);
+                                Description desc = new Description();
+                                desc.setEnabled(false);
+                                chart.setDescription(desc);
+                                chart.getLegend().setEnabled(false);
+                                XAxis xAxis = chart.getXAxis();
+                                xAxis.setGranularity(1f);
+                                xAxis.setTextColor(getResources().getColor(R.color.colorPrimary));
+                                xAxis.setValueFormatter(new IAxisValueFormatter() {
+                                    @Override
+                                    public String getFormattedValue(float value, AxisBase axis) {
+                                        if (value >= 0) {
+                                            if (value <= labels.size() - 1) {
+                                                return labels.get((int)value);
+                                            }
+                                        }
+                                        return "";
+                                    }
+                                });
+                                chart.invalidate();
                             } else {
                                 Log.e("Profile", "Document not found");
                             }
@@ -126,7 +215,7 @@ public class ProfileFragment extends Fragment {
         txtNoMoviesWatched.setText(String.valueOf(noMovies));
         txtNoTVShowsWatched.setText(String.valueOf(noShows));
 
-        populateLastWatched(rcyLastMovies, rcyLastShows);
+        populateLastWatched(rcyLastMovies, rcyLastShows, view);
 
         TextView viewMoreMovies = view.findViewById(R.id.profile_view_more_movies);
         viewMoreMovies.setOnClickListener(new View.OnClickListener() {
@@ -147,9 +236,17 @@ public class ProfileFragment extends Fragment {
         return view;
     }
 
-    void populateLastWatched(RecyclerView movieRecycler, RecyclerView tvRecycler) {
-        List<Globals.trackedMovie> lastMovies = Globals.getTrackedMovies();
-        List<Globals.trackedTV> lastShows = Globals.getTrackedTvShows();
+    void populateLastWatched(RecyclerView movieRecycler, RecyclerView tvRecycler, View view) {
+        List<Globals.trackedMovie> lastMovies = Globals.getTrackedMovies().subList(0, min(10, Globals.getTrackedMovies().size()));
+        List<Globals.trackedTV> lastShows = Globals.getTrackedTvShows().subList(0, min(10, Globals.getTrackedTvShows().size()));
+
+        TextView viewMoreMovies = view.findViewById(R.id.profile_view_more_movies);
+        TextView viewMoreTV = view.findViewById(R.id.profile_view_more_tv);
+
+        if (Globals.getTrackedMovies().size() <= 10)
+            viewMoreMovies.setEnabled(false);
+        if (Globals.getTrackedTvShows().size() <= 10)
+            viewMoreTV.setEnabled(false);
 
         RecyclerView.LayoutManager movieLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         movieRecycler.setLayoutManager(movieLayoutManager);
@@ -160,5 +257,9 @@ public class ProfileFragment extends Fragment {
         movieRecycler.setAdapter(adapter);
         adapter = new HorizontalAdapter(getContext(), lastShows, getActivity().getSupportFragmentManager(), HorizontalAdapter.MediaType.TV);
         tvRecycler.setAdapter(adapter);
+    }
+
+    void changeAvatar() {
+        //TODO: Implement method to change the user's avatar
     }
 }

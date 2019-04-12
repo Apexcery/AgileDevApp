@@ -90,12 +90,7 @@ public class MediaTracking {
                                     Globals.addToTrackedMovies(movie);
                                     Globals.sortTrackedMovies();
 
-                                    Snackbar.make(mView, "Movie Tracked!", Snackbar.LENGTH_LONG).setAction("Undo", new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View view) {
-                                            MediaTracking.untrackMovie(mContext, mView, username, id).show();
-                                        }
-                                    }).show();
+                                    Snackbar.make(mView, "Movie Tracked!", Snackbar.LENGTH_LONG).show();
                                 }
                             });
                         }
@@ -150,13 +145,7 @@ public class MediaTracking {
                             userData.put("timeWatched", Integer.valueOf(doc.get("timeWatched").toString()) - runtime);
                             userRef.update(userData);
 
-                            Snackbar.make(mView, "Movie Untracked!", Snackbar.LENGTH_LONG).setAction("Undo", new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    MediaTracking.trackMovie(mContext, mView, username, id).show();
-                                    System.out.println("test");
-                                }
-                            }).show();
+                            Snackbar.make(mView, "Movie Untracked!", Snackbar.LENGTH_LONG).show();
                         }
                     }
                 });
