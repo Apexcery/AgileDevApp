@@ -90,21 +90,32 @@ public class MediaTracking {
                                     Globals.addToTrackedMovies(movie);
                                     Globals.sortTrackedMovies();
 
-                                    Snackbar.make(mView, "Movie Tracked!", Snackbar.LENGTH_LONG).show();
+                                    final DocumentReference userRef = FirebaseFirestore.getInstance().collection("UserDetails").document(username);
+                                    userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                            if (task.isSuccessful()) {
+                                                DocumentSnapshot doc = task.getResult();
+                                                Map<String, Object> userData = new HashMap<>();
+                                                userData.put("timeWatched", Integer.valueOf(doc.get("timeWatched").toString()) + runtime);
+                                                Map<String, Long> userGenres = (Map<String, Long>)doc.get("genresWatched");
+                                                for (FullMovieDetails.Genre g : (ArrayList<FullMovieDetails.Genre>)genreList) {
+                                                    if (userGenres.containsKey(g.name)) {
+                                                        userGenres.put(g.name, userGenres.get(g.name) + 1);
+                                                    } else {
+                                                        userGenres.put(g.name, 1L);
+                                                    }
+                                                }
+                                                userData.put("genresWatched", userGenres);
+                                                userRef.update(userData);
+
+                                                Snackbar.make(mView, "Movie Tracked!", Snackbar.LENGTH_LONG).show();
+                                            }
+                                        }
+                                    });
+
                                 }
                             });
-                        }
-                    }
-                });
-                final DocumentReference userRef = FirebaseFirestore.getInstance().collection("UserDetails").document(username);
-                userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            DocumentSnapshot doc = task.getResult();
-                            Map<String, Object> userData = new HashMap<>();
-                            userData.put("timeWatched", Integer.valueOf(doc.get("timeWatched").toString()) + runtime);
-                            userRef.update(userData);
                         }
                     }
                 });
@@ -135,20 +146,36 @@ public class MediaTracking {
 
                 Globals.removeFromTrackedMovies(id);
 
-                final DocumentReference userRef = FirebaseFirestore.getInstance().collection("UserDetails").document(username);
-                userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                TmdbClient.getMovieInfo(id, null, new JsonHttpResponseHandler() {
                     @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            DocumentSnapshot doc = task.getResult();
-                            Map<String, Object> userData = new HashMap<>();
-                            userData.put("timeWatched", Integer.valueOf(doc.get("timeWatched").toString()) - runtime);
-                            userRef.update(userData);
+                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                        FullMovieDetails movieDetails = new Gson().fromJson(response.toString(), FullMovieDetails.class);
+                        if (movieDetails == null)
+                            return;
+                        genreList = movieDetails.getGenres();
 
-                            Snackbar.make(mView, "Movie Untracked!", Snackbar.LENGTH_LONG).show();
-                        }
+                        final DocumentReference userRef = FirebaseFirestore.getInstance().collection("UserDetails").document(username);
+                        userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                if (task.isSuccessful()) {
+                                    DocumentSnapshot doc = task.getResult();
+                                    Map<String, Object> userData = new HashMap<>();
+                                    userData.put("timeWatched", Integer.valueOf(doc.get("timeWatched").toString()) - runtime);
+                                    Map<String, Long> userGenres = (Map<String, Long>)doc.get("genresWatched");
+                                    for (FullMovieDetails.Genre g : (ArrayList<FullMovieDetails.Genre>)genreList) {
+                                        userGenres.put(g.name, userGenres.get(g.name) - 1);
+                                    }
+                                    userData.put("genresWatched", userGenres);
+                                    userRef.update(userData);
+
+                                    Snackbar.make(mView, "Movie Untracked!", Snackbar.LENGTH_LONG).show();
+                                }
+                            }
+                        });
                     }
                 });
+
             }
         });
 
