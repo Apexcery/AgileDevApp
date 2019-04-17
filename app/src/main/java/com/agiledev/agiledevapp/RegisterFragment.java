@@ -116,6 +116,8 @@ public class RegisterFragment extends Fragment implements View.OnClickListener, 
                 user.put("email", txtEmail.getText().toString());
                 user.put("password", hashedPass);
                 user.put("join_date", new Timestamp(new Date()));
+                user.put("timeWatched", 0);
+                user.put("genresWatched", new HashMap<String, Long>());
 
                 registerUser(txtUsername.getText().toString(), user);
 

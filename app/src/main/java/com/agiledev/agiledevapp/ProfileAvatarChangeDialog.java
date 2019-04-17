@@ -168,7 +168,10 @@ public class ProfileAvatarChangeDialog extends DialogFragment {
                     e.printStackTrace();
                 }
             }
-            if (dataSize / 1024 / 1024 >= 5)
+            if (dataSize / 1024 / 1024 >= 5) {
+                Toast.makeText(getActivity(), "You cannot upload an image that is more than 5MB!", Toast.LENGTH_LONG).show();
+                return;
+            }
             imgAvatarSpinner.setVisibility(View.VISIBLE);
             Glide.with(getActivity()).load(uri).dontAnimate().listener(new RequestListener<Uri, GlideDrawable>() {
                 @Override
@@ -185,7 +188,6 @@ public class ProfileAvatarChangeDialog extends DialogFragment {
                 }
             }).into(imgAvatar);
         }
-
     }
 
     void confirmAvatarChange() {
