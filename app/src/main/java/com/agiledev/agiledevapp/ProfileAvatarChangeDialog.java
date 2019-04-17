@@ -2,6 +2,7 @@ package com.agiledev.agiledevapp;
 
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -11,6 +12,7 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,13 +25,17 @@ import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -51,6 +57,8 @@ public class ProfileAvatarChangeDialog extends DialogFragment {
 
     CircleImageView imgAvatar;
     ProgressBar imgAvatarSpinner;
+    Bitmap avatarBitmap;
+    Button btnAvatarChange, btnSkip, btnConfirm;
 
     public static ProfileAvatarChangeDialog newInstance(String name) {
         ProfileAvatarChangeDialog fragment = new ProfileAvatarChangeDialog();
@@ -71,10 +79,10 @@ public class ProfileAvatarChangeDialog extends DialogFragment {
 
         imgAvatar = view.findViewById(R.id.avatar_change_image);
         imgAvatarSpinner = view.findViewById(R.id.avatar_change_spinner);
-        final Button btnAvatarChange = view.findViewById(R.id.avatar_change_button);
+        btnAvatarChange = view.findViewById(R.id.avatar_change_button);
 
-        final Button btnSkip = view.findViewById(R.id.avatar_change_skip);
-        final Button btnConfirm = view.findViewById(R.id.avatar_change_confirm);
+        btnSkip = view.findViewById(R.id.avatar_change_skip);
+        btnConfirm = view.findViewById(R.id.avatar_change_confirm);
 
         btnAvatarChange.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -152,6 +160,7 @@ public class ProfileAvatarChangeDialog extends DialogFragment {
         if (requestCode == GET_FROM_GALLERY && resultCode == Activity.RESULT_OK) {
             Uri uri = data.getData();
             String scheme = uri.getScheme();
+            avatarBitmap = null;
             if (scheme.equals(ContentResolver.SCHEME_CONTENT)) {
                 try {
                     InputStream fileInputStream = getActivity().getApplicationContext().getContentResolver().openInputStream(uri);
@@ -172,6 +181,13 @@ public class ProfileAvatarChangeDialog extends DialogFragment {
                 Toast.makeText(getActivity(), "You cannot upload an image that is more than 5MB!", Toast.LENGTH_LONG).show();
                 return;
             }
+            try {
+                avatarBitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             imgAvatarSpinner.setVisibility(View.VISIBLE);
             Glide.with(getActivity()).load(uri).dontAnimate().listener(new RequestListener<Uri, GlideDrawable>() {
                 @Override
@@ -191,6 +207,29 @@ public class ProfileAvatarChangeDialog extends DialogFragment {
     }
 
     void confirmAvatarChange() {
-        //TODO: Implement this method.
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        avatarBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] data = baos.toByteArray();
+
+        final Toast uploadingToast = Toast.makeText(getActivity(), "Image Uploading...", Toast.LENGTH_LONG);
+
+        StorageReference childRef = avatarRef.child(username + ".jpg");
+        UploadTask uploadTask = childRef.putBytes(data);
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getContext(), "Image upload failed!", Toast.LENGTH_LONG).show();
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                dismiss();
+                uploadingToast.cancel();
+            }
+        });
+        uploadingToast.show();
+        btnAvatarChange.setEnabled(false);
+        btnConfirm.setEnabled(false);
+        btnSkip.setEnabled(false);
     }
 }

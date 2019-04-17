@@ -169,6 +169,7 @@ public class MovieFullScreenDialog extends DialogFragment {
                         trailerVideoPlayImage.setVisibility(View.VISIBLE);
 
                         final FullMovieDetails.Video tempVideo = movieDetails.getVideos().get(0);
+                        //TODO: Deal with the movie not having any videos.
 
                         trailerVideoPlayImage.setOnClickListener(new View.OnClickListener() {
                             @Override
