@@ -2,6 +2,7 @@ package com.agiledev.agiledevapp;
 
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -69,12 +70,15 @@ public class ProfileFragment extends Fragment {
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private StorageReference avatarRef = FirebaseStorage.getInstance().getReference().child("avatars");
+    private static StorageReference avatarRef = FirebaseStorage.getInstance().getReference().child("avatars");
 
-    String username;
+    static String username;
     String imgExt;
 
     boolean viewingSelf = false;
+
+    static CircleImageView imgAvatar;
+    static ProgressBar imgAvatarSpinner;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -93,9 +97,9 @@ public class ProfileFragment extends Fragment {
         final TextView txtJoined = view.findViewById(R.id.profile_joined);
         TextView txtNoMoviesWatched = view.findViewById(R.id.profile_num_movies_watched);
         TextView txtNoTVShowsWatched = view.findViewById(R.id.profile_num_shows_watched);
-        final CircleImageView imgAvatar = view.findViewById(R.id.profile_avatar);
+        imgAvatar = view.findViewById(R.id.profile_avatar);
         final CircleImageView imgAvatarEdit = view.findViewById(R.id.profile_avatar_edit);
-        final ProgressBar imgAvatarSpinner = view.findViewById(R.id.profile_avatar_spinner);
+        imgAvatarSpinner = view.findViewById(R.id.profile_avatar_spinner);
         final TextView txtTimeWatched = view.findViewById(R.id.profile_time_watched);
         RecyclerView rcyLastMovies = view.findViewById(R.id.profile_last_movies_recycler);
         RecyclerView rcyLastShows = view.findViewById(R.id.profile_last_shows_recycler);
@@ -129,35 +133,35 @@ public class ProfileFragment extends Fragment {
                                 String joinDate = sdf.format(((Timestamp)doc.get("join_date")).toDate());
                                 txtJoined.setText(joinDate);
 
-                                imgExt = doc.getString("avatarExt");
-                                if (imgExt != null && !imgExt.isEmpty()) {
-                                    avatarRef.child(username + imgExt).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                        @Override
-                                        public void onSuccess(Uri uri) {
-                                            Glide.with(getActivity()).load(uri).placeholder(R.drawable.placeholder_med_cast).dontAnimate().listener(new RequestListener<Uri, GlideDrawable>() {
-                                                @Override
-                                                public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
+                                avatarRef.child(username + ".jpg").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                    @Override
+                                    public void onSuccess(Uri uri) {
+                                        Glide.with(getActivity()).load(uri).placeholder(R.drawable.placeholder_med_cast).dontAnimate().listener(new RequestListener<Uri, GlideDrawable>() {
+                                            @Override
+                                            public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
+                                                imgAvatarSpinner.setVisibility(View.GONE);
+                                                Toast.makeText(getContext(), "Profile image failed to load!", Toast.LENGTH_SHORT).show();
+                                                return false;
+                                            }
+                                            @Override
+                                            public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                                                if (viewingSelf) {
+                                                    imgAvatarEdit.setVisibility(View.VISIBLE);
                                                     imgAvatarSpinner.setVisibility(View.GONE);
-                                                    Toast.makeText(getContext(), "Profile image failed to load!", Toast.LENGTH_SHORT).show();
-                                                    return false;
                                                 }
-                                                @Override
-                                                public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                                                    if (viewingSelf) {
-                                                        imgAvatarEdit.setVisibility(View.VISIBLE);
-                                                        imgAvatarSpinner.setVisibility(View.GONE);
-                                                    }
-                                                    return false;
-                                                }
-                                            }).into(imgAvatar);
-                                        }
-                                    }).addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                            Log.e("Error", "-- Image Not Found --");
-                                        }
-                                    });
-                                }
+                                                return false;
+                                            }
+                                        }).into(imgAvatar);
+                                    }
+                                }).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Log.e("Error", "-- Image Not Found --");
+                                        if (viewingSelf)
+                                            imgAvatarEdit.setVisibility(View.VISIBLE);
+                                        imgAvatarSpinner.setVisibility(View.GONE);
+                                    }
+                                });
                                 long minsWatched = ((Number)doc.get("timeWatched")).longValue();
 
                                 long days = TimeUnit.MINUTES.toDays(minsWatched);
@@ -293,9 +297,43 @@ public class ProfileFragment extends Fragment {
     }
 
     void changeAvatar() {
-        //TODO: Implement method to change the user's avatar
         ProfileAvatarChangeDialog dialog = ProfileAvatarChangeDialog.newInstance(username);
-
         dialog.show(getActivity().getSupportFragmentManager(), ProfileAvatarChangeDialog.TAG);
+
+        getActivity().getSupportFragmentManager().executePendingTransactions();
+        dialog.getDialog().setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                updateAvatar();
+            }
+        });
     }
+
+    void updateAvatar() {
+        imgAvatarSpinner.setVisibility(View.VISIBLE);
+        avatarRef.child(username + ".jpg").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+            @Override
+            public void onSuccess(Uri uri) {
+                Glide.with(getActivity()).load(uri).placeholder(R.drawable.placeholder_med_cast).dontAnimate().listener(new RequestListener<Uri, GlideDrawable>() {
+                    @Override
+                    public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
+                        imgAvatarSpinner.setVisibility(View.GONE);
+                        Toast.makeText(getContext(), "Profile image failed to load!", Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
+                    @Override
+                    public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                        imgAvatarSpinner.setVisibility(View.GONE);
+                        return false;
+                    }
+                }).into(imgAvatar);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.e("Error", "-- Image Not Found --");
+            }
+        });
+    }
+
 }
