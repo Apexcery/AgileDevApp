@@ -221,7 +221,7 @@ public class ProfileAvatarChangeDialog extends DialogFragment {
         uploadTask.addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getContext(), "Image upload failed!", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Image upload failed! Make sure the file size is less than 5MB!", Toast.LENGTH_LONG).show();
             }
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
