@@ -7,14 +7,17 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
 
-        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
+        <item name="preferenceTheme">
+            @style/PreferenceThemeOverlay.v14.Material
+        </item>
+
+        <!-- makes buttons in pop-up dialogs visible  -->
+        <item name="alertDialogTheme">
+            @style/Theme.AppCompat.DayNight.Dialog.Alert
+        </item>
     </style>
 
-    <style name="settingsMainTheme" parent="PreferenceThemeOverlay">
-        <item name="android:textSize">17sp</item>
-        <item name="android:textColorPrimary">@color/colorPrimary</item>
-        <item name="android:textColorSecondary">@color/colorAccent</item>
-    </style>
+
 
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
@@ -39,4 +42,21 @@
     <style name="DarkCard" parent="CardView.Dark">
         <item name="cardBackgroundColor">@color/darkBackground</item>
     </style>
+
+
+
+
+
+
+
+    <style name="MyCheckbox" parent="@style/Widget.AppCompat.CompoundButton.CheckBox">
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat</item>
+        <item name="android:colorControlNormal">#ffffff</item>
+        <item name="android:colorControlActivated">#ffffff</item>
+        <item name="android:colorControlHighlight">#ffffff</item>
+    </style>
+
+
+
+
 </resources>

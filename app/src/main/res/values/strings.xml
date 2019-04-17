@@ -18,6 +18,8 @@
     <string name="prefs_loggedin_username">loggedInUsername</string>
 
     <string name="nav_loggedin_as">Logged in as: %1$s</string>
+     <string name ="empty_string">%1$s</string>
+
 
     <string name="poster_of_movie">Poster of movie.</string>
     <string name="movie_card_released">Released: %1$s</string>
