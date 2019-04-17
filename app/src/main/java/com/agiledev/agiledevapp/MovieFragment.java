@@ -195,7 +195,48 @@ public class MovieFragment extends Fragment implements MainActivity.PermissionCa
 
     public void populateRecommendedInArea() {
         //TODO: Actual populate stuff with code goes here.
-        Toast.makeText(getActivity(), countryCode, Toast.LENGTH_LONG).show(); //TODO: Remove this after logic is implemented.
+        Toast.makeText(getActivity(), countryCode, Toast.LENGTH_LONG).show();//TODO: Remove this after logic is implemented.
+
+        TmdbClient.getPopularMoviesInRegion(countryCode, null, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                JSONArray results = new JSONArray();
+                try {
+                    results = response.getJSONArray("results");
+                } catch (JSONException e) {
+                    Log.e("JSON Error", e.getMessage());
+                    e.printStackTrace();
+                }
+
+                List<Globals.trackedMovie> bmd = new ArrayList<>();
+                for (int i = 0; i < results.length(); i++) {
+                    try {
+                        BasicMovieDetails movie = new Gson().fromJson(results.getJSONObject(i).toString(), BasicMovieDetails.class);
+                        Globals.trackedMovie m = new Globals.trackedMovie();
+                        m.id = movie.getId();
+                        m.poster_path = movie.getPoster_path();
+                        m.name = movie.getTitle();
+                        bmd.add(m);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                bmd = new ArrayList<>(bmd.subList(0, min(bmd.size(), 9)));
+                RecyclerView recyclerView = view.findViewById(R.id.RegionRecommendedRecycler);
+
+                RecentMoviesAdapter adapter = new RecentMoviesAdapter(getActivity(), bmd, getActivity().getSupportFragmentManager());
+
+                recyclerView.setAdapter(adapter);
+
+                RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getActivity(), 3);
+                recyclerView.setLayoutManager(mLayoutManager);
+                recyclerView.setItemAnimator(new DefaultItemAnimator());
+
+                view.findViewById(R.id.movieFragmentSpinner).setVisibility(View.GONE);
+                recyclerView.setVisibility(View.VISIBLE);
+        }
+
+    });
     }
 
     @Override
