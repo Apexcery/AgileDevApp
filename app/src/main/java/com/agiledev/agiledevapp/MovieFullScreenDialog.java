@@ -57,6 +57,8 @@ import java.util.Map;
 
 import cz.msebera.android.httpclient.Header;
 
+import static java.lang.Math.min;
+
 public class MovieFullScreenDialog extends DialogFragment {
 
     public static String TAG = "MovieFullScreenDialog";
@@ -240,7 +242,7 @@ public class MovieFullScreenDialog extends DialogFragment {
         Context mContext = getContext();
         List<FullMovieDetails.Cast> top3Cast = new ArrayList<>();
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < min(3,castList.size()); i++) {
             top3Cast.add(castList.get(i));
         }
 

@@ -104,7 +104,6 @@ public class TvShowFullScreenDialog extends DialogFragment {
 
         recyclerView = view.findViewById(R.id.tvshowcast_recycler_view);
 
-
         trailerVideoImage = view.findViewById(R.id.tvshowTrailerImage);
         trailerVideoPlayImage = view.findViewById(R.id.tvshowTrailerPlayIcon);
 

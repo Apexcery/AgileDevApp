@@ -1,8 +1,13 @@
 package com.agiledev.agiledevapp;
 
+import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
@@ -25,6 +30,11 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ProfileAvatarChangeDialog extends DialogFragment {
@@ -38,6 +48,9 @@ public class ProfileAvatarChangeDialog extends DialogFragment {
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private StorageReference avatarRef = FirebaseStorage.getInstance().getReference().child("avatars");
+
+    CircleImageView imgAvatar;
+    ProgressBar imgAvatarSpinner;
 
     public static ProfileAvatarChangeDialog newInstance(String name) {
         ProfileAvatarChangeDialog fragment = new ProfileAvatarChangeDialog();
@@ -56,8 +69,8 @@ public class ProfileAvatarChangeDialog extends DialogFragment {
         super.onCreateView(inflater, container, savedInstanceState);
         view = inflater.inflate(R.layout.profile_avatar_change_layout, container, false);
 
-        final CircleImageView imgAvatar = view.findViewById(R.id.avatar_change_image);
-        final ProgressBar imgAvatarSpinner = view.findViewById(R.id.avatar_change_spinner);
+        imgAvatar = view.findViewById(R.id.avatar_change_image);
+        imgAvatarSpinner = view.findViewById(R.id.avatar_change_spinner);
         final Button btnAvatarChange = view.findViewById(R.id.avatar_change_button);
 
         final Button btnSkip = view.findViewById(R.id.avatar_change_skip);
@@ -123,8 +136,56 @@ public class ProfileAvatarChangeDialog extends DialogFragment {
         return view;
     }
 
+    private static int GET_FROM_GALLERY = 1;
+
     void changeAvatar() {
         //TODO: Implement this method.
+        startActivityForResult(new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI), GET_FROM_GALLERY);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        int dataSize = 0;
+
+        if (requestCode == GET_FROM_GALLERY && resultCode == Activity.RESULT_OK) {
+            Uri uri = data.getData();
+            String scheme = uri.getScheme();
+            if (scheme.equals(ContentResolver.SCHEME_CONTENT)) {
+                try {
+                    InputStream fileInputStream = getActivity().getApplicationContext().getContentResolver().openInputStream(uri);
+                    dataSize = fileInputStream.available();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else if (scheme.equals(ContentResolver.SCHEME_FILE)) {
+                String path = uri.getPath();
+                try {
+                    File f = new File(path);
+                    dataSize = (int)f.length();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (dataSize / 1024 / 1024 >= 5)
+            imgAvatarSpinner.setVisibility(View.VISIBLE);
+            Glide.with(getActivity()).load(uri).dontAnimate().listener(new RequestListener<Uri, GlideDrawable>() {
+                @Override
+                public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
+                    imgAvatarSpinner.setVisibility(View.GONE);
+                    Toast.makeText(getContext(), "Image failed to load!", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+
+                @Override
+                public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                    imgAvatarSpinner.setVisibility(View.GONE);
+                    return false;
+                }
+            }).into(imgAvatar);
+        }
+
     }
 
     void confirmAvatarChange() {
