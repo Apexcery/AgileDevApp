@@ -1,6 +1,9 @@
 package com.agiledev.agiledevapp;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,14 +13,23 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.agiledev.agiledevapp.MediaTracking.Media;
+
 import java.util.List;
 
 public class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdapter.MyViewHolder> {
 
     private Context mContext;
+    private Activity mActivity;
+    private View mView;
     private List mediaList;
     private FragmentManager manager;
     private String type;
+
+    private View view;
+
+    private BasicMovieDetails movie;
+    private BasicTvShowDetails tv;
 
     class MyViewHolder extends RecyclerView.ViewHolder {
         TextView title, genres, release_date;
@@ -25,18 +37,23 @@ public class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdap
         String id;
         RelativeLayout layout;
 
-        MyViewHolder(View view) {
-            super(view);
-            title = view.findViewById(R.id.movieCardTitle);
-            genres = view.findViewById(R.id.movieCardGenres);
-            release_date = view.findViewById(R.id.movieCardReleaseDate);
-            poster = view.findViewById(R.id.movieCardPoster);
-            layout = view.findViewById(R.id.movieCard);
+        MyViewHolder(View v) {
+            super(v);
+
+            view = v;
+
+            title = v.findViewById(R.id.movieCardTitle);
+            genres = v.findViewById(R.id.movieCardGenres);
+            release_date = v.findViewById(R.id.movieCardReleaseDate);
+            poster = v.findViewById(R.id.movieCardPoster);
+            layout = v.findViewById(R.id.movieCard);
         }
     }
 
-    SearchResultsAdapter(Context mContext, List mediaList, FragmentManager manager, String type) {
+    SearchResultsAdapter(Context mContext, Activity mActivity, View mView, List mediaList, FragmentManager manager, String type) {
         this.mContext = mContext;
+        this.mActivity = mActivity;
+        this.mView = mView;
         this.mediaList = mediaList;
         this.manager = manager;
         this.type = type;
@@ -51,7 +68,7 @@ public class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdap
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position)  {
         if (type.equals("Movie")) {
-            BasicMovieDetails movie = (BasicMovieDetails)mediaList.get(position);
+            movie = (BasicMovieDetails)mediaList.get(position);
             holder.title.setText(movie.getTitle());
             holder.genres.setText(movie.getGenreNames());
             holder.release_date.setText((movie.getRelease_date().equals("") ? "No Release" : mContext.getString(R.string.movie_card_released, movie.getRelease_date())));
@@ -66,7 +83,7 @@ public class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdap
             TmdbClient.loadImage(mContext, movie.getPoster_path(), holder.poster, TmdbClient.imageType.ICON, "movie");
 
         } else if (type.equals("TV")) {
-            BasicTvShowDetails tv = (BasicTvShowDetails) mediaList.get(position);
+            tv = (BasicTvShowDetails) mediaList.get(position);
             holder.title.setText(tv.getName());
             holder.genres.setText(tv.getGenreNames());
             holder.release_date.setText((tv.getFirst_air_date().equals("") ? "No Release" : mContext.getString(R.string.movie_card_released, tv.getFirst_air_date())));
@@ -86,5 +103,15 @@ public class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdap
     @Override
     public int getItemCount() {
         return mediaList.size();
+    }
+
+    public void trackItem(boolean tracking, Media type, final String username) {
+        if (tracking && type == Media.MOVIE) {
+            MediaTracking.trackMovie(mActivity, mView, username, movie.getId()).show();
+
+        } else if (!tracking && type == Media.MOVIE) {
+            MediaTracking.untrackMovie(mActivity, mView, username, movie.getId()).show();
+
+        }
     }
 }

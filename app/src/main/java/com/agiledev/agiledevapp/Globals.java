@@ -85,17 +85,17 @@ public class Globals
 
     //----------- Adding ------------
     public static synchronized void addToTrackedMovies(trackedMovie movie) {
-        Globals.trackedMovies.add(movie);
+        if (!trackedMoviesContains(movie.id))
+            Globals.trackedMovies.add(movie);
     }
     public static synchronized void addToTrackedTvShows(trackedTV TV) {
-        Globals.trackedTV.add(TV);
+        if (!trackedTVContains(TV.id))
+            Globals.trackedTV.add(TV);
     }
-    public static void addToTrendingMovies(trendingMovie movie)
-    {
+    public static void addToTrendingMovies(trendingMovie movie) {
         Globals.trendingMovies.add(movie);
     }
-    public static void addToTrendingTvShows(trendingTvShow tvshow)
-    {
+    public static void addToTrendingTvShows(trendingTvShow tvshow) {
         Globals.trendingTvShows.add(tvshow);
     }
 

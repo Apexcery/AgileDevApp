@@ -25,7 +25,6 @@ public class TvShowCastAdapter extends RecyclerView.Adapter<TvShowCastAdapter.My
     private Context mContext;
     private List<FullTvShowDetails.Cast> castList;
     public FragmentManager manager;
-    private Resources res;
     public Person person;
 
     class MyViewHolder extends RecyclerView.ViewHolder {
@@ -48,7 +47,6 @@ public class TvShowCastAdapter extends RecyclerView.Adapter<TvShowCastAdapter.My
         this.mContext = mContext;
         this.castList = castList;
         this.manager = manager;
-        this.res = mContext.getResources();
     }
 
     @Override
@@ -73,7 +71,7 @@ public class TvShowCastAdapter extends RecyclerView.Adapter<TvShowCastAdapter.My
             }
         });
 
-        TmdbClient.loadImage(mContext, cast.getProfile_path(), holder.image, TmdbClient.imageType.LARGEICON, "cast");
+        TmdbClient.loadImage(mContext, cast.getProfile_path(), holder.image, TmdbClient.imageType.ICON, "cast");
     }
 
     @Override

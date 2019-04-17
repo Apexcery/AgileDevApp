@@ -142,7 +142,6 @@ class TmdbClient {
                     Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url) + path).placeholder(R.drawable.placeholder_med_cast).into(holder);
                 } else if (usage.equals("movie")) {
                     Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url) + path).placeholder(R.drawable.placeholder_med_movie).into(holder);
-                    System.out.println("test");
                 }
                 break;
             case LARGEICON:
