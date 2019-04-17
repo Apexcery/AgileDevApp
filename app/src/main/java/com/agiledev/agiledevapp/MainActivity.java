@@ -86,6 +86,8 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+
+
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -196,6 +198,7 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_home) {
+            //finish();
             fragmentManager.beginTransaction()
                     .replace(R.id.content_frame
                             ,new HomeFragment())
@@ -224,9 +227,12 @@ public class MainActivity extends AppCompatActivity
             Intent intent = new Intent(this, ActivityHelp.class);
             startActivity(intent);
 
-        } else if (id == R.id.nav_settings) {
-//            Intent intent = new Intent(this, SettingsActivity.class);
-//            startActivity(intent);
+        } else if (id == R.id.nav_settings)
+        {
+            fragmentManager.beginTransaction()
+                    .replace(R.id.content_frame
+                            ,new SettingsFragment())
+                    .commit();
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
