@@ -113,29 +113,32 @@ public class ProfileAvatarChangeDialog extends DialogFragment {
                         if (task.isSuccessful()) {
                             DocumentSnapshot doc = task.getResult();
                             if (doc.exists()) {
-                                String imgExt = doc.getString("avatarExt");
-                                if (imgExt != null && !imgExt.isEmpty()) {
-                                    avatarRef.child(username + imgExt).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                        @Override
-                                        public void onSuccess(Uri uri) {
-                                            Glide.with(getActivity()).load(uri).placeholder(R.drawable.placeholder_med_cast).dontAnimate().listener(new RequestListener<Uri, GlideDrawable>() {
-                                                @Override
-                                                public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
-                                                    imgAvatarSpinner.setVisibility(View.GONE);
-                                                    Toast.makeText(getContext(), "Avatar failed to load!", Toast.LENGTH_SHORT).show();
-                                                    btnAvatarChange.setEnabled(true);
-                                                    return false;
-                                                }
-                                                @Override
-                                                public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                                                    imgAvatarSpinner.setVisibility(View.GONE);
-                                                    btnAvatarChange.setEnabled(true);
-                                                    return false;
-                                                }
-                                            }).into(imgAvatar);
-                                        }
-                                    });
-                                }
+                                avatarRef.child(username + ".jpg").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                    @Override
+                                    public void onSuccess(Uri uri) {
+                                        Glide.with(getActivity()).load(uri).placeholder(R.drawable.placeholder_med_cast).dontAnimate().listener(new RequestListener<Uri, GlideDrawable>() {
+                                            @Override
+                                            public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
+                                                imgAvatarSpinner.setVisibility(View.GONE);
+                                                Toast.makeText(getContext(), "Avatar failed to load!", Toast.LENGTH_SHORT).show();
+                                                btnAvatarChange.setEnabled(true);
+                                                return false;
+                                            }
+                                            @Override
+                                            public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                                                imgAvatarSpinner.setVisibility(View.GONE);
+                                                btnAvatarChange.setEnabled(true);
+                                                return false;
+                                            }
+                                        }).into(imgAvatar);
+                                    }
+                                }).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        imgAvatarSpinner.setVisibility(View.GONE);
+                                        btnAvatarChange.setEnabled(true);
+                                    }
+                                });
                             }
                         }
                     }
@@ -147,7 +150,6 @@ public class ProfileAvatarChangeDialog extends DialogFragment {
     private static int GET_FROM_GALLERY = 1;
 
     void changeAvatar() {
-        //TODO: Implement this method.
         startActivityForResult(new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI), GET_FROM_GALLERY);
     }
 
@@ -200,6 +202,7 @@ public class ProfileAvatarChangeDialog extends DialogFragment {
                 @Override
                 public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
                     imgAvatarSpinner.setVisibility(View.GONE);
+                    btnConfirm.setEnabled(true);
                     return false;
                 }
             }).into(imgAvatar);
