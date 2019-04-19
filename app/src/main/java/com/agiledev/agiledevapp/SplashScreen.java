@@ -56,11 +56,13 @@ public class SplashScreen extends Activity {
 
         TmdbClient.key = getResources().getString(R.string.tmdb_api_key);
         populateTrendingMovies();
-        populateGenreTags();
+        populateMovieGenreTags();
+        populateTvGenreTags();
         populateTrendingTvShows();
         if (sharedPref.getBoolean(getString(R.string.prefs_loggedin_boolean), false)) {
             getRecentMovies();
             getRecentTvShows();
+            //TODO: If logged in bool is true, but user has been removed from firebase, log out user.
         }
 
         /* New Handler to start the Menu-Activity
@@ -76,8 +78,8 @@ public class SplashScreen extends Activity {
         }, SPLASH_DISPLAY_LENGTH);
     }
 
-    public synchronized void populateGenreTags() {
-        TmdbClient.getGenres(null, new JsonHttpResponseHandler() {
+    public synchronized void populateMovieGenreTags() {
+        TmdbClient.getMovieGenres(null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 JSONArray results = new JSONArray();
@@ -96,7 +98,31 @@ public class SplashScreen extends Activity {
                         e.printStackTrace();
                     }
                 }
-                Globals.setGenreTags(genres);
+                Globals.setMovieGenreTags(genres);
+            }
+        });
+    }
+    public synchronized void populateTvGenreTags() {
+        TmdbClient.getTvGenres(null, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                JSONArray results = new JSONArray();
+                try {
+                    results = response.getJSONArray("genres");
+                } catch (JSONException e) {
+                    Log.e("JSON Error", e.getMessage());
+                    e.printStackTrace();
+                }
+                SparseArray<String> genres = new SparseArray<>();
+                for (int i = 0; i < results.length(); i++) {
+                    try {
+                        JSONObject genre = results.getJSONObject(i);
+                        genres.put(genre.getInt("id"), genre.getString("name"));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                Globals.setTvGenreTags(genres);
             }
         });
     }
@@ -118,12 +144,12 @@ public class SplashScreen extends Activity {
                             movie.date = timestamp.toDate();
                             movie.name = (String)field.get("name");
                             movie.poster_path = (String)field.get("poster_path");
-                            //TODO this causes a crash, commented out to push
-                            // java.lang.NullPointerException: Attempt to invoke virtual method 'java.util.Set java.util.HashMap.entrySet()' on a null object reference
-                            /*HashMap<String, String> genreMap = (HashMap)field.get("genres");
-                            for (HashMap.Entry<String, String> e : genreMap.entrySet()) {
-                                movie.genres.put(Integer.parseInt(e.getKey()), e.getValue());
-                            }*/
+                            HashMap<String, String> genreMap = (HashMap)field.get("genres");
+                            if (genreMap != null) {
+                                for (HashMap.Entry<String, String> e : genreMap.entrySet()) {
+                                    movie.genres.put(Integer.parseInt(e.getKey()), e.getValue());
+                                }
+                            }
                             movieList.add(movie);
                         }
                         Globals.setTrackedMovies(movieList);

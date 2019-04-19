@@ -77,7 +77,7 @@ public class FullCastAdapter extends RecyclerView.Adapter<FullCastAdapter.MyView
             }
         });
 
-        TmdbClient.loadImage(mContext, cast.getProfile_path(), holder.image, TmdbClient.imageType.ICON);
+        TmdbClient.loadImage(mContext, cast.getProfile_path(), holder.image, TmdbClient.imageType.ICON, "cast");
     }
 
     @Override

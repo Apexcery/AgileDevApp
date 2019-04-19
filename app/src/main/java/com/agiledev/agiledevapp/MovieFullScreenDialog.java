@@ -60,6 +60,7 @@ public class MovieFullScreenDialog extends DialogFragment {
 
     public static String TAG = "MovieFullScreenDialog";
     public String id, name, poster_path;
+    public int runtime;
     public FullMovieDetails movieDetails;
     public Toolbar toolbar;
     public ImageView trailerVideoImage, trailerVideoPlayImage;
@@ -151,6 +152,7 @@ public class MovieFullScreenDialog extends DialogFragment {
                 name = movieDetails.getTitle();
                 poster_path = movieDetails.getPoster_path();
                 genreList = movieDetails.getGenres();
+                runtime = movieDetails.getRuntime();
 
                 Glide.with(MovieFullScreenDialog.this).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
                     @Override
@@ -246,7 +248,6 @@ public class MovieFullScreenDialog extends DialogFragment {
 
     public void viewMoreCast()
     {
-        //TODO: Show popup of viewing more cast with the ability to click each one for their summary.
         FullCastDialog dialog = FullCastDialog.newInstance(id, FullCastDialog.mediatype.MOVIE);
         dialog.show(getActivity().getFragmentManager(), FullCastDialog.TAG);
     }
@@ -260,8 +261,8 @@ public class MovieFullScreenDialog extends DialogFragment {
         dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                final DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedMovies").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
-                ref.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                final DocumentReference movieRef = FirebaseFirestore.getInstance().collection("TrackedMovies").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
+                movieRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         if (task.isSuccessful()) {
@@ -280,9 +281,9 @@ public class MovieFullScreenDialog extends DialogFragment {
 
                             trackedMovie.put(id, trackData);
                             if (!doc.exists()) {
-                                ref.set(trackedMovie);
+                                movieRef.set(trackedMovie);
                             } else {
-                                ref.update(trackedMovie);
+                                movieRef.update(trackedMovie);
                             }
                             Globals.trackedMovie movie = new Globals.trackedMovie();
                             movie.id = id;
@@ -297,6 +298,19 @@ public class MovieFullScreenDialog extends DialogFragment {
                         }
                     }
                 });
+                final DocumentReference userRef = FirebaseFirestore.getInstance().collection("UserDetails").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
+                userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            DocumentSnapshot doc = task.getResult();
+                            Map<String, Object> userData = new HashMap<>();
+                            userData.put("timeWatched", Integer.valueOf(doc.get("timeWatched").toString()) + runtime);
+                            userRef.update(userData);
+                        }
+                    }
+                });
+
                 Toast.makeText(getContext(), "Movie tracked!", Toast.LENGTH_LONG).show();
             }
         });
@@ -311,6 +325,19 @@ public class MovieFullScreenDialog extends DialogFragment {
                     ref.update(id, FieldValue.delete());
 
                     Globals.removeFromTrackedMovies(id);
+
+                    final DocumentReference userRef = FirebaseFirestore.getInstance().collection("UserDetails").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
+                    userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if (task.isSuccessful()) {
+                                DocumentSnapshot doc = task.getResult();
+                                Map<String, Object> userData = new HashMap<>();
+                                userData.put("timeWatched", Integer.valueOf(doc.get("timeWatched").toString()) - runtime);
+                                userRef.update(userData);
+                            }
+                        }
+                    });
 
                     Toast.makeText(getContext(), "Movie untracked!", Toast.LENGTH_LONG).show();
                 }

@@ -14,7 +14,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import com.facebook.stetho.Stetho;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -29,8 +28,6 @@ import java.util.Collections;
 import java.util.Map;
 
 public class LoginRegisterActivity extends AppCompatActivity {
-
-    //TODO: Hash passwords with SHA-256.
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     public static ArrayList<String> usernameList = new ArrayList<>();
@@ -57,8 +54,6 @@ public class LoginRegisterActivity extends AppCompatActivity {
         populateUsers(db);
 
         setContentView(R.layout.activity_login_register);
-
-        Stetho.initializeWithDefaults(this);
 
         ViewPager viewPager = findViewById(R.id.viewPager);
         TabLayout tabLayout = findViewById(R.id.tabLayout);
@@ -95,11 +90,16 @@ public class LoginRegisterActivity extends AppCompatActivity {
                 for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                     Log.e("Found Username", document.getId());
                     Log.e("Found Password", document.getData().get("password").toString());
+                    Log.e("Found Email", document.getData().get("email").toString()); ////
+
                     User user = new User();
                     user.setUsername(document.getId());
                     user.setPassword(document.getData().get("password").toString());
+                    user.setEmail(document.getData().get("email").toString()); ////
+
                     userList.add(user);
-                    Log.e("Saved User", "Username: " + user.getUsername() + " | Password: " + user.getPassword());
+                  //  Log.e("Saved User", "Username: " + user.getUsername() + " | Password: " + user.getPassword());
+                    Log.e("Saved User", "Username: " + user.getUsername() + " | Password: " + user.getPassword() + " | Email: " + user.getEmail());
                     Log.e("-",":-");
                 }
             }
@@ -112,6 +112,7 @@ public class LoginRegisterActivity extends AppCompatActivity {
 
         editor.putBoolean("loggedIn", true);
         editor.putString("loggedInUsername", username);
+
         editor.apply();
 
         Intent intent = new Intent(mContext, MainActivity.class);
@@ -130,6 +131,14 @@ public class LoginRegisterActivity extends AppCompatActivity {
     public static class User {
         private String username;
         private String password;
+        private String email;
+
+        public String getEmail() {
+            return email;
+        }
+        public void setEmail(String email) {
+            this.email = email;
+        }
 
         public String getUsername() {
             return username;

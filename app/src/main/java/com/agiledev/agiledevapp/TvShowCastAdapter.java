@@ -73,7 +73,7 @@ public class TvShowCastAdapter extends RecyclerView.Adapter<TvShowCastAdapter.My
             }
         });
 
-        TmdbClient.loadImage(mContext, cast.getProfile_path(), holder.image, TmdbClient.imageType.LARGEICON);
+        TmdbClient.loadImage(mContext, cast.getProfile_path(), holder.image, TmdbClient.imageType.LARGEICON, "cast");
     }
 
     @Override
