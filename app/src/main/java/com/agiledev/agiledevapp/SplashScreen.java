@@ -57,20 +57,29 @@ public class SplashScreen extends Activity {
         TmdbClient.key = getResources().getString(R.string.tmdb_api_key);
         populateTrendingMovies();
         populateMovieGenreTags();
-        populateTvGenreTags();
         populateTrendingTvShows();
+        populateTvGenreTags();
         if (sharedPref.getBoolean(getString(R.string.prefs_loggedin_boolean), false)) {
-            getRecentMovies();
-            getRecentTvShows();
-            //TODO: If logged in bool is true, but user has been removed from firebase, log out user.
+            db.collection("UserDetails").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null))
+                    .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot doc = task.getResult();
+                        if (doc.exists()) {
+                            getRecentMovies();
+                            getRecentTvShows();
+                        } else {
+                            editor.putBoolean(getString(R.string.prefs_loggedin_boolean), false).apply();
+                        }
+                    }
+                }
+            });
         }
 
-        /* New Handler to start the Menu-Activity
-         * and close this Splash-Screen after some seconds.*/
         new Handler().postDelayed(new Runnable(){
             @Override
             public void run() {
-                /* Create an Intent that will start the Menu-Activity. */
                 Intent mainIntent = new Intent(getBaseContext(), LoginRegisterActivity.class);
                 SplashScreen.this.startActivity(mainIntent);
                 SplashScreen.this.finish();
@@ -186,8 +195,7 @@ public class SplashScreen extends Activity {
         });
     }
 
-    private synchronized void populateTrendingMovies()
-    {
+    private synchronized void populateTrendingMovies() {
         TmdbClient.getweektrendingmovies(null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
@@ -220,8 +228,7 @@ public class SplashScreen extends Activity {
             }
         });
     }
-    private synchronized void populateTrendingTvShows()
-    {
+    private synchronized void populateTrendingTvShows() {
         TmdbClient.getweektrendingtvshows(null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {

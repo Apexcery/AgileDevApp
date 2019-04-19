@@ -24,11 +24,13 @@
         style="?android:attr/ratingBarStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingBottom="2dp"
+        android:paddingBottom="0.3dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_margin="0dp"
         android:stepSize="0.01"
-        android:progressTint="@android:color/holo_orange_light"
-        android:progressBackgroundTint="@android:color/white"/>
+        android:progressTint="@android:color/holo_orange_dark"
+        android:progressBackgroundTint="@android:color/holo_orange_dark"
+        android:secondaryProgressTint="@android:color/holo_orange_dark"/>
+
 </RelativeLayout>

@@ -23,7 +23,6 @@ public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShows
 
     class MyViewHolder extends RecyclerView.ViewHolder
     {
-        TextView ratingNum;
         ImageView poster;
         String id;
         TrendingTvShowsAdapter adapter;
@@ -36,8 +35,6 @@ public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShows
             poster = view.findViewById(R.id.trendingtvimg);
             rating = view.findViewById(R.id.trendingtvshowrating);
             layout = view.findViewById(R.id.trendingtvlayout);
-            ratingNum = view.findViewById(R.id.trendingtvshowratingnum);
-
         }
     }
 
@@ -58,7 +55,6 @@ public class TrendingTvShowsAdapter extends RecyclerView.Adapter<TrendingTvShows
         Globals.trendingTvShow tvshow = tvshowList.get(position);
         holder.id = tvshow.id;
         holder.rating.setRating(tvshow.vote_average);
-        holder.ratingNum.setText(String.format("%.1f",tvshow.vote_average));
         holder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

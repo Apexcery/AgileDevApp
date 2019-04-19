@@ -46,12 +46,14 @@
     <string name="plot_overview"><u><b>Plot Overview</b></u></string>
     <string name="genres"><u><b>Genres</b></u></string>
     <string name="cast"><u><b>Cast</b></u></string>
+	<string name="seasons"><u><b>Seasons</b></u></string>
+    <string name="episodes"><u><b>Episodes</b></u></string>
     <string name="view_more">View More</string>
     <string name="born">Born -</string>
     <string name="release_date">Release Date:</string>
+	<string name="first_released">First Episode:</string>
     <string name="initial_release">Initial Release Date:</string>
     <string name="latest_episode">Latest Episode:</string>
-
     <string name="runtime">Runtime:</string>
     <string name="nextep">Next Episode:</string>
     <string name="title_activity_feedback">Feedback</string>
@@ -145,6 +147,7 @@
     <string name="Movies_name">Movies</string>
     <string name="nav_item_profile">Profile</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="joined">Joined:</string>
+    <string name="usernameAlt">Username:</string>
+    <string name="no_of_episodes">No. of Episodes:</string>
 </resources>
