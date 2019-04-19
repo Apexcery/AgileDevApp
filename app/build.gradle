@@ -50,6 +50,4 @@ dependencies {
     compile 'com.android.support:preference-v14:26.1.0'
 }
 
-
-
 apply plugin: 'com.google.gms.google-services'

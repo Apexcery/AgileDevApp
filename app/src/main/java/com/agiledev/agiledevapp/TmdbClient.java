@@ -37,6 +37,10 @@ class TmdbClient {
         client.get(url, params, responseHandler);
     }
 
+    static void getTvShowInfo(String tvshowID, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+        String url = getAbsoluteUrl("tv/" + tvshowID + "?api_key=" + key + "&append_to_response=videos,credits");
+        client.get(url, params, responseHandler);
+    }
     /**
      * This method is used to return information about a specific tv show, using the tvshow's ID as the specifier.
      *
@@ -126,7 +130,6 @@ class TmdbClient {
         String url = getAbsoluteUrl("discover/tv?api_key=" + key + "&sort_by=popularity.desc&with_genres=" + genreString);
         client.get(url, params, responseHandler);
     }
-
     /**
      * @param relativeUrl The specific part of the url after the BASE_URL that you want to request from.
      * @return The BASE_URL concatenated with the relative url that was passed as a parameter.
