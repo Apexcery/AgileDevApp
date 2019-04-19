@@ -205,9 +205,13 @@ public class MainActivity extends AppCompatActivity
                     .commit();
 
         } else if (id == R.id.nav_profile) {
+            Bundle bundle = new Bundle();
+            bundle.putString("username", sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
+            ProfileFragment fragment = new ProfileFragment();
+            fragment.setArguments(bundle);
             fragmentManager.beginTransaction()
                     .replace(R.id.content_frame
-                            ,new ProfileFragment())
+                            ,fragment)
                     .commit();
 
         } else if (id == R.id.nav_movies) {

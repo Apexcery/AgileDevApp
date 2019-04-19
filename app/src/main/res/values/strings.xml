@@ -46,12 +46,12 @@
     <string name="plot_overview"><u><b>Plot Overview</b></u></string>
     <string name="genres"><u><b>Genres</b></u></string>
     <string name="cast"><u><b>Cast</b></u></string>
-	<string name="seasons"><u><b>Seasons</b></u></string>
+    <string name="seasons"><u><b>Seasons</b></u></string>
     <string name="episodes"><u><b>Episodes</b></u></string>
     <string name="view_more">View More</string>
     <string name="born">Born -</string>
     <string name="release_date">Release Date:</string>
-	<string name="first_released">First Episode:</string>
+    <string name="first_released">First Episode:</string>
     <string name="initial_release">Initial Release Date:</string>
     <string name="latest_episode">Latest Episode:</string>
     <string name="runtime">Runtime:</string>

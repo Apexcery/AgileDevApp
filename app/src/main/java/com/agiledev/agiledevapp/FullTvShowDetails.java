@@ -131,7 +131,7 @@ public class FullTvShowDetails
     {
         String air_date;
         int episode_count;
-        int id;
+        String id;
         String name;
         String overview;
         String poster_path;
