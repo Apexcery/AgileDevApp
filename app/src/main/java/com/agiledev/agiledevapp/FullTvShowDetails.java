@@ -36,8 +36,6 @@ public class FullTvShowDetails
 
     private Credits credits;
 
-    public FullTvShowDetails() {}
-
     public FullTvShowDetails(String backdrop_path, ArrayList<Integer> episode_run_time,
                              String first_air_date, ArrayList<Genre> genres, String homepage,
                              String last_air_date, LastEpisodeToAir last_episode_to_air,

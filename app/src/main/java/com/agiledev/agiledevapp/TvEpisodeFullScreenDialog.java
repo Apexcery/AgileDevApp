@@ -77,7 +77,7 @@ public class TvEpisodeFullScreenDialog extends DialogFragment {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //TODO: Implement tracking single episode.
+                MediaTracking.trackTV(getContext(), view,"episode", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), seriesId, seasonNum, episodeNum).show();
             }
         });
 
@@ -104,6 +104,8 @@ public class TvEpisodeFullScreenDialog extends DialogFragment {
                 tvEpisodeDetails = new Gson().fromJson(response.toString(), FullTvEpisodeDetails.class);
                 if (tvEpisodeDetails == null)
                     return;
+
+                tvEpisodeDetails.setSeriesId(seriesId);
 
                 ImageView tvStillImage = view.findViewById(R.id.tvepisode_image);
                 Uri uri = Uri.parse("https://image.tmdb.org/t/p/w1280" + tvEpisodeDetails.getStill_path());

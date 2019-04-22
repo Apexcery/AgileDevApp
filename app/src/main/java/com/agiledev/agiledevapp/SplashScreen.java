@@ -170,29 +170,29 @@ public class SplashScreen extends Activity {
     }
 
     public void getRecentTvShows() {
-        final ArrayList<Globals.trackedTV> tvList = new ArrayList<>();
-        db.collection("TrackedTV").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot doc = task.getResult();
-                    if (doc.exists()) {
-                        Map<String, Object> tvshows = doc.getData();
-                        for (Map.Entry<String, Object> entry : tvshows.entrySet()) {
-                            Globals.trackedTV tv = new Globals.trackedTV();
-                            tv.id = entry.getKey();
-                            Map<String, Object> field = (Map)entry.getValue();
-                            Timestamp timestamp = (Timestamp)field.get("date");
-                            tv.date = timestamp.toDate();
-                            tv.poster_path = (String)field.get("poster_path");
-                            tvList.add(tv);
-                        }
-                        Globals.setTrackedTvShows(tvList);
-                        Collections.sort(Globals.getTrackedTvShows());
-                    }
-                }
-            }
-        });
+//        final ArrayList<Globals.trackedTV> tvList = new ArrayList<>();
+//        db.collection("TrackedTV").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+//            @Override
+//            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+//                if (task.isSuccessful()) {
+//                    DocumentSnapshot doc = task.getResult();
+//                    if (doc.exists()) {
+//                        Map<String, Object> tvshows = doc.getData();
+//                        for (Map.Entry<String, Object> entry : tvshows.entrySet()) {
+//                            Globals.trackedTV tv = new Globals.trackedTV();
+//                            tv.id = entry.getKey();
+//                            Map<String, Object> field = (Map)entry.getValue();
+//                            Timestamp timestamp = (Timestamp)field.get("date");
+//                            tv.date = timestamp.toDate();
+//                            tv.poster_path = (String)field.get("poster_path");
+//                            tvList.add(tv);
+//                        }
+//                        Globals.setTrackedTvShows(tvList);
+//                        Collections.sort(Globals.getTrackedTvShows());
+//                    }
+//                }
+//            }
+//        });
     }
 
     private synchronized void populateTrendingMovies() {
