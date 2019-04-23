@@ -200,6 +200,8 @@ public class MediaTracking {
                                             trackedEpisode.put(episodeString, trackData);
                                             String seasonString = "Season " + episode.getSeason_number();
                                             trackedSeason.put(seasonString, trackedEpisode);
+                                            trackedSeason.put("name", show.getName());
+                                            trackedSeason.put("poster_path", show.getPoster_path());
                                             trackedTV.put(show.getId(), trackedSeason);
 
                                             if (!doc.exists())
