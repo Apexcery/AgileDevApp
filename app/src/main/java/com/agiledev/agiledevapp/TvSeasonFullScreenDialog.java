@@ -40,7 +40,8 @@ import cz.msebera.android.httpclient.Header;
 
 public class TvSeasonFullScreenDialog extends DialogFragment {
     public static String TAG = "TvSeasonFullScreenDialog";
-    public static String seriesId, seasonNum;
+    public static String seriesId;
+    public static int seasonNum;
     public FullTvSeasonDetails tvSeasonDetails;
     public Toolbar toolbar;
     RecyclerView episodeRecycler;
@@ -51,7 +52,7 @@ public class TvSeasonFullScreenDialog extends DialogFragment {
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    public static TvSeasonFullScreenDialog newInstance(String id, String num) {
+    public static TvSeasonFullScreenDialog newInstance(String id, int num) {
         TvSeasonFullScreenDialog fragment = new TvSeasonFullScreenDialog();
         seriesId = id;
         seasonNum = num;
@@ -87,7 +88,7 @@ public class TvSeasonFullScreenDialog extends DialogFragment {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //TODO: Implement tracking entire season.
+                MediaTracking.trackTV(getContext(), view, "season", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), seriesId, seasonNum, null).show();
             }
         });
 

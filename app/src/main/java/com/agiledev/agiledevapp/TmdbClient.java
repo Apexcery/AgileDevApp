@@ -47,7 +47,7 @@ class TmdbClient {
         client.get(url, params, responseHandler);
     }
 
-    static void getTvSeasonDetails(String tvId, String seasonNum, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+    static void getTvSeasonDetails(String tvId, int seasonNum, RequestParams params, AsyncHttpResponseHandler responseHandler) {
         String url = getAbsoluteUrl("tv/"+ tvId + "/season/" + seasonNum + "?api_key=" + key);
         client.get(url, params, responseHandler);
     }

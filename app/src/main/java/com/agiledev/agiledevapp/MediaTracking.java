@@ -140,13 +140,16 @@ public class MediaTracking {
 
                 break;
             case "season":
-
+                if (seasonNum != null)
+                    return trackTVSeason(mContext, mView, username, seriesId, seasonNum);
+                else
+                    Log.e("Tracking Season", "SeasonNum was null.");
                 break;
             case "episode":
                 if (seasonNum != null && episodeNum != null)
                     return trackTVEpisode(mContext, mView, username, seriesId, seasonNum, episodeNum);
                 else
-                    Log.e("Tracking", "SeasonNum or EpisodeNum was null.");
+                    Log.e("Tracking Episode", "SeasonNum or EpisodeNum was null.");
                 break;
             default:
                 Log.e("Tracking", "Type was invalid.");
@@ -217,6 +220,104 @@ public class MediaTracking {
                                                     } else {
                                                         HashMap currentSeasons = ((HashMap)doc.get(show.getId()));
                                                         currentSeasons.put(seasonString, trackedSeason.get(seasonString));
+                                                        ref.update(show.getId(), currentSeasons);
+                                                    }
+                                                } else {
+                                                    ref.update(trackedTV);
+                                                }
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
+        dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialog.dismiss();
+            }
+        });
+
+        return dialog;
+    }
+
+    private static AlertDialog trackTVSeason(final Context mContext, final View mView, final String username, final String seriesId, final int seasonNum) {
+        final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, mContext, "Track TV", "Are you sure you want to track this entire season?");
+        dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                final DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedTV").document(username);
+                ref.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            final DocumentSnapshot doc = task.getResult();
+                            TmdbClient.getTvSeasonDetails(seriesId, seasonNum, null, new JsonHttpResponseHandler() {
+                                @Override
+                                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                                    final FullTvSeasonDetails season = new Gson().fromJson(response.toString(), FullTvSeasonDetails.class);
+                                    if (season == null)
+                                        return;
+
+                                    TmdbClient.getFullTvShowDetails(seriesId, null, new JsonHttpResponseHandler() {
+                                        @Override
+                                        public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                                            final FullTvShowDetails show = new Gson().fromJson(response.toString(), FullTvShowDetails.class);
+                                            if (show == null)
+                                                return;
+
+                                            ArrayList<FullTvSeasonDetails.Episode> episodes = season.getEpisodes();
+                                            final Map<String, Object> trackedTV = new HashMap<>();
+                                            final Map<String, Object> trackedSeason = new HashMap<>();
+                                            final Map<String, Object> trackedEpisode = new HashMap<>();
+
+                                            for (final FullTvSeasonDetails.Episode e : episodes) {
+                                                final Map<String, Object> trackData = new HashMap<>();
+
+                                                trackData.put("date", new Date());
+                                                trackData.put("episodeName", e.getName());
+                                                trackData.put("episodeNum", e.getEpisode_number());
+
+                                                genreList = show.getGenres();
+                                                Map<String, String> genres = new HashMap<>();
+                                                for (FullTvShowDetails.Genre g : (ArrayList<FullTvShowDetails.Genre>)genreList) {
+                                                    genres.put(String.valueOf(g.id), g.name);
+                                                }
+                                                trackData.put("genres", genres);
+                                                trackData.put("id", e.getId());
+                                                trackData.put("seriesName", show.getName());
+
+                                                String episodeString = "Episode " + e.getEpisode_number();
+                                                trackedEpisode.put(episodeString, trackData);
+                                            }
+                                            String seasonString = "Season " + seasonNum;
+                                            trackedSeason.put(seasonString, trackedEpisode);
+                                            trackedSeason.put("name", show.getName());
+                                            trackedSeason.put("poster_path", show.getPoster_path());
+                                            trackedTV.put(show.getId(), trackedSeason);
+
+                                            if (!doc.exists())
+                                                ref.set(trackedTV);
+                                            else {
+                                                if (doc.contains(show.getId())) { // Show exists
+                                                    if (!(((HashMap)doc.get(show.getId())).containsKey(seasonString))) { // Season doesn't exist
+                                                        HashMap currentSeasons = ((HashMap)doc.get(show.getId()));
+                                                        currentSeasons.put(seasonString, trackedSeason.get(seasonString));
+                                                        ref.update(show.getId(), currentSeasons);
+                                                    } else { //Season exists
+                                                        HashMap currentSeasons = ((HashMap)doc.get(show.getId()));
+                                                        HashMap currentSeason = (HashMap)currentSeasons.get(seasonString);
+                                                        for (Map.Entry<String, Object> entry : trackedEpisode.entrySet()) {
+                                                            if (!currentSeason.containsKey(entry.getKey())) {
+                                                                currentSeason.put(entry.getKey(), entry.getValue());
+                                                            }
+                                                        }
+                                                        currentSeasons.put(seasonString, currentSeason);
                                                         ref.update(show.getId(), currentSeasons);
                                                     }
                                                 } else {

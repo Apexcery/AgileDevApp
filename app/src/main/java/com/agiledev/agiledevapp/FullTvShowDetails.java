@@ -133,7 +133,7 @@ public class FullTvShowDetails
         String name;
         String overview;
         String poster_path;
-        String season_number;
+        int season_number;
     }
 
     public class Videos {
