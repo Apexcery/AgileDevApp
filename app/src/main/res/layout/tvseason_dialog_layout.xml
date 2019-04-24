@@ -177,4 +177,15 @@
         app:srcCompat="@drawable/ic_track_white"
         android:backgroundTint="@color/colorPrimary"
         android:visibility="gone"/>
+    <me.zhanghai.android.materialprogressbar.MaterialProgressBar
+        android:id="@+id/tvseasonTrackingProgress"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/colorPrimary"
+        app:mpb_progressStyle="horizontal"
+        app:mpb_useIntrinsicPadding="false"
+        style="@style/Widget.MaterialProgressBar.ProgressBar.Horizontal"
+        android:visibility="gone"/>
 </android.support.design.widget.CoordinatorLayout>

@@ -199,13 +199,12 @@ public class SplashScreen extends Activity {
         TmdbClient.getweektrendingmovies(null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JSONArray results = new JSONArray();
+                JSONArray results;
                 try {
                     results = response.getJSONArray("results");
 
                     for (int i = 0; i < 16; i++) {
                         try {
-                            Log.e("Results:", results.get(i).toString());
                             Globals.trendingMovie trendingMovie = new Globals.trendingMovie();
                             BasicMovieDetails movie = new Gson().fromJson(results.get(i).toString(), BasicMovieDetails.class);
 
@@ -232,13 +231,12 @@ public class SplashScreen extends Activity {
         TmdbClient.getweektrendingtvshows(null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JSONArray results = new JSONArray();
+                JSONArray results;
                 try {
                     results = response.getJSONArray("results");
 
                     for (int i = 0; i < 16; i++) {
                         try {
-                            Log.e("Results:", results.get(i).toString());
                             Globals.trendingTvShow trendingTvshow = new Globals.trendingTvShow();
                             BasicTvShowDetails tvshow = new Gson().fromJson(results.get(i).toString(), BasicTvShowDetails.class);
 

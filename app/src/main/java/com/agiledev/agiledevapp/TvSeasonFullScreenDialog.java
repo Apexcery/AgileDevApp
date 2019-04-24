@@ -37,6 +37,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import cz.msebera.android.httpclient.Header;
+import me.zhanghai.android.materialprogressbar.MaterialProgressBar;
 
 public class TvSeasonFullScreenDialog extends DialogFragment {
     public static String TAG = "TvSeasonFullScreenDialog";
@@ -46,6 +47,7 @@ public class TvSeasonFullScreenDialog extends DialogFragment {
     public Toolbar toolbar;
     RecyclerView episodeRecycler;
     FloatingActionButton fab;
+    MaterialProgressBar progressBar;
 
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
@@ -84,11 +86,13 @@ public class TvSeasonFullScreenDialog extends DialogFragment {
 
         episodeRecycler = view.findViewById(R.id.tvseason_episodes);
 
+        progressBar = view.findViewById(R.id.tvseasonTrackingProgress);
+
         fab = view.findViewById(R.id.fabTrackTVSeason);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MediaTracking.trackTV(getContext(), view, "season", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), seriesId, seasonNum, null).show();
+                MediaTracking.trackTV(getContext(), getActivity(), "season", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), seriesId, seasonNum, null, progressBar).show();
             }
         });
 

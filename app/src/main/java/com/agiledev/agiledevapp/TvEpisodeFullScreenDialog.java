@@ -28,6 +28,7 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import org.json.JSONObject;
 
 import cz.msebera.android.httpclient.Header;
+import me.zhanghai.android.materialprogressbar.MaterialProgressBar;
 
 public class TvEpisodeFullScreenDialog extends DialogFragment {
     public static String TAG = "TvEpisodeFullScreenDialog";
@@ -36,6 +37,7 @@ public class TvEpisodeFullScreenDialog extends DialogFragment {
     public FullTvEpisodeDetails tvEpisodeDetails;
     public Toolbar toolbar;
     FloatingActionButton fab;
+    MaterialProgressBar progressBar;
 
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
@@ -73,11 +75,13 @@ public class TvEpisodeFullScreenDialog extends DialogFragment {
             }
         });
 
+        progressBar = view.findViewById(R.id.tvepisodeTrackingProgress);
+
         fab = view.findViewById(R.id.fabTrackTVEpisode);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MediaTracking.trackTV(getContext(), view,"episode", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), seriesId, seasonNum, episodeNum).show();
+                MediaTracking.trackTV(getContext(), getActivity(),"episode", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), seriesId, seasonNum, episodeNum, progressBar).show();
             }
         });
 

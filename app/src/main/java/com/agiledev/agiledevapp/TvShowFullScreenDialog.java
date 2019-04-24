@@ -27,6 +27,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 
 import cz.msebera.android.httpclient.Header;
+import me.zhanghai.android.materialprogressbar.MaterialProgressBar;
 
 import static java.lang.Math.min;
 
@@ -67,6 +69,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
     RecyclerView recyclerView;
     RecyclerView seasonRecycler;
     TvShowCastAdapter adapter;
+    MaterialProgressBar trackingProgress;
 
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
@@ -109,6 +112,8 @@ public class TvShowFullScreenDialog extends DialogFragment {
         trailerVideoImage = view.findViewById(R.id.tvshowTrailerImage);
         trailerVideoPlayImage = view.findViewById(R.id.tvshowTrailerPlayIcon);
 
+        trackingProgress = view.findViewById(R.id.tvshowTrackingProgress); //TODO: Make progress bar persist even when dialog is closed.
+
         sharedPref = getContext().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         editor = sharedPref.edit();
 
@@ -118,7 +123,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //TODO: Implement tracking of entire tv show.
+                MediaTracking.trackTV(getContext(), getActivity(), "series", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), id, null, null, trackingProgress).show();
             }
         });
 
