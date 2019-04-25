@@ -117,8 +117,13 @@ class TmdbClient {
     }
 
 
-    static void getRelatedMovies(String genreString, RequestParams params, AsyncHttpResponseHandler responseHandler) {
-        String url = getAbsoluteUrl("discover/movie?api_key=" + key + "&sort_by=popularity.desc&with_genres=" + genreString);
+    static void getRelatedMovies(String movieId, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+        String url = getAbsoluteUrl("movie/" + movieId + "/similar?api_key=" + key);
+        client.get(url, params, responseHandler);
+    }
+
+    static void getRelatedTV(String tvId, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+        String url = getAbsoluteUrl("tv/" + tvId + "/similar?api_key=" + key);
         client.get(url, params, responseHandler);
     }
 

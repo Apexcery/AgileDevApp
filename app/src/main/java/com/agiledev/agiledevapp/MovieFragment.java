@@ -113,15 +113,8 @@ public class MovieFragment extends Fragment implements MainActivity.PermissionCa
         trackedMovies = new ArrayList<>(trackedMovies.subList(0, min(trackedMovies.size(), 9)));
         final Globals.trackedMovie randomMovie = trackedMovies.get(new Random().nextInt(trackedMovies.size()));
 
-        String genreString = "";
-        for (int i = 0; i < randomMovie.genres.size(); i++) {
-            genreString += randomMovie.genres.keyAt(i);
-            if (i < randomMovie.genres.size()) {
-                genreString += ",";
-            }
-        }
         TextView title = view.findViewById(R.id.moviesHomeRecommendedTitle);
-        String recTitle = "Recommended because you watched: <font color='#ec2734'>" + randomMovie.name + "</color>";
+        String recTitle = "Recommended because you watched: <font color='#ec2734'>" + randomMovie.name + "</font>";
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             title.setText(Html.fromHtml(recTitle, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
@@ -129,7 +122,7 @@ public class MovieFragment extends Fragment implements MainActivity.PermissionCa
             title.setText(Html.fromHtml(recTitle), TextView.BufferType.SPANNABLE);
         }
 
-        TmdbClient.getRelatedMovies(genreString, null, new JsonHttpResponseHandler() {
+        TmdbClient.getRelatedMovies(randomMovie.id, null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 JSONArray results = new JSONArray();
