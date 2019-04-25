@@ -290,9 +290,9 @@ public class ProfileFragment extends Fragment {
         RecyclerView.LayoutManager tvLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         tvRecycler.setLayoutManager(tvLayoutManager);
 
-        RecyclerView.Adapter adapter = new HorizontalAdapter(getContext(), lastMovies, getActivity().getSupportFragmentManager(), HorizontalAdapter.MediaType.MOVIE);
+        RecyclerView.Adapter adapter = new HorizontalAdapter(getContext(), lastMovies, getActivity().getSupportFragmentManager(), HorizontalAdapter.MediaType.MOVIE, null);
         movieRecycler.setAdapter(adapter);
-        adapter = new HorizontalAdapter(getContext(), lastShows, getActivity().getSupportFragmentManager(), HorizontalAdapter.MediaType.TV);
+        adapter = new HorizontalAdapter(getContext(), lastShows, getActivity().getSupportFragmentManager(), HorizontalAdapter.MediaType.TV, null);
         tvRecycler.setAdapter(adapter);
     }
 

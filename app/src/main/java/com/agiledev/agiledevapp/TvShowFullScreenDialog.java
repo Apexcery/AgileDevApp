@@ -13,11 +13,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
@@ -59,12 +59,13 @@ import static java.lang.Math.min;
 public class TvShowFullScreenDialog extends DialogFragment {
 
     public static String TAG = "TvShowFullScreenDialog";
-    public String id, poster_path;
+    public String id, poster_path, backdrop_path;
     public FullTvShowDetails tvshowDetails;
     public Toolbar toolbar;
     public ImageView trailerVideoImage, trailerVideoPlayImage;
     NestedScrollView pageContent;
     RecyclerView recyclerView;
+    RecyclerView seasonRecycler;
     TvShowCastAdapter adapter;
 
     SharedPreferences sharedPref;
@@ -103,11 +104,11 @@ public class TvShowFullScreenDialog extends DialogFragment {
         });
 
         recyclerView = view.findViewById(R.id.tvshowcast_recycler_view);
+        seasonRecycler = view.findViewById(R.id.tvshowSeasonRecycler);
 
         trailerVideoImage = view.findViewById(R.id.tvshowTrailerImage);
         trailerVideoPlayImage = view.findViewById(R.id.tvshowTrailerPlayIcon);
 
-        //TODO add floating action button to track tvshows
         sharedPref = getContext().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         editor = sharedPref.edit();
 
@@ -117,7 +118,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                trackTV();
+                //TODO: Implement tracking of entire tv show.
             }
         });
 
@@ -138,7 +139,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
     }
 
     protected synchronized void getTvShowDetails(final View view) {
-        TmdbClient.getTvShowInfo(id, null, new JsonHttpResponseHandler() {
+        TmdbClient.getFullTvShowDetails(id, null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 tvshowDetails = new Gson().fromJson(response.toString(), FullTvShowDetails.class);
@@ -147,6 +148,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
                 Uri uri = Uri.parse("https://image.tmdb.org/t/p/w1280" + tvshowDetails.getBackdrop_path());
 
                 poster_path = tvshowDetails.getPoster_path();
+                backdrop_path = tvshowDetails.getBackdrop_path();
 
                 Glide.with(TvShowFullScreenDialog.this).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
                     @Override
@@ -158,7 +160,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
                     public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
                         trailerVideoPlayImage.setVisibility(View.VISIBLE);
 
-                        final FullTvShowDetails.Video tempVideo = tvshowDetails.getVideos().get(0);
+                        final FullTvShowDetails.Video tempVideo = tvshowDetails.getVideos().get(0); //TODO: Deal with the possibility of no videos.
 
                         trailerVideoPlayImage.setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -168,6 +170,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
                         });
 
                         view.findViewById(R.id.tvshowLoadingSpinner).setVisibility(View.GONE);
+                        view.findViewById(R.id.fabTrackTV).setVisibility(View.VISIBLE);
                         pageContent.setVisibility(View.VISIBLE);
                         return false;
                     }
@@ -176,6 +179,9 @@ public class TvShowFullScreenDialog extends DialogFragment {
                 RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getContext(), 1);
                 recyclerView.setLayoutManager(mLayoutManager);
                 recyclerView.setItemAnimator(new DefaultItemAnimator());
+
+                mLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
+                seasonRecycler.setLayoutManager(mLayoutManager);
 
                 TextView tvshowName = view.findViewById(R.id.tvshowTitle);
                 TextView tvshowPlot = view.findViewById(R.id.tvshowInfoPlot);
@@ -186,32 +192,13 @@ public class TvShowFullScreenDialog extends DialogFragment {
 
                 String nextEpString;
                 String firstReleased = getResources().getString(R.string.first_released) + " <font color='#ffffff'>" + tvshowDetails.getFirst_air_date() + "</font>";
-                if(tvshowDetails.getNext_episode_to_air() == null)
-                {
-                    nextEpString = getResources().getString(R.string.nextep) + " <font color='#ffffff'>N/A</font>";
-                }
-                else
-                {
-                    nextEpString = getResources().getString(R.string.nextep) + " <font color='#ffffff'>" + tvshowDetails.getNext_episode_to_air().air_date + "</font>";
-                }
 
-                //TODO implement runtime per episode
-                //int runtimeMins = tvshowDetails.getRuntime();
-                //int hours = runtimeMins / 60, minutes = runtimeMins % 60;
-                //String runtimeString = String.format("%s %s", getResources().getString(R.string.runtime), String.format(" <font color='#ffffff'>%s</font>", String.format("%dhrs %02dmins", hours, minutes)));
+                nextEpString = tvshowDetails.getNext_episode_to_air() == null ? getResources().getString(R.string.nextep) + " <font color='#ffffff'>N/A</font>" : getResources().getString(R.string.nextep) + " <font color='#ffffff'>" + tvshowDetails.getNext_episode_to_air().air_date + "</font>";
 
                 tvshowName.setText(tvshowDetails.getName());
                 tvshowPlot.setText(tvshowDetails.getOverview());
 
-                if (tvshowDetails.getNext_episode_to_air() == null)
-                {
-                    tvshowNextEpisode.setText(" ");
-                }
-                else
-                {
-                    tvshowNextEpisode.setText(tvshowDetails.getNext_episode_to_air().air_date);
-
-                }
+                tvshowNextEpisode.setText(tvshowDetails.getNext_episode_to_air() == null ? " " : tvshowDetails.getNext_episode_to_air().air_date);
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     tvshowReleaseDate.setText(Html.fromHtml(firstReleased, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
@@ -223,6 +210,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
 
                 tvshowGenres.setText(tvshowDetails.getGenresString());
                 addCastToLayout(tvshowDetails.getCast(), getActivity().getSupportFragmentManager());
+                addSeasonsToLayout(tvshowDetails.getSeason(), getActivity().getSupportFragmentManager());
                 tvshowCastMore.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -265,68 +253,9 @@ public class TvShowFullScreenDialog extends DialogFragment {
         recyclerView.setAdapter(adapter);
     }
 
-    public void trackTV() {
-        boolean alreadyTracked = false;
-        if (Globals.trackedTVContains(id))
-            alreadyTracked = true;
-
-        final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, getContext(), "Track TvShow", "Are you sure you want to track this TvShow?");
-        dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                final DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedTV").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
-                ref.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            DocumentSnapshot doc = task.getResult();
-                            Map<String, Object> trackedTV = new HashMap<>();
-                            Map<String, Object> trackData = new HashMap<>();
-                            trackData.put("date", new Date());
-                            trackData.put("poster_path", poster_path);
-                            trackedTV.put(id, trackData);
-                            if (!doc.exists()) {
-                                ref.set(trackedTV);
-                            } else {
-                                ref.update(trackedTV);
-                            }
-                            Globals.trackedTV TV = new Globals.trackedTV();
-                            TV.id = id;
-                            TV.date = new Date();
-                            TV.poster_path = poster_path;
-                            Globals.addToTrackedTvShows(TV);
-                            Globals.sortTrackedTvShows();
-                        }
-                    }
-                });
-                Toast.makeText(getContext(), "Tv Show tracked!", Toast.LENGTH_LONG).show();
-            }
-        });
-
-        if (alreadyTracked) {
-            dialog.setTitle("Untrack TvShow");
-            dialog.setMessage("Are you sure you want to untrack this TvShow?");
-            dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedTV").document(sharedPref.getString(getString(R.string.prefs_loggedin_username), null));
-                    ref.update(id, FieldValue.delete());
-
-                    Globals.removeFromTrackedTvShows(id);
-
-                    Toast.makeText(getContext(), "TvShow untracked!", Toast.LENGTH_LONG).show();
-                }
-            });
-        }
-
-        dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialog.dismiss();
-            }
-        });
-
-        dialog.show();
+    public void addSeasonsToLayout(ArrayList<FullTvShowDetails.season> seasonList, FragmentManager fragmentManager) {
+        Context mContext = getContext();
+        RecyclerView.Adapter adapter = new HorizontalAdapter(mContext, seasonList, fragmentManager, HorizontalAdapter.MediaType.SEASON, id);
+        seasonRecycler.setAdapter(adapter);
     }
-
 }

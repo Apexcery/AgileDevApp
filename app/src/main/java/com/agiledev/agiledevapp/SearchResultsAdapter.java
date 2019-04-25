@@ -26,8 +26,6 @@ public class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdap
     private FragmentManager manager;
     private String type;
 
-    private View view;
-
     private BasicMovieDetails movie;
     private BasicTvShowDetails tv;
 
@@ -39,8 +37,6 @@ public class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdap
 
         MyViewHolder(View v) {
             super(v);
-
-            view = v;
 
             title = v.findViewById(R.id.movieCardTitle);
             genres = v.findViewById(R.id.movieCardGenres);

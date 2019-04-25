@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/movieImageView"
     android:layout_width="wrap_content"
@@ -16,10 +16,18 @@
         android:id="@+id/movieImageViewPoster"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
+        android:layout_gravity="start|top"
         android:adjustViewBounds="true"
         android:cropToPadding="false"
-        android:src="@drawable/login_background"
         android:layout_margin="0dp"/>
-</RelativeLayout>
+    <TextView
+        android:id="@+id/movieImageViewText"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal|top"
+        android:gravity="center"
+        android:layout_margin="0dp"
+        android:visibility="gone"
+        android:textColor="@color/colorAccent"
+        android:textSize="14sp"/>
+</LinearLayout>

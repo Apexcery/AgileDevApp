@@ -179,6 +179,7 @@ public class MovieFullScreenDialog extends DialogFragment {
                         });
 
                         view.findViewById(R.id.movieLoadingSpinner).setVisibility(View.GONE);
+                        view.findViewById(R.id.fabTrackMovie).setVisibility(View.VISIBLE);
                         pageContent.setVisibility(View.VISIBLE);
                         return false;
                     }
