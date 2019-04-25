@@ -178,6 +178,7 @@ public class Globals
         String id, name;
         String poster_path;
         Date date;
+        SparseArray<String> genres = new SparseArray<>();
         Map<String, ArrayList<Episode>> seasons = new HashMap<>();
 
         private Map<String, ArrayList<Episode>> getSeasons() {
@@ -188,7 +189,6 @@ public class Globals
             Date date;
             String episodeName, id, seriesName;
             int episodeNum, seasonNum;
-            SparseArray<String> genres = new SparseArray<>();
 
             @Override
             public int compareTo(@NonNull Episode episode) {

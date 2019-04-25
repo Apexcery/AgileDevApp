@@ -186,6 +186,11 @@ public class SplashScreen extends Activity {
                             Timestamp timestamp = (Timestamp)field.get("lastWatched");
                             tv.date = timestamp.toDate();
                             tv.poster_path = (String)field.get("poster_path");
+                            SparseArray<String> genres = new SparseArray<>();
+                            for (Map.Entry<String, String> gEntry : ((HashMap<String, String>)field.get("genres")).entrySet()) {
+                                genres.put(Integer.parseInt(gEntry.getKey()), gEntry.getValue());
+                            }
+                            tv.genres = genres;
                             Map<String, ArrayList<Globals.trackedTV.Episode>> seasons = new HashMap<>();
                             for (Map.Entry<String, Object> e : field.entrySet()) {
                                 if (e.getKey().contains("Season ")) {
@@ -199,11 +204,6 @@ public class SplashScreen extends Activity {
                                         ep.seriesName = (String)eEntry.getValue().get("seriesName");
                                         ep.episodeNum = ((Long)eEntry.getValue().get("episodeNum")).intValue();
                                         ep.seasonNum = Integer.parseInt(e.getKey().replace("Season ", ""));
-                                        SparseArray<String> genres = new SparseArray<>();
-                                        for (Map.Entry<String, String> gEntry : ((HashMap<String, String>)eEntry.getValue().get("genres")).entrySet()) {
-                                            genres.put(Integer.parseInt(gEntry.getKey()), gEntry.getValue());
-                                        }
-                                        ep.genres = genres;
                                         episodes.add(ep);
                                     }
                                     seasons.put(e.getKey(), episodes);

@@ -57,7 +57,6 @@ public class MovieFragment extends Fragment implements MainActivity.PermissionCa
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
-    String genreString;
     private FusedLocationProviderClient fusedLocationClient;
     public static Boolean locationBool = null;
     String countryCode = "";
@@ -66,8 +65,6 @@ public class MovieFragment extends Fragment implements MainActivity.PermissionCa
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_movies, container, false);
-
-        view.findViewById(R.id.movieFragmentSpinner).setVisibility(View.VISIBLE);
 
         getActivity().setTitle(getString(R.string.movies_name));
         sharedPref = getActivity().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
@@ -102,7 +99,6 @@ public class MovieFragment extends Fragment implements MainActivity.PermissionCa
         RecentMoviesAdapter adapter = new RecentMoviesAdapter(getActivity(), nineRecentMovies, getActivity().getSupportFragmentManager());
 
         recyclerView.setAdapter(adapter);
-
         RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getActivity(), 3);
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -114,10 +110,10 @@ public class MovieFragment extends Fragment implements MainActivity.PermissionCa
         if (Globals.getTrackedMovies().size() <= 0)
             return;
         List<Globals.trackedMovie> trackedMovies = Globals.getTrackedMovies();
-        trackedMovies = new ArrayList<>(trackedMovies.subList(0, min(trackedMovies.size(), 10)));
+        trackedMovies = new ArrayList<>(trackedMovies.subList(0, min(trackedMovies.size(), 9)));
         final Globals.trackedMovie randomMovie = trackedMovies.get(new Random().nextInt(trackedMovies.size()));
 
-        genreString = "";
+        String genreString = "";
         for (int i = 0; i < randomMovie.genres.size(); i++) {
             genreString += randomMovie.genres.keyAt(i);
             if (i < randomMovie.genres.size()) {
@@ -170,7 +166,6 @@ public class MovieFragment extends Fragment implements MainActivity.PermissionCa
                 recyclerView.setLayoutManager(mLayoutManager);
                 recyclerView.setItemAnimator(new DefaultItemAnimator());
 
-                view.findViewById(R.id.movieFragmentSpinner).setVisibility(View.GONE);
                 recyclerView.setVisibility(View.VISIBLE);
             }
         });

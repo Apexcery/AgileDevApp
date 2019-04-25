@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 
 import cz.msebera.android.httpclient.Header;
+import me.zhanghai.android.materialprogressbar.MaterialProgressBar;
 
 import static java.lang.Math.min;
 
@@ -72,6 +73,7 @@ public class MovieFullScreenDialog extends DialogFragment {
     RecyclerView recyclerView;
     MovieCastAdapter adapter;
     View view;
+    MaterialProgressBar trackingProgress;
 
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
@@ -112,6 +114,8 @@ public class MovieFullScreenDialog extends DialogFragment {
 
         trailerVideoImage = view.findViewById(R.id.movieTrailerImage);
         trailerVideoPlayImage = view.findViewById(R.id.movieTrailerPlayIcon);
+
+        trackingProgress = view.findViewById(R.id.movieTrackingProgress);
 
         sharedPref = getContext().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         editor = sharedPref.edit();
@@ -263,9 +267,9 @@ public class MovieFullScreenDialog extends DialogFragment {
             alreadyTracked = true;
 
         if (!alreadyTracked) {
-            MediaTracking.trackMovie(getActivity(), view, sharedPref.getString(getString(R.string.prefs_loggedin_username), null), id).show();
+            MediaTracking.trackMovie(getActivity(), getActivity(), sharedPref.getString(getString(R.string.prefs_loggedin_username), null), id, trackingProgress).show();
         } else {
-            MediaTracking.untrackMovie(getActivity(), view, sharedPref.getString(getString(R.string.prefs_loggedin_username), null), id).show();
+            MediaTracking.untrackMovie(getActivity(), getActivity(), sharedPref.getString(getString(R.string.prefs_loggedin_username), null), id, trackingProgress).show();
         }
     }
 

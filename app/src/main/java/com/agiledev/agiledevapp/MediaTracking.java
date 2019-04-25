@@ -10,6 +10,7 @@ import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -42,16 +43,17 @@ public class MediaTracking {
     }
 
     static String title, poster_path;
-    private static ArrayList genreList;
     private static int runtime;
     private static Map<FullTvShowDetails.season, Boolean> flags = new HashMap<>();
     static final Map<String, Object> trackedSeasons = new HashMap<>();
 
-    public static AlertDialog trackMovie(final Context mContext, final View mView, final String username, final String id) {
+    public static AlertDialog trackMovie(final Context mContext, final Activity mActivity, final String username, final String id, final MaterialProgressBar progressBar) {
         final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, mContext, "Track Movie", "Are you sure you want to track this movie?");
         dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+                if (progressBar != null)
+                    progressBar.setVisibility(View.VISIBLE);
                 final DocumentReference movieRef = FirebaseFirestore.getInstance().collection("TrackedMovies").document(username);
                 movieRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
@@ -72,7 +74,7 @@ public class MediaTracking {
                                                 return;
                                             title = movieDetails.getTitle();
                                             poster_path = movieDetails.getPoster_path();
-                                            genreList = movieDetails.getGenres();
+                                            final ArrayList<FullMovieDetails.Genre> genreList = movieDetails.getGenres();
                                             runtime = movieDetails.getRuntime();
 
                                             Map<String, Object> trackedMovie = new HashMap<>();
@@ -82,7 +84,7 @@ public class MediaTracking {
                                             trackData.put("poster_path", poster_path);
 
                                             Map<String, String> genres = new HashMap<>();
-                                            for (FullMovieDetails.Genre g : (ArrayList<FullMovieDetails.Genre>)genreList) {
+                                            for (FullMovieDetails.Genre g : genreList) {
                                                 genres.put(String.valueOf(g.id), g.name);
                                             }
                                             trackData.put("genres", genres);
@@ -113,7 +115,7 @@ public class MediaTracking {
                                                         Map<String, Object> userData = new HashMap<>();
                                                         userData.put("timeWatched", Integer.valueOf(doc.get("timeWatched").toString()) + runtime);
                                                         Map<String, Long> userGenres = (Map<String, Long>)doc.get("genresWatched");
-                                                        for (FullMovieDetails.Genre g : (ArrayList<FullMovieDetails.Genre>)genreList) {
+                                                        for (FullMovieDetails.Genre g : genreList) {
                                                             if (userGenres.containsKey(g.name)) {
                                                                 userGenres.put(g.name, userGenres.get(g.name) + 1);
                                                             } else {
@@ -123,7 +125,14 @@ public class MediaTracking {
                                                         userData.put("genresWatched", userGenres);
                                                         userRef.update(userData);
 
-                                                        Snackbar.make(mView, "Movie Tracked!", Snackbar.LENGTH_LONG).show();
+                                                        mActivity.runOnUiThread(new Runnable() {
+                                                            @Override
+                                                            public void run() {
+                                                                if (progressBar != null)
+                                                                    progressBar.setVisibility(View.GONE);
+                                                                Toast.makeText(mContext.getApplicationContext(), "Movie Tracked", Toast.LENGTH_LONG).show();
+                                                            }
+                                                        });
                                                     }
                                                 }
                                             });
@@ -211,12 +220,6 @@ public class MediaTracking {
                                                     if (show == null)
                                                         return;
 
-                                                    genreList = show.getGenres();
-                                                    Map<String, String> genres = new HashMap<>();
-                                                    for (FullTvShowDetails.Genre g : (ArrayList<FullTvShowDetails.Genre>)genreList) {
-                                                        genres.put(String.valueOf(g.id), g.name);
-                                                    }
-                                                    trackData.put("genres", genres);
                                                     trackData.put("id", episode.getId());
                                                     trackData.put("seriesName", show.getName());
 
@@ -228,6 +231,12 @@ public class MediaTracking {
                                                     trackedSeason.put("poster_path", show.getPoster_path());
                                                     Date date = new Date();
                                                     trackedSeason.put("lastWatched", date);
+                                                    ArrayList<FullTvShowDetails.Genre> genreList = show.getGenres();
+                                                    Map<String, String> genres = new HashMap<>();
+                                                    for (FullTvShowDetails.Genre g : genreList) {
+                                                        genres.put(String.valueOf(g.id), g.name);
+                                                    }
+                                                    trackedSeason.put("genres", genres);
                                                     trackedTV.put(show.getId(), trackedSeason);
 
                                                     Globals.trackedTV tv = null;
@@ -244,6 +253,11 @@ public class MediaTracking {
                                                     tv.id = show.getId();
                                                     tv.name = show.getName();
                                                     tv.poster_path = show.getPoster_path();
+                                                    SparseArray<String> trackedGenres = new SparseArray<>();
+                                                    for (FullTvShowDetails.Genre g : (ArrayList<FullTvShowDetails.Genre>)genreList) {
+                                                        trackedGenres.put(g.id, g.name);
+                                                    }
+                                                    tv.genres = trackedGenres;
 
                                                     Globals.trackedTV.Episode e = new Globals.trackedTV.Episode();
                                                     e.date = date;
@@ -251,11 +265,6 @@ public class MediaTracking {
                                                     e.id = episode.getId();
                                                     e.seriesName = show.getName();
                                                     e.episodeNum = episode.getEpisode_number();
-                                                    SparseArray<String> trackedGenres = new SparseArray<>();
-                                                    for (FullTvShowDetails.Genre g : (ArrayList<FullTvShowDetails.Genre>)genreList) {
-                                                        trackedGenres.put(g.id, g.name);
-                                                    }
-                                                    e.genres = trackedGenres;
                                                     tv.addEpisode(e);
 
 
@@ -282,6 +291,7 @@ public class MediaTracking {
                                                         @Override
                                                         public void run() {
                                                             progressBar.setVisibility(View.GONE);
+                                                            Toast.makeText(mContext.getApplicationContext(), "TV Episode Tracked!", Snackbar.LENGTH_LONG).show();
                                                         }
                                                     });
                                                 }
@@ -361,6 +371,12 @@ public class MediaTracking {
                                                     tv.id = show.getId();
                                                     tv.name = show.getName();
                                                     tv.poster_path = show.getPoster_path();
+                                                    SparseArray<String> trackedGenres = new SparseArray<>();
+                                                    ArrayList<FullTvShowDetails.Genre> genreList = show.getGenres();
+                                                    for (FullTvShowDetails.Genre g : genreList) {
+                                                        trackedGenres.put(g.id, g.name);
+                                                    }
+                                                    tv.genres = trackedGenres;
 
                                                     for (final FullTvSeasonDetails.Episode e : episodes) {
                                                         final Map<String, Object> trackData = new HashMap<>();
@@ -369,12 +385,6 @@ public class MediaTracking {
                                                         trackData.put("episodeName", e.getName());
                                                         trackData.put("episodeNum", e.getEpisode_number());
 
-                                                        genreList = show.getGenres();
-                                                        Map<String, String> genres = new HashMap<>();
-                                                        for (FullTvShowDetails.Genre g : (ArrayList<FullTvShowDetails.Genre>)genreList) {
-                                                            genres.put(String.valueOf(g.id), g.name);
-                                                        }
-                                                        trackData.put("genres", genres);
                                                         trackData.put("id", e.getId());
                                                         trackData.put("seriesName", show.getName());
 
@@ -387,11 +397,6 @@ public class MediaTracking {
                                                         ep.id = e.getId();
                                                         ep.seriesName = show.getName();
                                                         ep.episodeNum = e.getEpisode_number();
-                                                        SparseArray<String> trackedGenres = new SparseArray<>();
-                                                        for (FullTvShowDetails.Genre g : (ArrayList<FullTvShowDetails.Genre>)genreList) {
-                                                            trackedGenres.put(g.id, g.name);
-                                                        }
-                                                        ep.genres = trackedGenres;
                                                         tv.addEpisode(ep);
                                                     }
 
@@ -400,6 +405,12 @@ public class MediaTracking {
                                                     trackedSeason.put("name", show.getName());
                                                     trackedSeason.put("poster_path", show.getPoster_path());
                                                     trackedSeason.put("lastWatched", date);
+                                                    genreList = show.getGenres();
+                                                    Map<String, String> genres = new HashMap<>();
+                                                    for (FullTvShowDetails.Genre g : genreList) {
+                                                        genres.put(String.valueOf(g.id), g.name);
+                                                    }
+                                                    trackedSeason.put("genres", genres);
                                                     trackedTV.put(show.getId(), trackedSeason);
 
                                                     if (!doc.exists()) {
@@ -429,6 +440,7 @@ public class MediaTracking {
                                                         @Override
                                                         public void run() {
                                                             progressBar.setVisibility(View.GONE);
+                                                            Toast.makeText(mContext.getApplicationContext(), "TV Season Tracked!", Snackbar.LENGTH_LONG).show();
                                                         }
                                                     });
                                                 }
@@ -475,13 +487,14 @@ public class MediaTracking {
 
                                     final Map<String, Object> trackedTV = new HashMap<>();
 
+                                    final ArrayList<FullTvShowDetails.Genre> genreList = show.getGenres();
 
                                     for (final FullTvShowDetails.season s : show.getSeason()) {
                                         flags.put(s, false);
                                         new Thread(new Runnable() {
                                             @Override
                                             public void run() {
-                                                Map.Entry<String, Object> entry = trackSeasonForShowTrack(seriesId, s, show);
+                                                Map.Entry<String, Object> entry = trackSeasonForShowTrack(seriesId, s, show, genreList);
                                                 trackedSeasons.put(entry.getKey(), entry.getValue());
                                             }
                                         }).start();
@@ -496,6 +509,11 @@ public class MediaTracking {
                                             trackedSeasons.put("name", show.getName());
                                             trackedSeasons.put("poster_path", show.getPoster_path());
                                             trackedSeasons.put("lastWatched", new Date());
+                                            Map<String, String> genres = new HashMap<>();
+                                            for (FullTvShowDetails.Genre g : genreList) {
+                                                genres.put(String.valueOf(g.id), g.name);
+                                            }
+                                            trackedSeasons.put("genres", genres);
                                             trackedTV.put(show.getId(), trackedSeasons);
 
                                             if (!doc.exists()) {
@@ -532,6 +550,7 @@ public class MediaTracking {
                                                 @Override
                                                 public void run() {
                                                     progressBar.setVisibility(View.GONE);
+                                                    Toast.makeText(mContext.getApplicationContext(), "TV Show Tracked!", Snackbar.LENGTH_LONG).show();
                                                 }
                                             });
                                         }
@@ -563,7 +582,7 @@ public class MediaTracking {
         return false;
     }
 
-    private static synchronized Map.Entry<String, Object> trackSeasonForShowTrack(String seriesId, final FullTvShowDetails.season s, final FullTvShowDetails show) {
+    private static synchronized Map.Entry<String, Object> trackSeasonForShowTrack(String seriesId, final FullTvShowDetails.season s, final FullTvShowDetails show, final ArrayList<FullTvShowDetails.Genre> genreList) {
         final HashMap<String, Object> tempMap = new HashMap<>();
         SyncHttpClient client = new SyncHttpClient();
         String url = "https://api.themoviedb.org/3/" + "tv/"+ seriesId + "/season/" + s.season_number + "?api_key=" + TmdbClient.key;
@@ -596,6 +615,11 @@ public class MediaTracking {
                 tv.id = show.getId();
                 tv.name = show.getName();
                 tv.poster_path = show.getPoster_path();
+                SparseArray<String> trackedGenres = new SparseArray<>();
+                for (FullTvShowDetails.Genre g : genreList) {
+                    trackedGenres.put(g.id, g.name);
+                }
+                tv.genres = trackedGenres;
 
                 for (final FullTvSeasonDetails.Episode e : episodes) {
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -614,12 +638,6 @@ public class MediaTracking {
                     trackData.put("episodeName", e.getName());
                     trackData.put("episodeNum", e.getEpisode_number());
 
-                    genreList = show.getGenres();
-                    Map<String, String> genres = new HashMap<>();
-                    for (FullTvShowDetails.Genre g : (ArrayList<FullTvShowDetails.Genre>)genreList) {
-                        genres.put(String.valueOf(g.id), g.name);
-                    }
-                    trackData.put("genres", genres);
                     trackData.put("id", e.getId());
                     trackData.put("seriesName", show.getName());
 
@@ -632,11 +650,6 @@ public class MediaTracking {
                     ep.id = e.getId();
                     ep.seriesName = show.getName();
                     ep.episodeNum = e.getEpisode_number();
-                    SparseArray<String> trackedGenres = new SparseArray<>();
-                    for (FullTvShowDetails.Genre g : (ArrayList<FullTvShowDetails.Genre>)genreList) {
-                        trackedGenres.put(g.id, g.name);
-                    }
-                    ep.genres = trackedGenres;
                     tv.addEpisode(ep);
                 }
 
@@ -649,46 +662,61 @@ public class MediaTracking {
         return new AbstractMap.SimpleEntry<>("Season " + s.season_number, tempMap.get("Season " + s.season_number));
     }
 
-    public static AlertDialog untrackMovie(final Context mContext, final View mView, final String username, final String id) {
+    public static AlertDialog untrackMovie(final Context mContext, final Activity mActivity, final String username, final String id, final MaterialProgressBar progressBar) {
         final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, mContext, "Untrack Movie", "Are you sure you want to untrack this movie?");
         dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+                if (progressBar != null)
+                    progressBar.setVisibility(View.VISIBLE);
                 DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedMovies").document(username);
                 ref.update(id, FieldValue.delete());
 
                 Globals.removeFromTrackedMovies(id);
 
-                TmdbClient.getMovieInfo(id, null, new JsonHttpResponseHandler() {
+                new Thread(new Runnable() {
                     @Override
-                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                        FullMovieDetails movieDetails = new Gson().fromJson(response.toString(), FullMovieDetails.class);
-                        if (movieDetails == null)
-                            return;
-                        genreList = movieDetails.getGenres();
-
-                        final DocumentReference userRef = FirebaseFirestore.getInstance().collection("UserDetails").document(username);
-                        userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    public void run() {
+                        SyncHttpClient client = new SyncHttpClient();
+                        String url = "https://api.themoviedb.org/3/" + "movie/" + id + "?api_key=" + TmdbClient.key;
+                        client.get(url, null, new JsonHttpResponseHandler() {
                             @Override
-                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                if (task.isSuccessful()) {
-                                    DocumentSnapshot doc = task.getResult();
-                                    Map<String, Object> userData = new HashMap<>();
-                                    userData.put("timeWatched", Integer.valueOf(doc.get("timeWatched").toString()) - runtime);
-                                    Map<String, Long> userGenres = (Map<String, Long>)doc.get("genresWatched");
-                                    for (FullMovieDetails.Genre g : (ArrayList<FullMovieDetails.Genre>)genreList) {
-                                        userGenres.put(g.name, userGenres.get(g.name) - 1);
-                                    }
-                                    userData.put("genresWatched", userGenres);
-                                    userRef.update(userData);
+                            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                                FullMovieDetails movieDetails = new Gson().fromJson(response.toString(), FullMovieDetails.class);
+                                if (movieDetails == null)
+                                    return;
+                                final ArrayList<FullMovieDetails.Genre> genreList = movieDetails.getGenres();
 
-                                    Snackbar.make(mView, "Movie Untracked!", Snackbar.LENGTH_LONG).show();
-                                }
+                                final DocumentReference userRef = FirebaseFirestore.getInstance().collection("UserDetails").document(username);
+                                userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                        if (task.isSuccessful()) {
+                                            DocumentSnapshot doc = task.getResult();
+                                            Map<String, Object> userData = new HashMap<>();
+                                            userData.put("timeWatched", Integer.valueOf(doc.get("timeWatched").toString()) - runtime);
+                                            Map<String, Long> userGenres = (Map<String, Long>)doc.get("genresWatched");
+                                            for (FullMovieDetails.Genre g : genreList) {
+                                                userGenres.put(g.name, userGenres.get(g.name) - 1);
+                                            }
+                                            userData.put("genresWatched", userGenres);
+                                            userRef.update(userData);
+
+                                            mActivity.runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    if (progressBar != null)
+                                                        progressBar.setVisibility(View.GONE);
+                                                    Toast.makeText(mContext.getApplicationContext(), "Movie Untracked!", Snackbar.LENGTH_LONG).show();
+                                                }
+                                            });
+                                        }
+                                    }
+                                });
                             }
                         });
                     }
-                });
-
+                }).start();
             }
         });
 
