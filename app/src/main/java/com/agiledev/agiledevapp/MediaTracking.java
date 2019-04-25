@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.View;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -57,72 +58,81 @@ public class MediaTracking {
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         if (task.isSuccessful()) {
                             final DocumentSnapshot doc = task.getResult();
-                            TmdbClient.getMovieInfo(id, null, new JsonHttpResponseHandler() {
+
+                            new Thread(new Runnable() {
                                 @Override
-                                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                                    FullMovieDetails movieDetails = new Gson().fromJson(response.toString(), FullMovieDetails.class);
-                                    if (movieDetails == null)
-                                        return;
-                                    title = movieDetails.getTitle();
-                                    poster_path = movieDetails.getPoster_path();
-                                    genreList = movieDetails.getGenres();
-                                    runtime = movieDetails.getRuntime();
-
-                                    Map<String, Object> trackedMovie = new HashMap<>();
-                                    Map<String, Object> trackData = new HashMap<>();
-                                    trackData.put("date", new Date());
-                                    trackData.put("name", title);
-                                    trackData.put("poster_path", poster_path);
-
-                                    Map<String, String> genres = new HashMap<>();
-                                    for (FullMovieDetails.Genre g : (ArrayList<FullMovieDetails.Genre>)genreList) {
-                                        genres.put(String.valueOf(g.id), g.name);
-                                    }
-                                    trackData.put("genres", genres);
-
-                                    trackedMovie.put(id, trackData);
-                                    if (!doc.exists()) {
-                                        movieRef.set(trackedMovie);
-                                    } else {
-                                        movieRef.update(trackedMovie);
-                                    }
-                                    Globals.trackedMovie movie = new Globals.trackedMovie();
-                                    movie.id = id;
-                                    movie.date = new Date();
-                                    movie.poster_path = poster_path;
-                                    movie.name = title;
-                                    for (HashMap.Entry<String, String> e : genres.entrySet()) {
-                                        movie.genres.put(Integer.parseInt(e.getKey()), e.getValue());
-                                    }
-                                    Globals.addToTrackedMovies(movie);
-                                    Globals.sortTrackedMovies();
-
-                                    final DocumentReference userRef = FirebaseFirestore.getInstance().collection("UserDetails").document(username);
-                                    userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                public void run() {
+                                    SyncHttpClient client = new SyncHttpClient();
+                                    String url = "https://api.themoviedb.org/3/" + "movie/" + id + "?api_key=" + TmdbClient.key;
+                                    client.get(url, null, new JsonHttpResponseHandler() {
                                         @Override
-                                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                            if (task.isSuccessful()) {
-                                                DocumentSnapshot doc = task.getResult();
-                                                Map<String, Object> userData = new HashMap<>();
-                                                userData.put("timeWatched", Integer.valueOf(doc.get("timeWatched").toString()) + runtime);
-                                                Map<String, Long> userGenres = (Map<String, Long>)doc.get("genresWatched");
-                                                for (FullMovieDetails.Genre g : (ArrayList<FullMovieDetails.Genre>)genreList) {
-                                                    if (userGenres.containsKey(g.name)) {
-                                                        userGenres.put(g.name, userGenres.get(g.name) + 1);
-                                                    } else {
-                                                        userGenres.put(g.name, 1L);
+                                        public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                                            FullMovieDetails movieDetails = new Gson().fromJson(response.toString(), FullMovieDetails.class);
+                                            if (movieDetails == null)
+                                                return;
+                                            title = movieDetails.getTitle();
+                                            poster_path = movieDetails.getPoster_path();
+                                            genreList = movieDetails.getGenres();
+                                            runtime = movieDetails.getRuntime();
+
+                                            Map<String, Object> trackedMovie = new HashMap<>();
+                                            Map<String, Object> trackData = new HashMap<>();
+                                            trackData.put("date", new Date());
+                                            trackData.put("name", title);
+                                            trackData.put("poster_path", poster_path);
+
+                                            Map<String, String> genres = new HashMap<>();
+                                            for (FullMovieDetails.Genre g : (ArrayList<FullMovieDetails.Genre>)genreList) {
+                                                genres.put(String.valueOf(g.id), g.name);
+                                            }
+                                            trackData.put("genres", genres);
+
+                                            trackedMovie.put(id, trackData);
+                                            if (!doc.exists()) {
+                                                movieRef.set(trackedMovie);
+                                            } else {
+                                                movieRef.update(trackedMovie);
+                                            }
+                                            Globals.trackedMovie movie = new Globals.trackedMovie();
+                                            movie.id = id;
+                                            movie.date = new Date();
+                                            movie.poster_path = poster_path;
+                                            movie.name = title;
+                                            for (HashMap.Entry<String, String> e : genres.entrySet()) {
+                                                movie.genres.put(Integer.parseInt(e.getKey()), e.getValue());
+                                            }
+                                            Globals.addToTrackedMovies(movie);
+                                            Globals.sortTrackedMovies();
+
+                                            final DocumentReference userRef = FirebaseFirestore.getInstance().collection("UserDetails").document(username);
+                                            userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                                    if (task.isSuccessful()) {
+                                                        DocumentSnapshot doc = task.getResult();
+                                                        Map<String, Object> userData = new HashMap<>();
+                                                        userData.put("timeWatched", Integer.valueOf(doc.get("timeWatched").toString()) + runtime);
+                                                        Map<String, Long> userGenres = (Map<String, Long>)doc.get("genresWatched");
+                                                        for (FullMovieDetails.Genre g : (ArrayList<FullMovieDetails.Genre>)genreList) {
+                                                            if (userGenres.containsKey(g.name)) {
+                                                                userGenres.put(g.name, userGenres.get(g.name) + 1);
+                                                            } else {
+                                                                userGenres.put(g.name, 1L);
+                                                            }
+                                                        }
+                                                        userData.put("genresWatched", userGenres);
+                                                        userRef.update(userData);
+
+                                                        Snackbar.make(mView, "Movie Tracked!", Snackbar.LENGTH_LONG).show();
                                                     }
                                                 }
-                                                userData.put("genresWatched", userGenres);
-                                                userRef.update(userData);
+                                            });
 
-                                                Snackbar.make(mView, "Movie Tracked!", Snackbar.LENGTH_LONG).show();
-                                            }
                                         }
                                     });
-
                                 }
-                            });
+                            }).start();
+
                         }
                     }
                 });
@@ -173,73 +183,114 @@ public class MediaTracking {
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         if (task.isSuccessful()) {
                             final DocumentSnapshot doc = task.getResult();
-                            TmdbClient.getTvEpisodeDetails(seriesId, seasonNum, episodeNum, null, new JsonHttpResponseHandler() {
+                            new Thread(new Runnable() {
                                 @Override
-                                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                                    final FullTvEpisodeDetails episode = new Gson().fromJson(response.toString(), FullTvEpisodeDetails.class);
-                                    if (episode == null)
-                                        return;
-                                    final Map<String, Object> trackedTV = new HashMap<>();
-                                    final Map<String, Object> trackedSeason = new HashMap<>();
-                                    final Map<String, Object> trackedEpisode = new HashMap<>();
-                                    final Map<String, Object> trackData = new HashMap<>();
-
-                                    trackData.put("date", new Date());
-                                    trackData.put("episodeName", episode.getName());
-                                    trackData.put("episodeNum", episode.getEpisode_number());
-
-                                    TmdbClient.getFullTvShowDetails(seriesId, null, new JsonHttpResponseHandler() {
+                                public void run() {
+                                    final SyncHttpClient client = new SyncHttpClient();
+                                    String url = "https://api.themoviedb.org/3/" + "tv/" + seriesId + "/season/" + seasonNum + "/episode/" + episodeNum + "?api_key=" + TmdbClient.key;
+                                    client.get(url, null, new JsonHttpResponseHandler() {
                                         @Override
                                         public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                                            final FullTvShowDetails show = new Gson().fromJson(response.toString(), FullTvShowDetails.class);
-                                            if (show == null)
+                                            final FullTvEpisodeDetails episode = new Gson().fromJson(response.toString(), FullTvEpisodeDetails.class);
+                                            if (episode == null)
                                                 return;
+                                            final Map<String, Object> trackedTV = new HashMap<>();
+                                            final Map<String, Object> trackedSeason = new HashMap<>();
+                                            final Map<String, Object> trackedEpisode = new HashMap<>();
+                                            final Map<String, Object> trackData = new HashMap<>();
 
-                                            genreList = show.getGenres();
-                                            Map<String, String> genres = new HashMap<>();
-                                            for (FullTvShowDetails.Genre g : (ArrayList<FullTvShowDetails.Genre>)genreList) {
-                                                genres.put(String.valueOf(g.id), g.name);
-                                            }
-                                            trackData.put("genres", genres);
-                                            trackData.put("id", episode.getId());
-                                            trackData.put("seriesName", show.getName());
+                                            trackData.put("date", new Date());
+                                            trackData.put("episodeName", episode.getName());
+                                            trackData.put("episodeNum", episode.getEpisode_number());
 
-                                            String episodeString = "Episode " + episode.getEpisode_number();
-                                            trackedEpisode.put(episodeString, trackData);
-                                            String seasonString = "Season " + episode.getSeason_number();
-                                            trackedSeason.put(seasonString, trackedEpisode);
-                                            trackedSeason.put("name", show.getName());
-                                            trackedSeason.put("poster_path", show.getPoster_path());
-                                            trackedTV.put(show.getId(), trackedSeason);
+                                            String url = "https://api.themoviedb.org/3/" + "tv/" + seriesId + "?api_key=" + TmdbClient.key;
+                                            client.get(url, null, new JsonHttpResponseHandler() {
+                                                @Override
+                                                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                                                    final FullTvShowDetails show = new Gson().fromJson(response.toString(), FullTvShowDetails.class);
+                                                    if (show == null)
+                                                        return;
 
-                                            if (!doc.exists()) {
-                                                ref.set(trackedTV);
-                                                progressBar.setVisibility(View.GONE);
-                                            }
-                                            else {
-                                                if (doc.contains(show.getId())) { // Show exists
-                                                    if (((HashMap)doc.get(show.getId())).containsKey(seasonString)) { // Season exists
-                                                        if (!(((HashMap)((HashMap)doc.get(show.getId())).get(seasonString)).containsKey(episodeString))) { // Episode doesn't exist
-                                                            HashMap currentEps = ((HashMap)((HashMap)doc.get(show.getId())).get(seasonString));
-                                                            currentEps.put(episodeString, trackedEpisode.get(episodeString));
-                                                            ref.update(show.getId() + "." + seasonString, currentEps);
-                                                            progressBar.setVisibility(View.GONE);
+                                                    genreList = show.getGenres();
+                                                    Map<String, String> genres = new HashMap<>();
+                                                    for (FullTvShowDetails.Genre g : (ArrayList<FullTvShowDetails.Genre>)genreList) {
+                                                        genres.put(String.valueOf(g.id), g.name);
+                                                    }
+                                                    trackData.put("genres", genres);
+                                                    trackData.put("id", episode.getId());
+                                                    trackData.put("seriesName", show.getName());
+
+                                                    String episodeString = "Episode " + episode.getEpisode_number();
+                                                    trackedEpisode.put(episodeString, trackData);
+                                                    String seasonString = "Season " + episode.getSeason_number();
+                                                    trackedSeason.put(seasonString, trackedEpisode);
+                                                    trackedSeason.put("name", show.getName());
+                                                    trackedSeason.put("poster_path", show.getPoster_path());
+                                                    Date date = new Date();
+                                                    trackedSeason.put("lastWatched", date);
+                                                    trackedTV.put(show.getId(), trackedSeason);
+
+                                                    Globals.trackedTV tv = null;
+                                                    if (Globals.trackedTVContains(show.getId())) {
+                                                        for (Globals.trackedTV t : Globals.getTrackedTvShows()) {
+                                                            if (t.id.equals(show.getId())) {
+                                                                tv = t;
+                                                            }
                                                         }
                                                     } else {
-                                                        HashMap currentSeasons = ((HashMap)doc.get(show.getId()));
-                                                        currentSeasons.put(seasonString, trackedSeason.get(seasonString));
-                                                        ref.update(show.getId(), currentSeasons);
-                                                        progressBar.setVisibility(View.GONE);
+                                                        tv = new Globals.trackedTV();
                                                     }
-                                                } else {
-                                                    ref.update(trackedTV);
-                                                    progressBar.setVisibility(View.GONE);
+                                                    tv.date = date;
+                                                    tv.id = show.getId();
+                                                    tv.name = show.getName();
+                                                    tv.poster_path = show.getPoster_path();
+
+                                                    Globals.trackedTV.Episode e = new Globals.trackedTV.Episode();
+                                                    e.date = date;
+                                                    e.episodeName = episode.getName();
+                                                    e.id = episode.getId();
+                                                    e.seriesName = show.getName();
+                                                    e.episodeNum = episode.getEpisode_number();
+                                                    SparseArray<String> trackedGenres = new SparseArray<>();
+                                                    for (FullTvShowDetails.Genre g : (ArrayList<FullTvShowDetails.Genre>)genreList) {
+                                                        trackedGenres.put(g.id, g.name);
+                                                    }
+                                                    e.genres = trackedGenres;
+                                                    tv.addEpisode(e);
+
+
+                                                    if (!doc.exists()) {
+                                                        ref.set(trackedTV);
+                                                    } else {
+                                                        if (doc.contains(show.getId())) { // Show exists
+                                                            if (((HashMap)doc.get(show.getId())).containsKey(seasonString)) { // Season exists
+                                                                if (!(((HashMap)((HashMap)doc.get(show.getId())).get(seasonString)).containsKey(episodeString))) { // Episode doesn't exist
+                                                                    HashMap currentEps = ((HashMap)((HashMap)doc.get(show.getId())).get(seasonString));
+                                                                    currentEps.put(episodeString, trackedEpisode.get(episodeString));
+                                                                    ref.update(show.getId() + "." + seasonString, currentEps);
+                                                                }
+                                                            } else {
+                                                                HashMap currentSeasons = ((HashMap)doc.get(show.getId()));
+                                                                currentSeasons.put(seasonString, trackedSeason.get(seasonString));
+                                                                ref.update(show.getId(), currentSeasons);
+                                                            }
+                                                        } else {
+                                                            ref.update(trackedTV);
+                                                        }
+                                                    }
+                                                    mActivity.runOnUiThread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            progressBar.setVisibility(View.GONE);
+                                                        }
+                                                    });
                                                 }
-                                            }
+                                            });
                                         }
                                     });
                                 }
-                            });
+                            }).start();
+
                         }
                     }
                 });
@@ -268,82 +319,125 @@ public class MediaTracking {
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         if (task.isSuccessful()) {
                             final DocumentSnapshot doc = task.getResult();
-                            TmdbClient.getTvSeasonDetails(seriesId, seasonNum, null, new JsonHttpResponseHandler() {
-                                @Override
-                                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                                    final FullTvSeasonDetails season = new Gson().fromJson(response.toString(), FullTvSeasonDetails.class);
-                                    if (season == null)
-                                        return;
 
-                                    TmdbClient.getFullTvShowDetails(seriesId, null, new JsonHttpResponseHandler() {
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    final SyncHttpClient client = new SyncHttpClient();
+                                    String url = "https://api.themoviedb.org/3/" + "tv/"+ seriesId + "/season/" + seasonNum + "?api_key=" + TmdbClient.key;
+                                    client.get(url, null, new JsonHttpResponseHandler() {
                                         @Override
                                         public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                                            final FullTvShowDetails show = new Gson().fromJson(response.toString(), FullTvShowDetails.class);
-                                            if (show == null)
+                                            final FullTvSeasonDetails season = new Gson().fromJson(response.toString(), FullTvSeasonDetails.class);
+                                            if (season == null)
                                                 return;
 
-                                            ArrayList<FullTvSeasonDetails.Episode> episodes = season.getEpisodes();
-                                            final Map<String, Object> trackedTV = new HashMap<>();
-                                            final Map<String, Object> trackedSeason = new HashMap<>();
-                                            final Map<String, Object> trackedEpisode = new HashMap<>();
+                                            String url = "https://api.themoviedb.org/3/" + "tv/" + seriesId + "?api_key=" + TmdbClient.key;
+                                            client.get(url, null, new JsonHttpResponseHandler() {
+                                                @Override
+                                                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                                                    final FullTvShowDetails show = new Gson().fromJson(response.toString(), FullTvShowDetails.class);
+                                                    if (show == null)
+                                                        return;
 
-                                            for (final FullTvSeasonDetails.Episode e : episodes) {
-                                                final Map<String, Object> trackData = new HashMap<>();
+                                                    ArrayList<FullTvSeasonDetails.Episode> episodes = season.getEpisodes();
+                                                    final Map<String, Object> trackedTV = new HashMap<>();
+                                                    final Map<String, Object> trackedSeason = new HashMap<>();
+                                                    final Map<String, Object> trackedEpisode = new HashMap<>();
 
-                                                trackData.put("date", new Date());
-                                                trackData.put("episodeName", e.getName());
-                                                trackData.put("episodeNum", e.getEpisode_number());
+                                                    Date date = new Date();
 
-                                                genreList = show.getGenres();
-                                                Map<String, String> genres = new HashMap<>();
-                                                for (FullTvShowDetails.Genre g : (ArrayList<FullTvShowDetails.Genre>)genreList) {
-                                                    genres.put(String.valueOf(g.id), g.name);
-                                                }
-                                                trackData.put("genres", genres);
-                                                trackData.put("id", e.getId());
-                                                trackData.put("seriesName", show.getName());
-
-                                                String episodeString = "Episode " + e.getEpisode_number();
-                                                trackedEpisode.put(episodeString, trackData);
-                                            }
-                                            String seasonString = "Season " + seasonNum;
-                                            trackedSeason.put(seasonString, trackedEpisode);
-                                            trackedSeason.put("name", show.getName());
-                                            trackedSeason.put("poster_path", show.getPoster_path());
-                                            trackedTV.put(show.getId(), trackedSeason);
-
-                                            if (!doc.exists()) {
-                                                ref.set(trackedTV);
-                                                progressBar.setVisibility(View.GONE);
-                                            }
-                                            else {
-                                                if (doc.contains(show.getId())) { // Show exists
-                                                    if (!(((HashMap)doc.get(show.getId())).containsKey(seasonString))) { // Season doesn't exist
-                                                        HashMap<String, Object> currentSeasons = ((HashMap<String, Object>)doc.get(show.getId()));
-                                                        currentSeasons.put(seasonString, trackedSeason.get(seasonString));
-                                                        ref.update(show.getId(), currentSeasons);
-                                                        progressBar.setVisibility(View.GONE);
-                                                    } else { //Season exists
-                                                        HashMap<String, Object> currentSeasons = ((HashMap<String, Object>)doc.get(show.getId()));
-                                                        HashMap<String, Object> currentSeason = (HashMap<String, Object>)currentSeasons.get(seasonString);
-                                                        for (Map.Entry<String, Object> entry : trackedEpisode.entrySet()) {
-                                                            if (!currentSeason.containsKey(entry.getKey())) {
-                                                                currentSeason.put(entry.getKey(), entry.getValue());
+                                                    Globals.trackedTV tv = null;
+                                                    if (Globals.trackedTVContains(show.getId())) {
+                                                        for (Globals.trackedTV t : Globals.getTrackedTvShows()) {
+                                                            if (t.id.equals(show.getId())) {
+                                                                tv = t;
                                                             }
                                                         }
-                                                        currentSeasons.put(seasonString, currentSeason);
-                                                        ref.update(show.getId(), currentSeasons);
-                                                        progressBar.setVisibility(View.GONE);
+                                                    } else {
+                                                        tv = new Globals.trackedTV();
                                                     }
-                                                } else {
-                                                    ref.update(trackedTV);
-                                                    progressBar.setVisibility(View.GONE);
+                                                    tv.date = date;
+                                                    tv.id = show.getId();
+                                                    tv.name = show.getName();
+                                                    tv.poster_path = show.getPoster_path();
+
+                                                    for (final FullTvSeasonDetails.Episode e : episodes) {
+                                                        final Map<String, Object> trackData = new HashMap<>();
+
+                                                        trackData.put("date", date);
+                                                        trackData.put("episodeName", e.getName());
+                                                        trackData.put("episodeNum", e.getEpisode_number());
+
+                                                        genreList = show.getGenres();
+                                                        Map<String, String> genres = new HashMap<>();
+                                                        for (FullTvShowDetails.Genre g : (ArrayList<FullTvShowDetails.Genre>)genreList) {
+                                                            genres.put(String.valueOf(g.id), g.name);
+                                                        }
+                                                        trackData.put("genres", genres);
+                                                        trackData.put("id", e.getId());
+                                                        trackData.put("seriesName", show.getName());
+
+                                                        String episodeString = "Episode " + e.getEpisode_number();
+                                                        trackedEpisode.put(episodeString, trackData);
+
+                                                        Globals.trackedTV.Episode ep = new Globals.trackedTV.Episode();
+                                                        ep.date = date;
+                                                        ep.episodeName = e.getName();
+                                                        ep.id = e.getId();
+                                                        ep.seriesName = show.getName();
+                                                        ep.episodeNum = e.getEpisode_number();
+                                                        SparseArray<String> trackedGenres = new SparseArray<>();
+                                                        for (FullTvShowDetails.Genre g : (ArrayList<FullTvShowDetails.Genre>)genreList) {
+                                                            trackedGenres.put(g.id, g.name);
+                                                        }
+                                                        ep.genres = trackedGenres;
+                                                        tv.addEpisode(ep);
+                                                    }
+
+                                                    String seasonString = "Season " + seasonNum;
+                                                    trackedSeason.put(seasonString, trackedEpisode);
+                                                    trackedSeason.put("name", show.getName());
+                                                    trackedSeason.put("poster_path", show.getPoster_path());
+                                                    trackedSeason.put("lastWatched", date);
+                                                    trackedTV.put(show.getId(), trackedSeason);
+
+                                                    if (!doc.exists()) {
+                                                        ref.set(trackedTV);
+                                                    } else {
+                                                        if (doc.contains(show.getId())) { // Show exists
+                                                            if (!(((HashMap)doc.get(show.getId())).containsKey(seasonString))) { // Season doesn't exist
+                                                                HashMap<String, Object> currentSeasons = ((HashMap<String, Object>)doc.get(show.getId()));
+                                                                currentSeasons.put(seasonString, trackedSeason.get(seasonString));
+                                                                ref.update(show.getId(), currentSeasons);
+                                                            } else { //Season exists
+                                                                HashMap<String, Object> currentSeasons = ((HashMap<String, Object>)doc.get(show.getId()));
+                                                                HashMap<String, Object> currentSeason = (HashMap<String, Object>)currentSeasons.get(seasonString);
+                                                                for (Map.Entry<String, Object> entry : trackedEpisode.entrySet()) {
+                                                                    if (!currentSeason.containsKey(entry.getKey())) {
+                                                                        currentSeason.put(entry.getKey(), entry.getValue());
+                                                                    }
+                                                                }
+                                                                currentSeasons.put(seasonString, currentSeason);
+                                                                ref.update(show.getId(), currentSeasons);
+                                                            }
+                                                        } else {
+                                                            ref.update(trackedTV);
+                                                        }
+                                                    }
+                                                    mActivity.runOnUiThread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            progressBar.setVisibility(View.GONE);
+                                                        }
+                                                    });
                                                 }
-                                            }
+                                            });
                                         }
                                     });
                                 }
-                            });
+                            }).start();
+
                         }
                     }
                 });
@@ -401,16 +495,11 @@ public class MediaTracking {
                                             }
                                             trackedSeasons.put("name", show.getName());
                                             trackedSeasons.put("poster_path", show.getPoster_path());
+                                            trackedSeasons.put("lastWatched", new Date());
                                             trackedTV.put(show.getId(), trackedSeasons);
 
                                             if (!doc.exists()) {
                                                 ref.set(trackedTV);
-                                                mActivity.runOnUiThread(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        progressBar.setVisibility(View.GONE);
-                                                    }
-                                                });
                                             } else {
                                                 if (doc.contains(show.getId())) { // Show exists
                                                     HashMap currentStoredSeasons = ((HashMap)doc.get(show.getId()));
@@ -435,22 +524,16 @@ public class MediaTracking {
                                                         }
                                                     }
                                                     ref.update(show.getId(), currentStoredSeasons);
-                                                    mActivity.runOnUiThread(new Runnable() {
-                                                        @Override
-                                                        public void run() {
-                                                            progressBar.setVisibility(View.GONE);
-                                                        }
-                                                    });
                                                 } else {
                                                     ref.update(show.getId(), trackedTV.get(show.getId()));
-                                                    mActivity.runOnUiThread(new Runnable() {
-                                                        @Override
-                                                        public void run() {
-                                                            progressBar.setVisibility(View.GONE);
-                                                        }
-                                                    });
                                                 }
                                             }
+                                            mActivity.runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    progressBar.setVisibility(View.GONE);
+                                                }
+                                            });
                                         }
                                     });
                                     flagCheck.start();
@@ -496,12 +579,29 @@ public class MediaTracking {
                 final Map<String, Object> trackedEpisode = new HashMap<>();
 
                 ArrayList<FullTvSeasonDetails.Episode> episodes = season.getEpisodes();
+
+                Date date = new Date();
+
+                Globals.trackedTV tv = null;
+                if (Globals.trackedTVContains(show.getId())) {
+                    for (Globals.trackedTV t : Globals.getTrackedTvShows()) {
+                        if (t.id.equals(show.getId())) {
+                            tv = t;
+                        }
+                    }
+                } else {
+                    tv = new Globals.trackedTV();
+                }
+                tv.date = date;
+                tv.id = show.getId();
+                tv.name = show.getName();
+                tv.poster_path = show.getPoster_path();
+
                 for (final FullTvSeasonDetails.Episode e : episodes) {
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                    Date currentDate = new Date();
                     try {
                         Date episodeDate = sdf.parse(e.getAir_date());
-                        if (episodeDate.after(currentDate)) {
+                        if (episodeDate.after(date)) {
                             flags.put(s, true);
                             break;
                         }
@@ -510,7 +610,7 @@ public class MediaTracking {
                     }
 
                     final Map<String, Object> trackData = new HashMap<>();
-                    trackData.put("date", new Date());
+                    trackData.put("date", date);
                     trackData.put("episodeName", e.getName());
                     trackData.put("episodeNum", e.getEpisode_number());
 
@@ -525,6 +625,19 @@ public class MediaTracking {
 
                     String episodeString = "Episode " + e.getEpisode_number();
                     trackedEpisode.put(episodeString, trackData);
+
+                    Globals.trackedTV.Episode ep = new Globals.trackedTV.Episode();
+                    ep.date = date;
+                    ep.episodeName = e.getName();
+                    ep.id = e.getId();
+                    ep.seriesName = show.getName();
+                    ep.episodeNum = e.getEpisode_number();
+                    SparseArray<String> trackedGenres = new SparseArray<>();
+                    for (FullTvShowDetails.Genre g : (ArrayList<FullTvShowDetails.Genre>)genreList) {
+                        trackedGenres.put(g.id, g.name);
+                    }
+                    ep.genres = trackedGenres;
+                    tv.addEpisode(ep);
                 }
 
                 String seasonString = "Season " + s.season_number;

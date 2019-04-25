@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,82 +27,82 @@ public class Globals
     private static SearchType lastSearchType = SearchType.Movie;
 
     //Genres getter and setter
-    public static SparseArray<String> getMovieGenreTags() {
+    static SparseArray<String> getMovieGenreTags() {
         return movieGenreTags;
     }
-    public static synchronized void setMovieGenreTags(SparseArray<String> genres) {
+    static synchronized void setMovieGenreTags(SparseArray<String> genres) {
         movieGenreTags = genres;
     }
-    public static SparseArray<String> getTvGenreTags() {
+    static SparseArray<String> getTvGenreTags() {
         return tvGenreTags;
     }
-    public static synchronized void setTvGenreTags(SparseArray<String> genres) {
+    static synchronized void setTvGenreTags(SparseArray<String> genres) {
         tvGenreTags = genres;
     }
 
 
-    //Tracked movies configurators
-    public static List<trackedMovie> getTrackedMovies() {
+    //Tracked media getters
+    static List<trackedMovie> getTrackedMovies() {
         return trackedMovies;
     }
 
-    public static List<trackedTV> getTrackedTvShows() {
+    static List<trackedTV> getTrackedTvShows() {
         return trackedTV;
     }
 
 
     //----------- Setters ------------
-    public static synchronized void setTrackedMovies(List<trackedMovie> trackedMovies) {
+    static synchronized void setTrackedMovies(List<trackedMovie> trackedMovies) {
         Globals.trackedMovies = trackedMovies;
     }
-    public static synchronized void setTrackedTvShows(List<trackedTV> trackedTvShows) {
+    static synchronized void setTrackedTvShows(List<trackedTV> trackedTvShows) {
         Globals.trackedTV = trackedTvShows;
     }
-    public static synchronized void setLastSearchType(SearchType searchType) {
+    static synchronized void setLastSearchType(SearchType searchType) {
         Globals.lastSearchType = searchType;
     }
-    public static void setTrendingMovies(List<trendingMovie> trendingMovies)
+    static void setTrendingMovies(List<trendingMovie> trendingMovies)
     {
         Globals.trendingMovies = trendingMovies;
     }
-    public static void setTrendingTvShows(List<trendingTvShow> trendingTvShows)
+    static void setTrendingTvShows(List<trendingTvShow> trendingTvShows)
     {
         Globals.trendingTvShows = trendingTvShows;
     }
 
     //----------- Getters ------------
-    public static SearchType getLastSearchType() {
+    static SearchType getLastSearchType() {
         return lastSearchType;
     }
-    public static List<trendingMovie> getTrendingMovies()
+    static List<trendingMovie> getTrendingMovies()
     {
         return trendingMovies;
     }
-    public static List<trendingTvShow> getTrendingTvShows()
+    static List<trendingTvShow> getTrendingTvShows()
     {
         return trendingTvShows;
     }
 
 
     //----------- Adding ------------
-    public static synchronized void addToTrackedMovies(trackedMovie movie) {
+    static synchronized void addToTrackedMovies(trackedMovie movie) {
         if (!trackedMoviesContains(movie.id))
             Globals.trackedMovies.add(movie);
     }
-    public static synchronized void addToTrackedTvShows(trackedTV TV) {
+    static synchronized void addToTrackedTvShows(trackedTV TV) {
         if (!trackedTVContains(TV.id))
             Globals.trackedTV.add(TV);
     }
-    public static void addToTrendingMovies(trendingMovie movie) {
+    static void addToTrendingMovies(trendingMovie movie) {
         Globals.trendingMovies.add(movie);
     }
-    public static void addToTrendingTvShows(trendingTvShow tvshow) {
+    static void addToTrendingTvShows(trendingTvShow tvshow) {
         Globals.trendingTvShows.add(tvshow);
     }
 
 
     //----------- Removing ------------
-    public static synchronized void removeFromTrackedMovies(String id) {
+    static synchronized void removeFromTrackedMovies(String id) {
         for (int i = 0; i < Globals.trackedMovies.size(); i++) {
             if (Globals.trackedMovies.get(i).id.equals(id)) {
                 Globals.trackedMovies.remove(i);
@@ -109,7 +110,7 @@ public class Globals
             }
         }
     }
-    public static synchronized void removeFromTrackedTvShows(String id) {
+    static synchronized void removeFromTrackedTvShows(String id) {
         for (int i = 0; i < Globals.trackedTV.size(); i++) {
             if (Globals.trackedTV.get(i).id.equals(id)) {
                 Globals.trackedTV.remove(i);
@@ -120,16 +121,16 @@ public class Globals
 
 
     //----------- Contains ------------
-    public static boolean trackedMoviesContains(String id) {
+    static boolean trackedMoviesContains(String id) {
         for (trackedMovie m : Globals.trackedMovies) {
             if(m.id.equals(id))
                 return true;
         }
         return false;
     }
-    public static boolean trackedTVContains(String id) {
-        for (trackedTV m : Globals.trackedTV) {
-            if(m.id.equals(id))
+    static boolean trackedTVContains(String id) {
+        for (trackedTV tv : Globals.trackedTV) {
+            if(tv.id.equals(id))
                 return true;
         }
         return false;
@@ -137,7 +138,7 @@ public class Globals
 
 
     //----------- Sorting ------------
-    public static synchronized void sortTrackedMovies() {
+    static synchronized void sortTrackedMovies() {
         if (Globals.trackedMovies.size() > 0) {
             Collections.sort(Globals.trackedMovies, new Comparator<trackedMovie>() {
                 @Override
@@ -147,7 +148,7 @@ public class Globals
             });
         }
     }
-    public static synchronized void sortTrackedTvShows() {
+    static synchronized void sortTrackedTvShows() {
         if (Globals.trackedTV.size() > 0) {
             Collections.sort(Globals.trackedTV, new Comparator<trackedTV>() {
                 @Override
@@ -160,7 +161,7 @@ public class Globals
 
 
     //-------Tracked Movies--------
-    public static class trackedMovie implements Comparable<trackedMovie> {
+    static class trackedMovie implements Comparable<trackedMovie> {
         String id, name;
         Date date;
         String poster_path;
@@ -173,28 +174,53 @@ public class Globals
     }
 
     //-------Tracked TV Shows--------
-    public static class trackedTV implements Comparable<trackedTV>
-    {
-        String id;
-        Date date;
+    static class trackedTV {
+        String id, name;
         String poster_path;
+        Date date;
+        Map<String, ArrayList<Episode>> seasons = new HashMap<>();
 
-        @Override
-        public int compareTo(@NonNull trackedTV o) {
-            return o.date.compareTo(date);
+        private Map<String, ArrayList<Episode>> getSeasons() {
+            return seasons;
+        }
+
+        static class Episode implements Comparable<Episode> {
+            Date date;
+            String episodeName, id, seriesName;
+            int episodeNum, seasonNum;
+            SparseArray<String> genres = new SparseArray<>();
+
+            @Override
+            public int compareTo(@NonNull Episode episode) {
+                return Integer.compare(episode.episodeNum, episodeNum);
+            }
+        }
+
+        void addEpisode(Episode episode) {
+            String seasonString = "Season " + episode.seasonNum;
+            if (seasons.containsKey(seasonString)) { //Season exists
+                if (!seasons.get(seasonString).contains(episode)) { //Episode doesn't exist
+                    seasons.get(seasonString).add(episode);
+                }
+            } else {
+                ArrayList<Episode> season = new ArrayList<>();
+                season.add(episode);
+                seasons.put(seasonString, season);
+                Globals.addToTrackedTvShows(this);
+            }
         }
     }
 
 
     //-------Trending Movie--------
-    public static class trendingMovie {
+    static class trendingMovie {
         String id;
         String poster_path;
         Float vote_average;
     }
 
     //-------Trending TvShow--------
-    public static class trendingTvShow
+    static class trendingTvShow
     {
         String id;
         String poster_path;
@@ -202,7 +228,7 @@ public class Globals
     }
 
     //-------Last Search Type--------
-    public static enum SearchType {
+    static enum SearchType {
         Movie,
         TV
     }
