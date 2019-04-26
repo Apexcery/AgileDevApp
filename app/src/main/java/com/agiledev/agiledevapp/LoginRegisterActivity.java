@@ -41,7 +41,7 @@ public class LoginRegisterActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
+//k/kk
         sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         editor = sharedPref.edit();
 
@@ -78,9 +78,11 @@ public class LoginRegisterActivity extends AppCompatActivity {
     }
 
     protected void goToMain() {
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
-        finishAffinity();
+        if(SettingsFragment.stayLoggedIn) {
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+            finishAffinity();
+        }
     }
 
     public static synchronized void populateUsers(FirebaseFirestore db) {

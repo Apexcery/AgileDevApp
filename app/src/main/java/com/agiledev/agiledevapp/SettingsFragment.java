@@ -33,7 +33,7 @@ public class SettingsFragment extends PreferenceFragmentCompat
 
     String currentUserName;
     Map<String, String[]> currentUserDetails = new HashMap<String, String[]>();
-
+    public static boolean stayLoggedIn = true;
 
     @Override
     public void onCreatePreferences(Bundle bundle, String s)
@@ -100,7 +100,6 @@ public class SettingsFragment extends PreferenceFragmentCompat
         final CheckBoxPreference checkboxPref2 = (CheckBoxPreference) getPreferenceManager().findPreference("key_checkbox_newEpisode");
         final CheckBoxPreference checkboxPref3 = (CheckBoxPreference) getPreferenceManager().findPreference("key_checkbox_trailerN");
 
-
         checkboxPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object newValue)
             {
@@ -109,15 +108,22 @@ public class SettingsFragment extends PreferenceFragmentCompat
                     editor.remove(getString(R.string.prefs_loggedin_username));
                     editor.putBoolean(getString(R.string.prefs_loggedin_boolean), false).apply();
                     editor.apply();
+                    stayLoggedIn = false;
                 } else {
                     editor.putString("loggedInUsername", currentUserName);
                     editor.putBoolean(getString(R.string.prefs_loggedin_boolean), true).apply();
                     editor.apply();
+                    stayLoggedIn = true;
                 }
 
                 return true;
             }
         });
+
+
+
+
+
     }
 
     public  void changeUserDetails(FirebaseFirestore db,  int changeIt, String username, final String newValue)
