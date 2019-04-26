@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.support.v7.widget.Toolbar;
+import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -40,7 +41,7 @@ public class FullCastDialog extends DialogFragment {
     ArrayList<MovieCredits.Cast> castList;
 
 
-    public static enum mediatype{
+    public static enum mediatype {
         MOVIE,
         TV
     }
@@ -62,10 +63,9 @@ public class FullCastDialog extends DialogFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState){
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.full_cast_dialog, container, false);
-
 
         recyclerView = view.findViewById(R.id.full_cast_recycler_view);
         toolbar = view.findViewById(R.id.full_castDialogTool_Bar);
@@ -76,6 +76,7 @@ public class FullCastDialog extends DialogFragment {
                 dismiss();
             }
         });
+        ((TextView)view.findViewById(R.id.castName)).setText("Cast");
 
         getFullCast(view);
         return view;
@@ -93,34 +94,30 @@ public class FullCastDialog extends DialogFragment {
     }
 
     protected synchronized void getFullCast(View view){
-        if (mediaT == mediatype.MOVIE)
-        {
+        if (mediaT == mediatype.MOVIE) {
             TmdbClient.getMovieCast(id, null, new JsonHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-
                     credits = new Gson().fromJson(response.toString(), MovieCredits.class);
                     if (credits == null)
                         return;
-                    addCastToLayout(credits.getCast(), ((FragmentActivity) getActivity()).getSupportFragmentManager());
+                    if (FullCastDialog.this.isAdded())
+                        addCastToLayout(credits.getCast(), ((FragmentActivity) getActivity()).getSupportFragmentManager());
                 }
             });
         }
-        else if (mediaT == mediatype.TV)
-        {
+        else if (mediaT == mediatype.TV) {
             TmdbClient.getTvCast(id, null, new JsonHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-
                     credits = new Gson().fromJson(response.toString(), MovieCredits.class);
                     if (credits == null)
                         return;
-                    addCastToLayout(credits.getCast(), ((FragmentActivity) getActivity()).getSupportFragmentManager());
+                    if (FullCastDialog.this.isAdded())
+                        addCastToLayout(credits.getCast(), ((FragmentActivity) getActivity()).getSupportFragmentManager());
                 }
             });
         }
-
-
     }
 
     public void addCastToLayout(ArrayList<MovieCredits.Cast> castList, FragmentManager fragmentManager) {
@@ -130,5 +127,4 @@ public class FullCastDialog extends DialogFragment {
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayout.VERTICAL, false));
     }
-
 }

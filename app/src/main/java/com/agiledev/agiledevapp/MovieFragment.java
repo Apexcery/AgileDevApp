@@ -8,7 +8,6 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.Build;
 import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.content.Context;
@@ -29,6 +28,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -49,6 +51,7 @@ import java.util.Random;
 import cz.msebera.android.httpclient.Header;
 
 import static com.agiledev.agiledevapp.MainActivity.PERMS_LOCATION;
+import static com.agiledev.agiledevapp.MainActivity.locationBool;
 import static java.lang.Math.min;
 
 public class MovieFragment extends Fragment implements MainActivity.PermissionCallback {
@@ -58,7 +61,6 @@ public class MovieFragment extends Fragment implements MainActivity.PermissionCa
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
     private FusedLocationProviderClient fusedLocationClient;
-    public static Boolean locationBool = null;
     String countryCode = "";
 
     @Nullable
@@ -173,18 +175,14 @@ public class MovieFragment extends Fragment implements MainActivity.PermissionCa
         }
 
         if (locationBool != null && !locationBool) {
-            getCountryCodeFromLocale();
+            countryCode = getCountryCodeFromLocale();
             populateRecommendedInArea();
-        }
-        else if (locationBool != null && locationBool) {
+        } else if (locationBool != null && locationBool) {
             getCountryCodeFromGPS();
         }
     }
 
     public void populateRecommendedInArea() {
-        //TODO: Actual populate stuff with code goes here.
-        Toast.makeText(getActivity(), countryCode, Toast.LENGTH_LONG).show();//TODO: Remove this after logic is implemented.
-
         TmdbClient.getPopularMoviesInRegion(countryCode, null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
@@ -210,7 +208,7 @@ public class MovieFragment extends Fragment implements MainActivity.PermissionCa
                     }
                 }
                 bmd = new ArrayList<>(bmd.subList(0, min(bmd.size(), 9)));
-                RecyclerView recyclerView = view.findViewById(R.id.RegionRecommendedRecycler);
+                RecyclerView recyclerView = view.findViewById(R.id.moviesRegionRecommendedRecycler);
 
                 RecentMoviesAdapter adapter = new RecentMoviesAdapter(getActivity(), bmd, getActivity().getSupportFragmentManager());
 
@@ -219,12 +217,9 @@ public class MovieFragment extends Fragment implements MainActivity.PermissionCa
                 RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getActivity(), 3);
                 recyclerView.setLayoutManager(mLayoutManager);
                 recyclerView.setItemAnimator(new DefaultItemAnimator());
-
-                view.findViewById(R.id.movieFragmentSpinner).setVisibility(View.GONE);
                 recyclerView.setVisibility(View.VISIBLE);
-        }
-
-    });
+            }
+        });
     }
 
     @Override
@@ -243,8 +238,8 @@ public class MovieFragment extends Fragment implements MainActivity.PermissionCa
         fusedLocationClient.getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
+                final Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
                 if (location != null) {
-                    Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
                     try {
                         List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
                         Address obj = addresses.get(0);
@@ -252,8 +247,31 @@ public class MovieFragment extends Fragment implements MainActivity.PermissionCa
                         populateRecommendedInArea();
                     } catch (IOException e) {
                         e.printStackTrace();
-                        Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
+                } else {
+                    LocationRequest locationRequest = LocationRequest.create();
+                    locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+                    locationRequest.setInterval(20 * 1000);
+                    final LocationCallback locationCallback = new LocationCallback() {
+                        @Override
+                        public void onLocationResult(LocationResult locationResult) {
+                            if (locationResult == null) {
+                                countryCode = getCountryCodeFromLocale();
+                                populateRecommendedInArea();
+                                return;
+                            }
+                            try {
+                                List<Address> addresses = geocoder.getFromLocation(locationResult.getLocations().get(0).getLatitude(), locationResult.getLocations().get(0).getLongitude(), 1);
+                                Address obj = addresses.get(0);
+                                countryCode = obj.getCountryCode();
+                                populateRecommendedInArea();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    };
+                    fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null);
+                    fusedLocationClient.removeLocationUpdates(locationCallback);
                 }
             }
         }).addOnFailureListener(getActivity(), new OnFailureListener() {
@@ -265,6 +283,7 @@ public class MovieFragment extends Fragment implements MainActivity.PermissionCa
     }
 
     private String getCountryCodeFromLocale() {
+        Toast.makeText(getContext(), "Locale", Toast.LENGTH_LONG).show();
         return Locale.getDefault().getCountry();
     }
 }

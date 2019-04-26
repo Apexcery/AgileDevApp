@@ -31,7 +31,6 @@ import android.widget.Toast;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import static android.view.Gravity.CENTER_VERTICAL;
-import static com.agiledev.agiledevapp.MovieFragment.locationBool;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -43,6 +42,7 @@ public class MainActivity extends AppCompatActivity
     SharedPreferences.Editor editor;
 
     public static final int PERMS_LOCATION = 1;
+    public static Boolean locationBool;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     //Granted
                     Toast.makeText(this,"Location Permission Granted", Toast.LENGTH_LONG).show();
-                    locationBool = false;
+                    locationBool = true;
 
                     if (callback != null) {
                         callback.onPermissionGranted();
@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity
                 } else {
                     //Denied
                     Toast.makeText(this,"Location Permission Denied", Toast.LENGTH_LONG).show();
-                    locationBool = true;
+                    locationBool = false;
 
                     if (callback != null) {
                         callback.onPermissionDenied();

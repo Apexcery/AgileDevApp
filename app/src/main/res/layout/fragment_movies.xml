@@ -94,19 +94,19 @@
                         android:padding="5dp"
                         android:orientation="vertical">
                         <TextView
-                            android:id="@+id/RegionRecommendedTitle"
+                            android:id="@+id/moviesRegionRecommendedTitle"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:textColor="@color/colorAccent"
                             android:textSize="16sp"
-                            android:text="Recommended in your region"/>
+                            android:text="@string/popular_in_your_region"/>
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
                             android:background="@android:color/darker_gray"
                             android:layout_marginBottom="2dp"/>
                         <android.support.v7.widget.RecyclerView
-                            android:id="@+id/RegionRecommendedRecycler"
+                            android:id="@+id/moviesRegionRecommendedRecycler"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:nestedScrollingEnabled="false"

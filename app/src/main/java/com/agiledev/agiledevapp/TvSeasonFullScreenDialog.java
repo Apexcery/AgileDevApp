@@ -134,21 +134,24 @@ public class TvSeasonFullScreenDialog extends DialogFragment {
                         tvSeasonName.setText(tvSeasonDetails.getName() + " | " + tvShow.getName());
 
                         Uri uri = Uri.parse("https://image.tmdb.org/t/p/w1280" + tvShow.getBackdrop_path());
-                        Glide.with(getContext()).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
-                            @Override
-                            public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
-                                return false;
-                            }
-                            @Override
-                            public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                                backdropImage.setVisibility(View.VISIBLE);
+                        if (TvSeasonFullScreenDialog.this.isAdded()) {
+                            Glide.with(getContext()).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
+                                @Override
+                                public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
+                                    return false;
+                                }
 
-                                view.findViewById(R.id.tvseason_spinner).setVisibility(View.GONE);
-                                view.findViewById(R.id.tvseason_content).setVisibility(View.VISIBLE);
-                                fab.setVisibility(View.VISIBLE);
-                                return false;
-                            }
-                        }).into(backdropImage);
+                                @Override
+                                public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                                    backdropImage.setVisibility(View.VISIBLE);
+
+                                    view.findViewById(R.id.tvseason_spinner).setVisibility(View.GONE);
+                                    view.findViewById(R.id.tvseason_content).setVisibility(View.VISIBLE);
+                                    fab.setVisibility(View.VISIBLE);
+                                    return false;
+                                }
+                            }).into(backdropImage);
+                        }
                     }
                 });
 

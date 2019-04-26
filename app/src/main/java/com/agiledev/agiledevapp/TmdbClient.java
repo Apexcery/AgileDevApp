@@ -132,6 +132,11 @@ class TmdbClient {
         client.get(url, params, responseHandler);
     }
 
+    static void getPopularTvInRegion(String region, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+        String url = getAbsoluteUrl("tv/popular?api_key=" + key + "&region=" + region);
+        client.get(url, params, responseHandler);
+    }
+
     /**
      * @param relativeUrl The specific part of the url after the BASE_URL that you want to request from.
      * @return The BASE_URL concatenated with the relative url that was passed as a parameter.
