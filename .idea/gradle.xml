@@ -3,12 +3,15 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
+        <compositeConfiguration>
+          <compositeBuild compositeDefinitionSource="SCRIPT" />
+        </compositeConfiguration>
         <option name="distributionType" value="DEFAULT_WRAPPED" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
-            <option value="/home/scm-studs/t7097354/AndroidStudioProjects/AgileDevApp" />
-            <option value="/home/scm-studs/t7097354/AndroidStudioProjects/AgileDevApp/app" />
+            <option value="/home/scm-studs/t7037453/AndroidStudioProjects/AgileDevApp" />
+            <option value="/home/scm-studs/t7037453/AndroidStudioProjects/AgileDevApp/app" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
