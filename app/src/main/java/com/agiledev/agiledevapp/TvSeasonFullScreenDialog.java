@@ -37,21 +37,24 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import cz.msebera.android.httpclient.Header;
+import me.zhanghai.android.materialprogressbar.MaterialProgressBar;
 
 public class TvSeasonFullScreenDialog extends DialogFragment {
     public static String TAG = "TvSeasonFullScreenDialog";
-    public static String seriesId, seasonNum;
+    public static String seriesId;
+    public static int seasonNum;
     public FullTvSeasonDetails tvSeasonDetails;
     public Toolbar toolbar;
     RecyclerView episodeRecycler;
     FloatingActionButton fab;
+    MaterialProgressBar progressBar;
 
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    public static TvSeasonFullScreenDialog newInstance(String id, String num) {
+    public static TvSeasonFullScreenDialog newInstance(String id, int num) {
         TvSeasonFullScreenDialog fragment = new TvSeasonFullScreenDialog();
         seriesId = id;
         seasonNum = num;
@@ -83,11 +86,13 @@ public class TvSeasonFullScreenDialog extends DialogFragment {
 
         episodeRecycler = view.findViewById(R.id.tvseason_episodes);
 
+        progressBar = view.findViewById(R.id.tvseasonTrackingProgress);
+
         fab = view.findViewById(R.id.fabTrackTVSeason);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //TODO: Implement tracking entire season.
+                MediaTracking.trackTV(getContext(), getActivity(), "season", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), seriesId, seasonNum, null, progressBar).show();
             }
         });
 
@@ -129,21 +134,24 @@ public class TvSeasonFullScreenDialog extends DialogFragment {
                         tvSeasonName.setText(tvSeasonDetails.getName() + " | " + tvShow.getName());
 
                         Uri uri = Uri.parse("https://image.tmdb.org/t/p/w1280" + tvShow.getBackdrop_path());
-                        Glide.with(getContext()).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
-                            @Override
-                            public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
-                                return false;
-                            }
-                            @Override
-                            public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                                backdropImage.setVisibility(View.VISIBLE);
+                        if (TvSeasonFullScreenDialog.this.isAdded()) {
+                            Glide.with(getContext()).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
+                                @Override
+                                public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
+                                    return false;
+                                }
 
-                                view.findViewById(R.id.tvseason_spinner).setVisibility(View.GONE);
-                                view.findViewById(R.id.tvseason_content).setVisibility(View.VISIBLE);
-                                fab.setVisibility(View.VISIBLE);
-                                return false;
-                            }
-                        }).into(backdropImage);
+                                @Override
+                                public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                                    backdropImage.setVisibility(View.VISIBLE);
+
+                                    view.findViewById(R.id.tvseason_spinner).setVisibility(View.GONE);
+                                    view.findViewById(R.id.tvseason_content).setVisibility(View.VISIBLE);
+                                    fab.setVisibility(View.VISIBLE);
+                                    return false;
+                                }
+                            }).into(backdropImage);
+                        }
                     }
                 });
 

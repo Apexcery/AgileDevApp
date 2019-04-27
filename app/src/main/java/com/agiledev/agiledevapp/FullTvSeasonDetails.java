@@ -54,7 +54,7 @@ public class FullTvSeasonDetails {
         private int episode_number;
         private String name;
         private String overview;
-        private int id;
+        private String id;
         private int season_number;
         private String still_path;
         private float vote_average;
@@ -73,7 +73,7 @@ public class FullTvSeasonDetails {
         public String getOverview() {
             return overview;
         }
-        public int getId() {
+        public String getId() {
             return id;
         }
         public int getSeason_number() {

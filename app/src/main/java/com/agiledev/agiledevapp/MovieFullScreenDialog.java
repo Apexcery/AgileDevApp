@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 
 import cz.msebera.android.httpclient.Header;
+import me.zhanghai.android.materialprogressbar.MaterialProgressBar;
 
 import static java.lang.Math.min;
 
@@ -72,6 +73,7 @@ public class MovieFullScreenDialog extends DialogFragment {
     RecyclerView recyclerView;
     MovieCastAdapter adapter;
     View view;
+    MaterialProgressBar trackingProgress;
 
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
@@ -113,6 +115,8 @@ public class MovieFullScreenDialog extends DialogFragment {
         trailerVideoImage = view.findViewById(R.id.movieTrailerImage);
         trailerVideoPlayImage = view.findViewById(R.id.movieTrailerPlayIcon);
 
+        trackingProgress = view.findViewById(R.id.movieTrackingProgress);
+
         sharedPref = getContext().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         editor = sharedPref.edit();
 
@@ -126,9 +130,15 @@ public class MovieFullScreenDialog extends DialogFragment {
             }
         });
 
-        getMovieDetails(view);
+//        getMovieDetails(view);
 
         return view;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        getMovieDetails(view);
     }
 
     @Override
@@ -158,32 +168,46 @@ public class MovieFullScreenDialog extends DialogFragment {
                 genreList = movieDetails.getGenres();
                 runtime = movieDetails.getRuntime();
 
-                Glide.with(MovieFullScreenDialog.this).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
-                    @Override
-                    public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
-                        return false;
-                    }
+                String releaseDateString = "";
+                String runtimeString = "";
 
-                    @Override
-                    public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                        trailerVideoPlayImage.setVisibility(View.VISIBLE);
+                if (MovieFullScreenDialog.this.isAdded()) {
+                    Glide.with(MovieFullScreenDialog.this).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
+                        @Override
+                        public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
+                            return false;
+                        }
 
-                        final FullMovieDetails.Video tempVideo = movieDetails.getVideos().get(0);
-                        //TODO: Deal with the movie not having any videos.
+                        @Override
+                        public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                            trailerVideoPlayImage.setVisibility(View.VISIBLE);
 
-                        trailerVideoPlayImage.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                openYoutubeVideo(getContext(), tempVideo.getKey());
-                            }
-                        });
+                            final FullMovieDetails.Video tempVideo = movieDetails.getVideos().get(0);
+                            //TODO: Deal with the movie not having any videos.
 
-                        view.findViewById(R.id.movieLoadingSpinner).setVisibility(View.GONE);
-                        view.findViewById(R.id.fabTrackMovie).setVisibility(View.VISIBLE);
-                        pageContent.setVisibility(View.VISIBLE);
-                        return false;
-                    }
-                }).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).dontAnimate().into(trailerVideoImage);
+                            trailerVideoPlayImage.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    openYoutubeVideo(getContext(), tempVideo.getKey());
+                                }
+                            });
+
+                            view.findViewById(R.id.movieLoadingSpinner).setVisibility(View.GONE);
+                            view.findViewById(R.id.fabTrackMovie).setVisibility(View.VISIBLE);
+                            pageContent.setVisibility(View.VISIBLE);
+                            return false;
+                        }
+                    }).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).dontAnimate().into(trailerVideoImage);
+
+                    releaseDateString = getResources().getString(R.string.release_date) + " <font color='#ffffff'>" + movieDetails.getRelease_date() + "</font>";
+
+                    int runtimeMins = movieDetails.getRuntime();
+                    int hours = runtimeMins / 60, minutes = runtimeMins % 60;
+
+                    runtimeString = String.format("%s %s", getResources().getString(R.string.runtime), String.format(" <font color='#ffffff'>%s</font>", String.format("%dhrs %02dmins", hours, minutes)));
+
+                    addCastToLayout(movieDetails.getCast(), getActivity().getSupportFragmentManager());
+                }
 
                 RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getContext(), 1);
                 recyclerView.setLayoutManager(mLayoutManager);
@@ -195,13 +219,6 @@ public class MovieFullScreenDialog extends DialogFragment {
                 TextView movieRuntime = view.findViewById(R.id.movieInfoRuntime);
                 TextView movieGenres = view.findViewById(R.id.movieInfoGenres);
                 Button movieCastMore = view.findViewById(R.id.movieInfoCastMore);
-
-
-                String releaseDateString = getResources().getString(R.string.release_date) + " <font color='#ffffff'>" + movieDetails.getRelease_date() + "</font>";
-
-                int runtimeMins = movieDetails.getRuntime();
-                int hours = runtimeMins / 60, minutes = runtimeMins % 60;
-                String runtimeString = String.format("%s %s", getResources().getString(R.string.runtime), String.format(" <font color='#ffffff'>%s</font>", String.format("%dhrs %02dmins", hours, minutes)));
 
                 movieTitle.setText(movieDetails.getTitle());
                 moviePlot.setText(movieDetails.getOverview());
@@ -215,7 +232,6 @@ public class MovieFullScreenDialog extends DialogFragment {
                 }
 
                 movieGenres.setText(movieDetails.getGenresString());
-                addCastToLayout(movieDetails.getCast(), getActivity().getSupportFragmentManager());
                 movieCastMore.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -263,9 +279,9 @@ public class MovieFullScreenDialog extends DialogFragment {
             alreadyTracked = true;
 
         if (!alreadyTracked) {
-            MediaTracking.trackMovie(getActivity(), view, sharedPref.getString(getString(R.string.prefs_loggedin_username), null), id).show();
+            MediaTracking.trackMovie(getActivity(), getActivity(), sharedPref.getString(getString(R.string.prefs_loggedin_username), null), id, trackingProgress).show();
         } else {
-            MediaTracking.untrackMovie(getActivity(), view, sharedPref.getString(getString(R.string.prefs_loggedin_username), null), id).show();
+            MediaTracking.untrackMovie(getActivity(), getActivity(), sharedPref.getString(getString(R.string.prefs_loggedin_username), null), id, trackingProgress).show();
         }
     }
 

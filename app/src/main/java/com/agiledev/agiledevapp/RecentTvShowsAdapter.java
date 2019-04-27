@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import java.util.List;
@@ -18,13 +19,13 @@ public class RecentTvShowsAdapter extends RecyclerView.Adapter<RecentTvShowsAdap
     public FragmentManager manager;
 
     class MyViewHolder extends RecyclerView.ViewHolder {
+        LinearLayout layout;
         ImageView poster;
-        RelativeLayout layout;
 
         MyViewHolder(View view) {
             super(view);
-            poster = view.findViewById(R.id.tvRecentCardPoster);
-            layout = view.findViewById(R.id.tvVerticalCard);
+            poster = view.findViewById(R.id.movieImageViewPoster);
+            layout = view.findViewById(R.id.movieImageView);
         }
     }
 
@@ -36,7 +37,7 @@ public class RecentTvShowsAdapter extends RecyclerView.Adapter<RecentTvShowsAdap
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.tvshow_vertical_card, parent, false);
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.movie_vertical_card, parent, false);
         return new MyViewHolder(itemView);
     }
 
@@ -52,7 +53,7 @@ public class RecentTvShowsAdapter extends RecyclerView.Adapter<RecentTvShowsAdap
             }
         });
 
-        TmdbClient.loadImage(mContext, TV.poster_path, holder.poster, TmdbClient.imageType.ICON, "movie");
+        TmdbClient.loadImage(mContext, TV.poster_path, holder.poster, TmdbClient.imageType.LARGEICON, "movie");
     }
 
     @Override

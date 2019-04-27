@@ -181,14 +181,38 @@ public class SplashScreen extends Activity {
                         for (Map.Entry<String, Object> entry : tvshows.entrySet()) {
                             Globals.trackedTV tv = new Globals.trackedTV();
                             tv.id = entry.getKey();
-                            Map<String, Object> field = (Map)entry.getValue();
-                            Timestamp timestamp = (Timestamp)field.get("date");
+                            Map<String, Object> field = (HashMap<String, Object>)entry.getValue();
+                            tv.name = field.get("name").toString();
+                            Timestamp timestamp = (Timestamp)field.get("lastWatched");
                             tv.date = timestamp.toDate();
                             tv.poster_path = (String)field.get("poster_path");
+                            SparseArray<String> genres = new SparseArray<>();
+                            for (Map.Entry<String, String> gEntry : ((HashMap<String, String>)field.get("genres")).entrySet()) {
+                                genres.put(Integer.parseInt(gEntry.getKey()), gEntry.getValue());
+                            }
+                            tv.genres = genres;
+                            Map<String, ArrayList<Globals.trackedTV.Episode>> seasons = new HashMap<>();
+                            for (Map.Entry<String, Object> e : field.entrySet()) {
+                                if (e.getKey().contains("Season ")) {
+                                    ArrayList<Globals.trackedTV.Episode> episodes = new ArrayList<>();
+                                    for (Map.Entry<String, HashMap> eEntry : ((HashMap<String, HashMap>)e.getValue()).entrySet()) {
+                                        Globals.trackedTV.Episode ep = new Globals.trackedTV.Episode();
+                                        Timestamp ts = (Timestamp)eEntry.getValue().get("date");
+                                        ep.date = ts.toDate();
+                                        ep.episodeName = (String)eEntry.getValue().get("episodeName");
+                                        ep.id = (String)eEntry.getValue().get("id");
+                                        ep.seriesName = (String)eEntry.getValue().get("seriesName");
+                                        ep.episodeNum = ((Long)eEntry.getValue().get("episodeNum")).intValue();
+                                        ep.seasonNum = Integer.parseInt(e.getKey().replace("Season ", ""));
+                                        episodes.add(ep);
+                                    }
+                                    seasons.put(e.getKey(), episodes);
+                                }
+                            }
+                            tv.seasons = seasons;
                             tvList.add(tv);
                         }
                         Globals.setTrackedTvShows(tvList);
-                        Collections.sort(Globals.getTrackedTvShows());
                     }
                 }
             }
@@ -199,13 +223,12 @@ public class SplashScreen extends Activity {
         TmdbClient.getweektrendingmovies(null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JSONArray results = new JSONArray();
+                JSONArray results;
                 try {
                     results = response.getJSONArray("results");
 
                     for (int i = 0; i < 16; i++) {
                         try {
-                            Log.e("Results:", results.get(i).toString());
                             Globals.trendingMovie trendingMovie = new Globals.trendingMovie();
                             BasicMovieDetails movie = new Gson().fromJson(results.get(i).toString(), BasicMovieDetails.class);
 
@@ -232,13 +255,12 @@ public class SplashScreen extends Activity {
         TmdbClient.getweektrendingtvshows(null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JSONArray results = new JSONArray();
+                JSONArray results;
                 try {
                     results = response.getJSONArray("results");
 
                     for (int i = 0; i < 16; i++) {
                         try {
-                            Log.e("Results:", results.get(i).toString());
                             Globals.trendingTvShow trendingTvshow = new Globals.trendingTvShow();
                             BasicTvShowDetails tvshow = new Gson().fromJson(results.get(i).toString(), BasicTvShowDetails.class);
 

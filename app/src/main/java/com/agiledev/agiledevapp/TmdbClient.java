@@ -51,7 +51,7 @@ class TmdbClient {
         client.get(url, params, responseHandler);
     }
 
-    static void getTvSeasonDetails(String tvId, String seasonNum, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+    static void getTvSeasonDetails(String tvId, int seasonNum, RequestParams params, AsyncHttpResponseHandler responseHandler) {
         String url = getAbsoluteUrl("tv/"+ tvId + "/season/" + seasonNum + "?api_key=" + key);
         client.get(url, params, responseHandler);
     }
@@ -121,8 +121,23 @@ class TmdbClient {
     }
 
 
-    static void getRelatedMovies(String genreString, RequestParams params, AsyncHttpResponseHandler responseHandler) {
-        String url = getAbsoluteUrl("discover/movie?api_key=" + key + "&sort_by=popularity.desc&with_genres=" + genreString);
+    static void getRelatedMovies(String movieId, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+        String url = getAbsoluteUrl("movie/" + movieId + "/similar?api_key=" + key);
+        client.get(url, params, responseHandler);
+    }
+
+    static void getRelatedTV(String tvId, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+        String url = getAbsoluteUrl("tv/" + tvId + "/similar?api_key=" + key);
+        client.get(url, params, responseHandler);
+    }
+
+    static void getPopularMoviesInRegion(String region, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+        String url = getAbsoluteUrl("movie/popular?api_key=" + key + "&region=" + region);
+        client.get(url, params, responseHandler);
+    }
+
+    static void getPopularTvInRegion(String region, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+        String url = getAbsoluteUrl("tv/popular?api_key=" + key + "&region=" + region);
         client.get(url, params, responseHandler);
     }
 

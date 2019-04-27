@@ -88,19 +88,12 @@ public class LoginRegisterActivity extends AppCompatActivity {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                 for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                    Log.e("Found Username", document.getId());
-                    Log.e("Found Password", document.getData().get("password").toString());
-                    Log.e("Found Email", document.getData().get("email").toString()); ////
-
                     User user = new User();
                     user.setUsername(document.getId());
                     user.setPassword(document.getData().get("password").toString());
                     user.setEmail(document.getData().get("email").toString()); ////
 
                     userList.add(user);
-                  //  Log.e("Saved User", "Username: " + user.getUsername() + " | Password: " + user.getPassword());
-                    Log.e("Saved User", "Username: " + user.getUsername() + " | Password: " + user.getPassword() + " | Email: " + user.getEmail());
-                    Log.e("-",":-");
                 }
             }
         });

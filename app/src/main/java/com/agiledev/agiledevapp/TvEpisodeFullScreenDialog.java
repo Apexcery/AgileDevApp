@@ -28,6 +28,7 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import org.json.JSONObject;
 
 import cz.msebera.android.httpclient.Header;
+import me.zhanghai.android.materialprogressbar.MaterialProgressBar;
 
 public class TvEpisodeFullScreenDialog extends DialogFragment {
     public static String TAG = "TvEpisodeFullScreenDialog";
@@ -36,6 +37,7 @@ public class TvEpisodeFullScreenDialog extends DialogFragment {
     public FullTvEpisodeDetails tvEpisodeDetails;
     public Toolbar toolbar;
     FloatingActionButton fab;
+    MaterialProgressBar progressBar;
 
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
@@ -73,11 +75,13 @@ public class TvEpisodeFullScreenDialog extends DialogFragment {
             }
         });
 
+        progressBar = view.findViewById(R.id.tvepisodeTrackingProgress);
+
         fab = view.findViewById(R.id.fabTrackTVEpisode);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //TODO: Implement tracking single episode.
+                MediaTracking.trackTV(getContext(), getActivity(),"episode", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), seriesId, seasonNum, episodeNum, progressBar).show();
             }
         });
 
@@ -105,28 +109,36 @@ public class TvEpisodeFullScreenDialog extends DialogFragment {
                 if (tvEpisodeDetails == null)
                     return;
 
+                tvEpisodeDetails.setSeriesId(seriesId);
+
                 ImageView tvStillImage = view.findViewById(R.id.tvepisode_image);
                 Uri uri = Uri.parse("https://image.tmdb.org/t/p/w1280" + tvEpisodeDetails.getStill_path());
-                Glide.with(getContext()).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
-                    @Override
-                    public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
-                        view.findViewById(R.id.tvepisode_spinner).setVisibility(View.GONE);
-                        view.findViewById(R.id.tvepisode_content).setVisibility(View.VISIBLE);
-                        fab.setVisibility(View.VISIBLE);
-                        return false;
-                    }
-                    @Override
-                    public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                        view.findViewById(R.id.tvepisode_spinner).setVisibility(View.GONE);
-                        view.findViewById(R.id.tvepisode_content).setVisibility(View.VISIBLE);
-                        fab.setVisibility(View.VISIBLE);
-                        return false;
-                    }
-                }).into(tvStillImage);
+
+                String airDateString = "";
+                if (TvEpisodeFullScreenDialog.this.isAdded()) {
+                    Glide.with(getContext()).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
+                        @Override
+                        public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
+                            view.findViewById(R.id.tvepisode_spinner).setVisibility(View.GONE);
+                            view.findViewById(R.id.tvepisode_content).setVisibility(View.VISIBLE);
+                            fab.setVisibility(View.VISIBLE);
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                            view.findViewById(R.id.tvepisode_spinner).setVisibility(View.GONE);
+                            view.findViewById(R.id.tvepisode_content).setVisibility(View.VISIBLE);
+                            fab.setVisibility(View.VISIBLE);
+                            return false;
+                        }
+                    }).into(tvStillImage);
+
+                    airDateString = getResources().getString(R.string.release_date) + " <font color='#ffffff'>" + tvEpisodeDetails.getAir_date() + "</font>";
+                }
 
                 TextView tvEpisodeName = view.findViewById(R.id.tvepisode_toolbar_title);
                 TextView tvEpisodeAirDate = view.findViewById(R.id.tvepisode_airDate);
-                String airDateString = getResources().getString(R.string.release_date) + " <font color='#ffffff'>" + tvEpisodeDetails.getAir_date() + "</font>";
                 TextView tvEpisodePlot = view.findViewById(R.id.tvepisode_plot);
 
                 tvEpisodeName.setText(tvEpisodeDetails.getName() + " | " + seasonNum + "x" + episodeNum);

@@ -103,11 +103,9 @@ public class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdap
 
     public void trackItem(boolean tracking, Media type, final String username) {
         if (tracking && type == Media.MOVIE) {
-            MediaTracking.trackMovie(mActivity, mView, username, movie.getId()).show();
-
+            MediaTracking.trackMovie(mActivity, mActivity, username, movie.getId(), null).show();
         } else if (!tracking && type == Media.MOVIE) {
-            MediaTracking.untrackMovie(mActivity, mView, username, movie.getId()).show();
-
+            MediaTracking.untrackMovie(mActivity, mActivity, username, movie.getId(), null).show();
         }
     }
 }

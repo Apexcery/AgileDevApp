@@ -27,6 +27,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 
 import cz.msebera.android.httpclient.Header;
+import me.zhanghai.android.materialprogressbar.MaterialProgressBar;
 
 import static java.lang.Math.min;
 
@@ -67,6 +69,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
     RecyclerView recyclerView;
     RecyclerView seasonRecycler;
     TvShowCastAdapter adapter;
+    MaterialProgressBar trackingProgress;
 
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
@@ -103,11 +106,21 @@ public class TvShowFullScreenDialog extends DialogFragment {
             }
         });
 
+        Button tvshowCastMore = view.findViewById(R.id.tvshowInfoCastMore);
+        tvshowCastMore.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                viewMoreCast();
+            }
+        });
+
         recyclerView = view.findViewById(R.id.tvshowcast_recycler_view);
         seasonRecycler = view.findViewById(R.id.tvshowSeasonRecycler);
 
         trailerVideoImage = view.findViewById(R.id.tvshowTrailerImage);
         trailerVideoPlayImage = view.findViewById(R.id.tvshowTrailerPlayIcon);
+
+        trackingProgress = view.findViewById(R.id.tvshowTrackingProgress); //TODO: Make progress bar persist even when dialog is closed.
 
         sharedPref = getContext().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         editor = sharedPref.edit();
@@ -118,9 +131,10 @@ public class TvShowFullScreenDialog extends DialogFragment {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //TODO: Implement tracking of entire tv show.
+                MediaTracking.trackTV(getContext(), getActivity(), "series", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), id, null, null, trackingProgress).show();
             }
         });
+
 
         getTvShowDetails(view);
 
@@ -150,31 +164,40 @@ public class TvShowFullScreenDialog extends DialogFragment {
                 poster_path = tvshowDetails.getPoster_path();
                 backdrop_path = tvshowDetails.getBackdrop_path();
 
-                Glide.with(TvShowFullScreenDialog.this).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
-                    @Override
-                    public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
-                        return false;
-                    }
+                String nextEpString = "", firstReleased = "";
+                if (TvShowFullScreenDialog.this.isAdded()) {
+                    Glide.with(TvShowFullScreenDialog.this).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
+                        @Override
+                        public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
+                            return false;
+                        }
 
-                    @Override
-                    public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                        trailerVideoPlayImage.setVisibility(View.VISIBLE);
+                        @Override
+                        public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                            trailerVideoPlayImage.setVisibility(View.VISIBLE);
 
-                        final FullTvShowDetails.Video tempVideo = tvshowDetails.getVideos().get(0); //TODO: Deal with the possibility of no videos.
+                            final FullTvShowDetails.Video tempVideo = tvshowDetails.getVideos().get(0); //TODO: Deal with the possibility of no videos.
 
-                        trailerVideoPlayImage.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                openYoutubeVideo(getContext(), tempVideo.getKey());
-                            }
-                        });
+                            trailerVideoPlayImage.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    openYoutubeVideo(getContext(), tempVideo.getKey());
+                                }
+                            });
 
-                        view.findViewById(R.id.tvshowLoadingSpinner).setVisibility(View.GONE);
-                        view.findViewById(R.id.fabTrackTV).setVisibility(View.VISIBLE);
-                        pageContent.setVisibility(View.VISIBLE);
-                        return false;
-                    }
-                }).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).dontAnimate().into(trailerVideoImage);
+                            view.findViewById(R.id.tvshowLoadingSpinner).setVisibility(View.GONE);
+                            view.findViewById(R.id.fabTrackTV).setVisibility(View.VISIBLE);
+                            pageContent.setVisibility(View.VISIBLE);
+                            return false;
+                        }
+                    }).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).dontAnimate().into(trailerVideoImage);
+
+                    firstReleased = getResources().getString(R.string.first_released) + " <font color='#ffffff'>" + tvshowDetails.getFirst_air_date() + "</font>";
+                    nextEpString = tvshowDetails.getNext_episode_to_air() == null ? getResources().getString(R.string.nextep) + " <font color='#ffffff'>N/A</font>" : getResources().getString(R.string.nextep) + " <font color='#ffffff'>" + tvshowDetails.getNext_episode_to_air().air_date + "</font>";
+
+                    addCastToLayout(tvshowDetails.getCast(), getActivity().getSupportFragmentManager());
+                    addSeasonsToLayout(tvshowDetails.getSeason(), getActivity().getSupportFragmentManager());
+                }
 
                 RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getContext(), 1);
                 recyclerView.setLayoutManager(mLayoutManager);
@@ -185,73 +208,24 @@ public class TvShowFullScreenDialog extends DialogFragment {
 
                 TextView tvshowName = view.findViewById(R.id.tvshowTitle);
                 TextView tvshowPlot = view.findViewById(R.id.tvshowInfoPlot);
-                TextView tvshowLatestEpisode = view.findViewById(R.id.tvshowInfoReleaseDate);
+                TextView tvshowReleaseDate = view.findViewById(R.id.tvshowInfoReleaseDate);
                 TextView tvshowNextEpisode = view.findViewById(R.id.tvshowNextEp);
                 TextView tvshowGenres = view.findViewById(R.id.tvshowInfoGenres);
-                Button tvshowCastMore = view.findViewById(R.id.tvshowInfoCastMore);
-                TextView tvshowFirstRelease = view.findViewById(R.id.tvshowfirstrelease);
-
-                String nextEpString;
-                String latestEpisode;
-                String firstRelease;
-                if(tvshowDetails.getFirst_air_date() == null)
-                {
-                    firstRelease = getResources().getString(R.string.initial_release) + " <font color='#ffffff'>N/A</font>";
-                }
-                else
-                {
-                    firstRelease = getResources().getString(R.string.initial_release) + " <font color='#ffffff'>" + tvshowDetails.getFirst_air_date() + "</font>";
-                }
-
-                if(tvshowDetails.getLast_air_date() == null)
-                {
-                    latestEpisode = getResources().getString(R.string.latest_episode) + " <font color='#ffffff'>N/A</font>";
-                }
-                else
-                {
-                    latestEpisode = getResources().getString(R.string.latest_episode) + " <font color='#ffffff'>" + tvshowDetails.getLast_air_date() + "</font>";
-                }
-
-                if(tvshowDetails.getNext_episode_to_air() == null)
-                {
-                    nextEpString = getResources().getString(R.string.nextep) + " <font color='#ffffff'>N/A</font>";
-                }
-                else
-                {
-                    nextEpString = getResources().getString(R.string.nextep) + " <font color='#ffffff'>" + tvshowDetails.getNext_episode_to_air().air_date + "</font>";
-                }
-
-
-                //TODO implement runtime per episode
-                //int runtimeMins = tvshowDetails.getRuntime();
-                //int hours = runtimeMins / 60, minutes = runtimeMins % 60;
-                //String runtimeString = String.format("%s %s", getResources().getString(R.string.runtime), String.format(" <font color='#ffffff'>%s</font>", String.format("%dhrs %02dmins", hours, minutes)));
 
                 tvshowName.setText(tvshowDetails.getName());
                 tvshowPlot.setText(tvshowDetails.getOverview());
-                tvshowFirstRelease.setText(tvshowDetails.getFirst_air_date());
 
                 tvshowNextEpisode.setText(tvshowDetails.getNext_episode_to_air() == null ? " " : tvshowDetails.getNext_episode_to_air().air_date);
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    tvshowLatestEpisode.setText(Html.fromHtml(latestEpisode, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
+                    tvshowReleaseDate.setText(Html.fromHtml(firstReleased, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
                     tvshowNextEpisode.setText(Html.fromHtml(nextEpString, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
-                    tvshowFirstRelease.setText(Html.fromHtml(firstRelease, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
                 } else {
-                    tvshowLatestEpisode.setText(Html.fromHtml(latestEpisode), TextView.BufferType.SPANNABLE);
+                    tvshowReleaseDate.setText(Html.fromHtml(firstReleased), TextView.BufferType.SPANNABLE);
                     tvshowNextEpisode.setText(Html.fromHtml(nextEpString), TextView.BufferType.SPANNABLE);
-                    tvshowFirstRelease.setText(Html.fromHtml(firstRelease), TextView.BufferType.SPANNABLE);
                 }
 
                 tvshowGenres.setText(tvshowDetails.getGenresString());
-                addCastToLayout(tvshowDetails.getCast(), getActivity().getSupportFragmentManager());
-                addSeasonsToLayout(tvshowDetails.getSeason(), getActivity().getSupportFragmentManager());
-                tvshowCastMore.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        viewMoreCast();
-                    }
-                });
             }
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
@@ -270,8 +244,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
         }
     }
 
-    public void viewMoreCast()
-    {
+    public void viewMoreCast() {
         FullCastDialog dialog = FullCastDialog.newInstance(id, FullCastDialog.mediatype.TV);
         dialog.show(getActivity().getFragmentManager(), FullCastDialog.TAG);
     }
