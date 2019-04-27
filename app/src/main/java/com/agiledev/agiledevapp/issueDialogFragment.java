@@ -32,7 +32,6 @@ public class issueDialogFragment extends DialogFragment
     //wigets
     private Button mActionSubmit, mActionCancel;
     public EditText mName, mEmail, mMessage;
-
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
 
@@ -44,10 +43,8 @@ public class issueDialogFragment extends DialogFragment
         mActionSubmit = view.findViewById(R.id.issueSubmitbutton);
         mActionCancel = view.findViewById(R.id.issuecancelbutton);
         mMessage = view.findViewById(R.id.issuemessagetext);
-
         sharedPref = getActivity().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         editor = sharedPref.edit();
-
         final AlertDialog noTextDialog = SimpleDialog.create(DialogOption.OkOnlyDismiss, getActivity(),
                 "Error!", "Issue needs to have text!");
 
@@ -74,7 +71,6 @@ public class issueDialogFragment extends DialogFragment
                 {
                     String username = sharedPref.getString(getString(R.string.prefs_loggedin_username), null);
                     final String messageS = mMessage.getText().toString();
-
                     final FirebaseFirestore db = FirebaseFirestore.getInstance();
                     db.collection("UserDetails").document(username).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                         @Override
@@ -83,14 +79,12 @@ public class issueDialogFragment extends DialogFragment
                                 DocumentSnapshot doc = task.getResult();
                                 if (doc != null && doc.exists()) {
                                     final String email = doc.get("email").toString();
-
                                     db.collection("Feedback").document(email).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                                         @Override
                                         public void onSuccess(DocumentSnapshot documentSnapshot) {
                                             HashMap<String, Object> feedbackIssuesMap = new HashMap<>();
                                             HashMap<String, ArrayList<String>> issueMap = new HashMap<>();
                                             ArrayList<String> issueMessages = new ArrayList<>();
-
                                             if (documentSnapshot.exists()) {
                                                 feedbackIssuesMap = (HashMap<String, Object>)documentSnapshot.getData();
                                                 issueMap = (HashMap<String, ArrayList<String>>)feedbackIssuesMap.get("Feedback");
@@ -99,7 +93,6 @@ public class issueDialogFragment extends DialogFragment
                                                     issueMessages = issueMap.get("Issues");
                                                 }
                                             }
-
                                             issueMessages.add(messageS);
                                             issueMap.put("Issues", issueMessages);
                                             feedbackIssuesMap.put("Feedback", issueMap);
@@ -120,12 +113,6 @@ public class issueDialogFragment extends DialogFragment
             }
 
         });
-
         return view;
-    }
-
-    public boolean onTouch(View v, MotionEvent event) {
-        CloseKeyboard.hideKeyboard(getActivity());
-        return true;
     }
 }

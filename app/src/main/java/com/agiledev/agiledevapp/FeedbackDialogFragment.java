@@ -38,7 +38,6 @@ public class FeedbackDialogFragment extends DialogFragment
     //wigets
     private Button mActionSubmit, mActionCancel;
     public EditText mName, mEmail, mMessage;
-
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
 
@@ -50,10 +49,8 @@ public class FeedbackDialogFragment extends DialogFragment
         mActionSubmit = view.findViewById(R.id.feedbackSubmitbutton);
         mActionCancel = view.findViewById(R.id.feedbackcancelbutton);
         mMessage = view.findViewById(R.id.feedbackmessagetext);
-
         sharedPref = getActivity().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         editor = sharedPref.edit();
-
         final AlertDialog noTextDialog = SimpleDialog.create(DialogOption.OkOnlyDismiss, getActivity(),
                 "Error!", "Feedback needs to have text!");
 
@@ -80,7 +77,6 @@ public class FeedbackDialogFragment extends DialogFragment
                 {
                     String username = sharedPref.getString(getString(R.string.prefs_loggedin_username), null);
                     final String messageS = mMessage.getText().toString();
-
                     final FirebaseFirestore db = FirebaseFirestore.getInstance();
                     db.collection("UserDetails").document(username).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                         @Override
@@ -89,14 +85,12 @@ public class FeedbackDialogFragment extends DialogFragment
                                 DocumentSnapshot doc = task.getResult();
                                 if (doc != null && doc.exists()) {
                                     final String email = doc.get("email").toString();
-
                                     db.collection("Feedback").document(email).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                                         @Override
                                         public void onSuccess(DocumentSnapshot documentSnapshot) {
                                             HashMap<String, Object> feedbackIssuesMap = new HashMap<>();
                                             HashMap<String, ArrayList<String>> feedbackMap = new HashMap<>();
                                             ArrayList<String> feedbackMessages = new ArrayList<>();
-
                                             if (documentSnapshot.exists()) {
                                                 feedbackIssuesMap = (HashMap<String, Object>)documentSnapshot.getData();
                                                 feedbackMap = (HashMap<String, ArrayList<String>>)feedbackIssuesMap.get("Feedback");
@@ -105,11 +99,9 @@ public class FeedbackDialogFragment extends DialogFragment
                                                     feedbackMessages = feedbackMap.get("Feedback");
                                                 }
                                             }
-
                                             feedbackMessages.add(messageS);
                                             feedbackMap.put("Feedback", feedbackMessages);
                                             feedbackIssuesMap.put("Feedback", feedbackMap);
-
                                             db.collection("Feedback").document(email).set(feedbackIssuesMap);
                                         }
                                     });
@@ -124,15 +116,8 @@ public class FeedbackDialogFragment extends DialogFragment
                 }
                 mMessage.setText("");
             }
-
         });
 
         return view;
     }
-
-    private void sendFeedback(HashMap<String, ArrayList<String>> feedbackM)
-    {
-
-    }
-
 }
