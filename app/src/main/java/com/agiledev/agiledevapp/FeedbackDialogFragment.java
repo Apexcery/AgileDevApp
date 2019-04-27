@@ -2,7 +2,9 @@ package com.agiledev.agiledevapp;
 
 import android.app.AlertDialog;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,10 +16,16 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,16 +39,23 @@ public class FeedbackDialogFragment extends DialogFragment
     private Button mActionSubmit, mActionCancel;
     public EditText mName, mEmail, mMessage;
 
+    SharedPreferences sharedPref;
+    SharedPreferences.Editor editor;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState)
     {
         View view = inflater.inflate(R.layout.dialogfrag_feedback, container, false);
-        mActionSubmit = view.findViewById(R.id.issueSubmitbutton);
-        mActionCancel = view.findViewById(R.id.issuecancelbutton);
-        mName = view.findViewById(R.id.issueNameText);
-        mEmail = view.findViewById(R.id.issueEmailText);
-        mMessage = view.findViewById(R.id.issuemessagetext);
+        mActionSubmit = view.findViewById(R.id.feedbackSubmitbutton);
+        mActionCancel = view.findViewById(R.id.feedbackcancelbutton);
+        mMessage = view.findViewById(R.id.feedbackmessagetext);
+
+        sharedPref = getActivity().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        editor = sharedPref.edit();
+
+        final AlertDialog noTextDialog = SimpleDialog.create(DialogOption.OkOnlyDismiss, getActivity(),
+                "Error!", "Feedback needs to have text!");
 
         mActionCancel.setOnClickListener(new View.OnClickListener()
         {
@@ -48,9 +63,7 @@ public class FeedbackDialogFragment extends DialogFragment
             public void onClick(View view)
             {
                 getDialog().dismiss();
-                mName.setText("");
                 mMessage.setText("");
-                mEmail.setText("");
             }
         });
 
@@ -59,32 +72,57 @@ public class FeedbackDialogFragment extends DialogFragment
             @Override
             public void onClick(View view)
             {
-                String messageS = mMessage.getText().toString();
-                String nameS = mName.getText().toString();
-                String emailS = mEmail.getText().toString();
+                if(mMessage.getText().toString().length() < 5)
+                {
+                    noTextDialog.show();
+                }
+                else
+                {
+                    String username = sharedPref.getString(getString(R.string.prefs_loggedin_username), null);
+                    final String messageS = mMessage.getText().toString();
 
-                Intent email = new Intent(Intent.ACTION_SEND);
-                email.putExtra(Intent.EXTRA_EMAIL, new String[] { "s6104158@live.tees.ac.uk" });
-                email.putExtra(Intent.EXTRA_SUBJECT, "Feedback by: " + nameS);
-                email.putExtra(Intent.EXTRA_TEXT, messageS + "\n\n Email: " + emailS);
+                    final FirebaseFirestore db = FirebaseFirestore.getInstance();
+                    db.collection("UserDetails").document(username).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if (task.isSuccessful()) {
+                                DocumentSnapshot doc = task.getResult();
+                                if (doc != null && doc.exists()) {
+                                    final String email = doc.get("email").toString();
 
-                email.setType("text/email");
-                startActivity(Intent.createChooser(email, "Choose app to send email"));
+                                    db.collection("Feedback").document(email).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                        @Override
+                                        public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                            HashMap<String, Object> feedbackIssuesMap = new HashMap<>();
+                                            HashMap<String, ArrayList<String>> feedbackMap = new HashMap<>();
+                                            ArrayList<String> feedbackMessages = new ArrayList<>();
 
-                dismiss();
-                mName.setText("");
+                                            if (documentSnapshot.exists()) {
+                                                feedbackIssuesMap = (HashMap<String, Object>)documentSnapshot.getData();
+                                                feedbackMap = (HashMap<String, ArrayList<String>>)feedbackIssuesMap.get("Feedback");
+                                                if (feedbackIssuesMap.get("Feedback") != null)
+                                                {
+                                                    feedbackMessages = feedbackMap.get("Feedback");
+                                                }
+                                            }
+
+                                            feedbackMessages.add(messageS);
+                                            feedbackMap.put("Feedback", feedbackMessages);
+                                            feedbackIssuesMap.put("Feedback", feedbackMap);
+
+                                            db.collection("Feedback").document(email).set(feedbackIssuesMap);
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    });
+                    dismiss();
+                    final AlertDialog dialog = SimpleDialog.create(DialogOption.OkOnlyDismiss, getActivity(),
+                            "Feedback sent", "Thank you for sending feedback");
+                    dialog.show();
+                }
                 mMessage.setText("");
-                mEmail.setText("");
-                final AlertDialog dialog = SimpleDialog.create(DialogOption.OkOnlyDismiss, getActivity(), "Feedback sent", "Thank you for sending feedback");
-                dialog.show();
-
-
-                /*Map<String, Object> feedback = new HashMap<>();
-                feedback.put("Feedback", mMessage.getText().toString());
-                feedback.put("email", mEmail.getText().toString());
-
-                sendFeedback(txtUsername.getText().toString(), user);*/
-
             }
 
         });
@@ -92,25 +130,9 @@ public class FeedbackDialogFragment extends DialogFragment
         return view;
     }
 
-    public boolean onTouch(View v, MotionEvent event)
+    private void sendFeedback(HashMap<String, ArrayList<String>> feedbackM)
     {
-        CloseKeyboard.hideKeyboard(getActivity());
-        return true;
-    }
-    private void sendFeedback(String username, Map<String, Object> user)
-    {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("Feedback").document(username).set(user).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Log.d("Success", "Feedback sent successfully!");
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.w("Error", "Error sending feedback", e);
-            }
-        });
+
     }
 
 }

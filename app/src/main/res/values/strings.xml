@@ -32,13 +32,19 @@
     <string name="nav_item_settings">Settings</string>
     <string name="nav_log_out">Log Out</string>
     <string name="logout_caps">LOGOUT</string>
+    <string name="credit">Credit</string>
+    <string name="dev_title">Developers</string>
+    <string name="dev_names">Stuart - Lead Dev \nTom \nJordan \nJakub</string>
     <string name="about_text">This app is used to track movies and TV shows that you watch.
         Allowing you to see information about the cast/crew/director etc. When you search for a movie,
         you can watch the movies trailer and see the plot of it.
         once you have some TV shows saved you can get notifications about upcoming episodes of those TV shows when they air.
         You can also see movie recommendations based on the movies and TV shows you have watch/saved in the app.
     </string>
-
+    <string name="tmdb_text">We use The Movie Database (TMDb) for our API to get all of the movie and TV show data needed.
+        This lets us display all information about a movie/tv show that the user may want to see.</string>
+    <string name="firebase_text">To store all of our users details, data, and what they have tracked we use Firebase.
+        We encryted users passwords and do not share their information with any third parties.</string>
     <string name="poster_icon_base_url_small">http://image.tmdb.org/t/p/w92/</string>
     <string name="poster_icon_base_url">http://image.tmdb.org/t/p/w154/</string>
     <string name="poster_icon_base_url_large">http://image.tmdb.org/t/p/w500/</string>

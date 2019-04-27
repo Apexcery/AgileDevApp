@@ -14,7 +14,7 @@ public class ActivityHelp extends AppCompatActivity
 {
     private static final String TAG = "ActivityHelp";
     private Button mOpenDialog, ReportButton;
-    private ImageButton imdbButton;
+    private ImageButton imdbButton, firebaseButton;
     public FeedbackDialogFragment dialog = new FeedbackDialogFragment();
     public issueDialogFragment issueDialog = new issueDialogFragment();
 
@@ -57,6 +57,20 @@ public class ActivityHelp extends AppCompatActivity
                 intent.setAction(Intent.ACTION_VIEW);
                 intent.addCategory(Intent.CATEGORY_BROWSABLE);
                 intent.setData(Uri.parse("https://www.themoviedb.org/"));
+                startActivity(intent);
+            }
+        });
+
+        firebaseButton = findViewById(R.id.fireBaseButton);
+        firebaseButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_VIEW);
+                intent.addCategory(Intent.CATEGORY_BROWSABLE);
+                intent.setData(Uri.parse("https://firebase.google.com/"));
                 startActivity(intent);
             }
         });
