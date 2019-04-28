@@ -12,6 +12,7 @@ import android.support.v7.preference.Preference;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Patterns;
+import android.widget.EditText;
 
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -32,7 +33,6 @@ public class SettingsFragment extends PreferenceFragmentCompat
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     String currentUserName;
-    Map<String, String[]> currentUserDetails = new HashMap<String, String[]>();
     public static boolean stayLoggedIn = true;
 
     @Override
@@ -94,8 +94,6 @@ public class SettingsFragment extends PreferenceFragmentCompat
             }
         });
 
-
-
         final CheckBoxPreference checkboxPref = (CheckBoxPreference) getPreferenceManager().findPreference("key_checkbox1");
         final CheckBoxPreference checkboxPref2 = (CheckBoxPreference) getPreferenceManager().findPreference("key_checkbox_newEpisode");
         final CheckBoxPreference checkboxPref3 = (CheckBoxPreference) getPreferenceManager().findPreference("key_checkbox_trailerN");
@@ -136,6 +134,36 @@ public class SettingsFragment extends PreferenceFragmentCompat
                if(changeIt == 1) {
                    final String username1 = username;
                    final FirebaseFirestore db1 = db;
+
+
+                   db.collection("TrackedMovies").get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                       @Override
+                       public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                           for (QueryDocumentSnapshot document1 : queryDocumentSnapshots) {
+                               if (document1.getId().equals(username1))
+                               {
+                                   Map<String, Object> trackedMovie = new HashMap<>();
+                                   trackedMovie.put("date", document1.getData().get("date").toString());
+                                   trackedMovie.put("genres", document1.getData().get("genres"));
+                                   trackedMovie.put("name", document1.getData().get("name").toString());
+                                   trackedMovie.put("poster_path", document1.getData().get("poster_path").toString());
+
+                                   db1.collection("TrackedMovies").document(username1).delete();
+                                   db1.collection("TrackedMovies").document(newValue.toString()).set(trackedMovie).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                       @Override
+                                       public void onSuccess(Void aVoid) {
+                                           Log.d("Success", "TrackedMovies Snapshot successfully written!");
+                                       }
+                                   }).addOnFailureListener(new OnFailureListener() {
+                                       @Override
+                                       public void onFailure(@NonNull Exception e) {
+                                           Log.w("Error", "Error writing TrackedMovies document", e);
+                                       }
+                                   });
+                               } } } });
+
+
+
                    db.collection("UserDetails").get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                        @Override
                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
@@ -150,7 +178,6 @@ public class SettingsFragment extends PreferenceFragmentCompat
 //                                                   + "\n genresWatched: " + document.getData().get("genresWatched")
 //                                            ).show();
 
-
                                    Map<String, Object> user = new HashMap<>();
                                    user.put("dob", document.getData().get("dob").toString());
                                    user.put("email", document.getData().get("email").toString());
@@ -160,7 +187,6 @@ public class SettingsFragment extends PreferenceFragmentCompat
                                    user.put("genresWatched", document.getData().get("genresWatched"));
 
                                    db1.collection("UserDetails").document(username1).delete();
-
                                    db1.collection("UserDetails").document(newValue.toString()).set(user).addOnSuccessListener(new OnSuccessListener<Void>() {
                                        @Override
                                        public void onSuccess(Void aVoid) {
