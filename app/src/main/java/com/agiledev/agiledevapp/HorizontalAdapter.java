@@ -1,6 +1,8 @@
 package com.agiledev.agiledevapp;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -14,6 +16,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.annotation.Nullable;
 
@@ -24,10 +27,11 @@ import javax.annotation.Nullable;
 public class HorizontalAdapter extends RecyclerView.Adapter<HorizontalAdapter.MyViewHolder> {
 
     private Context mContext;
-    private List mediaList;
+    private CopyOnWriteArrayList mediaList;
     private FragmentManager manager;
     private MediaType mediaType;
     private String string;
+    private ProfileFragment fragment;
 
     class MyViewHolder extends RecyclerView.ViewHolder {
         LinearLayout layout;
@@ -42,12 +46,13 @@ public class HorizontalAdapter extends RecyclerView.Adapter<HorizontalAdapter.My
         }
     }
 
-    HorizontalAdapter(Context mContext, List mediaList, FragmentManager manager, MediaType mediaType, @Nullable String string) {
+    HorizontalAdapter(Context mContext, List mediaList, FragmentManager manager, MediaType mediaType, @Nullable String string, @Nullable ProfileFragment fragment) {
         this.mContext = mContext;
-        this.mediaList = mediaList;
+        this.mediaList = new CopyOnWriteArrayList(mediaList);
         this.manager = manager;
         this.mediaType = mediaType;
         this.string = string;
+        this.fragment = fragment;
     }
 
     @Override
@@ -64,8 +69,7 @@ public class HorizontalAdapter extends RecyclerView.Adapter<HorizontalAdapter.My
                 holder.layout.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        MovieFullScreenDialog dialog = MovieFullScreenDialog.newInstance(movie.id);
-                        dialog.show(manager, MovieFullScreenDialog.TAG);
+                        fragment.openMovieDialog(movie.id);
                     }
                 });
                 Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url) + movie.poster_path).placeholder(R.drawable.placeholder_med_movie).override((int)(92 * mContext.getResources().getDisplayMetrics().density), (int)(154 * mContext.getResources().getDisplayMetrics().density)).dontAnimate().into(holder.poster);
@@ -75,8 +79,7 @@ public class HorizontalAdapter extends RecyclerView.Adapter<HorizontalAdapter.My
                 holder.layout.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        TvShowFullScreenDialog dialog = TvShowFullScreenDialog.newInstance(tv.id);
-                        dialog.show(manager, TvShowFullScreenDialog.TAG);
+                        fragment.openTVDialog(tv.id);
                     }
                 });
                 Glide.with(mContext).load(mContext.getResources().getString(R.string.poster_icon_base_url) + tv.poster_path).placeholder(R.drawable.placeholder_med_movie).override((int)(92 * mContext.getResources().getDisplayMetrics().density), (int)(154 * mContext.getResources().getDisplayMetrics().density)).dontAnimate().into(holder.poster);
@@ -108,5 +111,11 @@ public class HorizontalAdapter extends RecyclerView.Adapter<HorizontalAdapter.My
     @Override
     public int getItemCount() {
         return mediaList.size();
+    }
+
+    public void updateList(List mediaList) {
+        this.mediaList.clear();
+        this.mediaList.addAll(mediaList);
+        notifyDataSetChanged();
     }
 }

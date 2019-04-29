@@ -4,9 +4,11 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/AgileDevApp.iml" filepath="$PROJECT_DIR$/AgileDevApp.iml" />
       <module fileurl="file://\home\scm-studs\t7037453\AndroidStudioProjects\AgileDevApp\AgileDevApp.iml" filepath="\home\scm-studs\t7037453\AndroidStudioProjects\AgileDevApp\AgileDevApp.iml" />
+      <module fileurl="file://E:\androidStudio\AgileDevApp\AgileDevApp.iml" filepath="E:\androidStudio\AgileDevApp\AgileDevApp.iml" />
       <module fileurl="file://C:\Users\Tom\StudioProjects\AgileDevApp\AgileDevAppFUCKYOU.iml" filepath="C:\Users\Tom\StudioProjects\AgileDevApp\AgileDevAppFUCKYOU.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://\home\scm-studs\t7037453\AndroidStudioProjects\AgileDevApp\app\app.iml" filepath="\home\scm-studs\t7037453\AndroidStudioProjects\AgileDevApp\app\app.iml" />
+      <module fileurl="file://E:\androidStudio\AgileDevApp\app\app.iml" filepath="E:\androidStudio\AgileDevApp\app\app.iml" />
     </modules>
   </component>
 </project>

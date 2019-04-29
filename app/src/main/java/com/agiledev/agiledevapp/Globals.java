@@ -3,16 +3,13 @@ package com.agiledev.agiledevapp;
 import android.support.annotation.NonNull;
 import android.util.SparseArray;
 
-import java.text.SimpleDateFormat;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
 
 public class Globals
 {
@@ -57,6 +54,12 @@ public class Globals
     }
     static synchronized void setTrackedTvShows(List<trackedTV> trackedTvShows) {
         Globals.trackedTV = trackedTvShows;
+        for (Globals.trackedTV tv : trackedTV) {
+            Collections.sort(tv.trackedSeasons);
+            for (Globals.trackedTV.Season s : tv.trackedSeasons) {
+                Collections.sort(s.trackedEpisodes);
+            }
+        }
     }
     static synchronized void setLastSearchType(SearchType searchType) {
         Globals.lastSearchType = searchType;
@@ -90,7 +93,7 @@ public class Globals
             Globals.trackedMovies.add(movie);
     }
     static synchronized void addToTrackedTvShows(trackedTV TV) {
-        if (!trackedTVContains(TV.id))
+        if (!basicTvShowExists(TV.id))
             Globals.trackedTV.add(TV);
     }
     static void addToTrendingMovies(trendingMovie movie) {
@@ -110,17 +113,48 @@ public class Globals
             }
         }
     }
-    static synchronized void removeFromTrackedTvShows(String id) {
-        for (int i = 0; i < Globals.trackedTV.size(); i++) {
-            if (Globals.trackedTV.get(i).id.equals(id)) {
-                Globals.trackedTV.remove(i);
+    static synchronized void removeTrackedEpisode(String seriesId, int seasonNum, int episodeNum) {
+        for (Globals.trackedTV tv : trackedTV) {
+            if (tv.id.equals(seriesId)) {
+                for (Globals.trackedTV.Season s : tv.trackedSeasons) {
+                    if (s.seasonNum == seasonNum) {
+                        for (Globals.trackedTV.Episode e : s.trackedEpisodes) {
+                            if (e.episodeNum == episodeNum) {
+                                s.trackedEpisodes.remove(e);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    }
+    static synchronized void removeTrackedSeason(String seriesId, int seasonNum) {
+        for (Globals.trackedTV tv : trackedTV) {
+            if (tv.id.equals(seriesId)) {
+                for (Globals.trackedTV.Season s : tv.trackedSeasons) {
+                    if (s.seasonNum == seasonNum) {
+                        tv.trackedSeasons.remove(s);
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    }
+    static synchronized void removeTrackedShow(String seriesId) {
+        for (Globals.trackedTV tv : trackedTV) {
+            if (tv.id.equals(seriesId)) {
+                trackedTV.remove(tv);
                 break;
             }
         }
     }
 
 
-    //----------- Contains ------------
+    //----------- Movie Contains ------------
     static boolean trackedMoviesContains(String id) {
         for (trackedMovie m : Globals.trackedMovies) {
             if(m.id.equals(id))
@@ -128,12 +162,79 @@ public class Globals
         }
         return false;
     }
-    static boolean trackedTVContains(String id) {
+    //----------- TV Contains ------------
+    enum responseType {
+        FULL,
+        PARTIAL,
+        NONE
+    }
+    static boolean basicTvShowExists(String seriesId) {
         for (trackedTV tv : Globals.trackedTV) {
-            if(tv.id.equals(id))
+            if (tv.id.equals(seriesId)) {
                 return true;
+            }
         }
         return false;
+    }
+    static responseType trackedEpisodeExists(String seriesId, int seasonNum, int episodeNum) {
+        for (trackedTV tv : Globals.trackedTV) {
+            if (tv.id.equals(seriesId)) {
+                for (Globals.trackedTV.Season s : tv.trackedSeasons) {
+                    if (s.seasonNum == seasonNum) {
+                        ArrayList<Globals.trackedTV.Episode> trackedEpisodes = s.trackedEpisodes;
+                        for (Globals.trackedTV.Episode e : trackedEpisodes) {
+                            if (e.episodeNum == episodeNum)
+                                return responseType.FULL;
+                        }
+                        return responseType.NONE;
+                    }
+                }
+            }
+        }
+        return responseType.NONE;
+    }
+    static responseType trackedSeasonExists(String seriesId, int seasonNum) {
+        for (trackedTV tv : Globals.trackedTV) {
+            if (tv.id.equals(seriesId)) {
+                for (Globals.trackedTV.Season s : tv.trackedSeasons) {
+                    if (s.seasonNum == seasonNum) { //Season exists
+                        if (s.trackedEpisodes.size() == s.totalEpisodes) { //All episodes exist
+                            return responseType.FULL;
+                        } else if (s.trackedEpisodes.size() == 0) { //No episodes exist
+                            return responseType.NONE;
+                        } else { //Some episodes exist
+                            return responseType.PARTIAL;
+                        }
+                    }
+                }
+            }
+        }
+        return responseType.NONE;
+    }
+    static responseType trackedShowExists(String seriesId) {
+        HashMap<Integer, responseType> responses = new HashMap<>();
+        for (trackedTV tv : Globals.trackedTV) {
+            if (tv.id.equals(seriesId)) {
+                if (tv.trackedSeasons.size() < tv.totalSeasons && tv.trackedSeasons.size() > 0) {
+                    responses.put(-1, responseType.PARTIAL);
+                } else {
+                    for (Globals.trackedTV.Season s : tv.trackedSeasons) {
+                        if (s.trackedEpisodes.size() == s.totalEpisodes) {
+                            responses.put(s.seasonNum, responseType.FULL);
+                        } else if (s.trackedEpisodes.size() > 0) {
+                            responses.put(s.seasonNum, responseType.PARTIAL);
+                        }
+                    }
+                }
+            }
+        }
+        if (responses.containsValue(responseType.PARTIAL))
+            return responseType.PARTIAL;
+        else if (!responses.containsValue(responseType.FULL))
+            return responseType.NONE;
+        else if (!responses.containsValue(responseType.NONE))
+            return responseType.FULL;
+        return responseType.NONE;
     }
 
 
@@ -174,39 +275,54 @@ public class Globals
     }
 
     //-------Tracked TV Shows--------
-    static class trackedTV {
+    static class trackedTV implements Serializable {
         String id, name;
         String poster_path;
         Date date;
-        SparseArray<String> genres = new SparseArray<>();
-        Map<String, ArrayList<Episode>> seasons = new HashMap<>();
+        int totalSeasons;
+        SerializableSparseArray<String> genres = new SerializableSparseArray<>();
+        ArrayList<Season> trackedSeasons = new ArrayList<>();
 
-        private Map<String, ArrayList<Episode>> getSeasons() {
-            return seasons;
-        }
+        trackedTV() {}
 
-        static class Episode implements Comparable<Episode> {
+        static class Episode implements Comparable<Episode>, Serializable{
             Date date;
             String episodeName, id, seriesName;
             int episodeNum, seasonNum;
 
+            public Episode() {}
+
             @Override
             public int compareTo(@NonNull Episode episode) {
-                return Integer.compare(episode.episodeNum, episodeNum);
+                return Integer.compare(episodeNum, episode.episodeNum);
             }
         }
 
-        void addEpisode(Episode episode) {
-            String seasonString = "Season " + episode.seasonNum;
-            if (seasons.containsKey(seasonString)) { //Season exists
-                if (!seasons.get(seasonString).contains(episode)) { //Episode doesn't exist
-                    seasons.get(seasonString).add(episode);
+        static class Season implements Comparable<Season>, Serializable {
+            int seasonNum, totalEpisodes;
+            ArrayList<Episode> trackedEpisodes;
+
+            Season() {}
+
+            @Override
+            public int compareTo(@NonNull Season season) {
+                return Integer.compare(seasonNum, season.seasonNum);
+            }
+
+            void addEpisode(Episode episode) {
+                if (trackedEpisodes == null)
+                    trackedEpisodes = new ArrayList<>();
+                if (!trackedEpisodes.contains(episode))
+                    trackedEpisodes.add(episode);
+            }
+        }
+
+        void removeSeason(int seasonNum) {
+            ArrayList<Season> tempSeasons = new ArrayList<>(trackedSeasons);
+            for (Season s : tempSeasons) {
+                if (s.seasonNum == seasonNum) {
+                    trackedSeasons.remove(s);
                 }
-            } else {
-                ArrayList<Episode> season = new ArrayList<>();
-                season.add(episode);
-                seasons.put(seasonString, season);
-                Globals.addToTrackedTvShows(this);
             }
         }
     }

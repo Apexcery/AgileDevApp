@@ -76,11 +76,22 @@ public class TvShowFullScreenDialog extends DialogFragment {
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    static ProfileFragment.ReturnToProfileListener listener;
+
     public static TvShowFullScreenDialog newInstance(String id) {
         TvShowFullScreenDialog fragment = new TvShowFullScreenDialog();
         Bundle args = new Bundle();
         args.putString("id", id);
         fragment.setArguments(args);
+        return fragment;
+    }
+
+    public static TvShowFullScreenDialog newInstance(String id, ProfileFragment.ReturnToProfileListener returnListener) {
+        TvShowFullScreenDialog fragment = new TvShowFullScreenDialog();
+        Bundle args = new Bundle();
+        args.putString("id", id);
+        fragment.setArguments(args);
+        listener = returnListener;
         return fragment;
     }
 
@@ -131,7 +142,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MediaTracking.trackTV(getContext(), getActivity(), "series", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), id, null, null, trackingProgress).show();
+                trackTvShow();
             }
         });
 
@@ -166,31 +177,41 @@ public class TvShowFullScreenDialog extends DialogFragment {
 
                 String nextEpString = "", firstReleased = "";
                 if (TvShowFullScreenDialog.this.isAdded()) {
-                    Glide.with(TvShowFullScreenDialog.this).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
-                        @Override
-                        public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
-                            return false;
-                        }
+                    if (tvshowDetails.getBackdrop_path() != null) {
+                        Glide.with(TvShowFullScreenDialog.this).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
+                            @Override
+                            public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
+                                return false;
+                            }
 
-                        @Override
-                        public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                            trailerVideoPlayImage.setVisibility(View.VISIBLE);
+                            @Override
+                            public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                                trailerVideoPlayImage.setVisibility(View.VISIBLE);
 
-                            final FullTvShowDetails.Video tempVideo = tvshowDetails.getVideos().get(0); //TODO: Deal with the possibility of no videos.
-
-                            trailerVideoPlayImage.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    openYoutubeVideo(getContext(), tempVideo.getKey());
+                                final FullTvShowDetails.Video tempVideo;
+                                if (tvshowDetails.getVideos() != null && tvshowDetails.getVideos().size() > 0) {
+                                    tempVideo = tvshowDetails.getVideos().get(0);
+                                    trailerVideoPlayImage.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            openYoutubeVideo(getContext(), tempVideo.getKey());
+                                        }
+                                    });
+                                } else {
+                                    trailerVideoPlayImage.setVisibility(View.GONE);
                                 }
-                            });
 
-                            view.findViewById(R.id.tvshowLoadingSpinner).setVisibility(View.GONE);
-                            view.findViewById(R.id.fabTrackTV).setVisibility(View.VISIBLE);
-                            pageContent.setVisibility(View.VISIBLE);
-                            return false;
-                        }
-                    }).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).dontAnimate().into(trailerVideoImage);
+                                view.findViewById(R.id.tvshowLoadingSpinner).setVisibility(View.GONE);
+                                view.findViewById(R.id.fabTrackTV).setVisibility(View.VISIBLE);
+                                pageContent.setVisibility(View.VISIBLE);
+                                return false;
+                            }
+                        }).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).dontAnimate().into(trailerVideoImage);
+                    } else {
+                        view.findViewById(R.id.tvshowLoadingSpinner).setVisibility(View.GONE);
+                        view.findViewById(R.id.fabTrackTV).setVisibility(View.VISIBLE);
+                        pageContent.setVisibility(View.VISIBLE);
+                    }
 
                     firstReleased = getResources().getString(R.string.release_date) + " <font color='#ffffff'>" + tvshowDetails.getFirst_air_date() + "</font>";
                     nextEpString = tvshowDetails.getNext_episode_to_air() == null ? getResources().getString(R.string.nextep) + " <font color='#ffffff'>N/A</font>" : getResources().getString(R.string.nextep) + " <font color='#ffffff'>" + tvshowDetails.getNext_episode_to_air().air_date + "</font>";
@@ -263,7 +284,23 @@ public class TvShowFullScreenDialog extends DialogFragment {
 
     public void addSeasonsToLayout(ArrayList<FullTvShowDetails.season> seasonList, FragmentManager fragmentManager) {
         Context mContext = getContext();
-        RecyclerView.Adapter adapter = new HorizontalAdapter(mContext, seasonList, fragmentManager, HorizontalAdapter.MediaType.SEASON, id);
+        RecyclerView.Adapter adapter = new HorizontalAdapter(mContext, seasonList, fragmentManager, HorizontalAdapter.MediaType.SEASON, id, null);
         seasonRecycler.setAdapter(adapter);
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        super.onDismiss(dialog);
+        if (listener != null)
+            listener.onDialogDismissed();
+    }
+
+    void trackTvShow() {
+        if (Globals.trackedShowExists(id).equals(Globals.responseType.NONE))
+            MediaTracking.trackTV(getContext(), getActivity(), "series", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), id, null, null, trackingProgress);
+        else if (Globals.trackedShowExists(id).equals(Globals.responseType.PARTIAL))
+            MediaTracking.untrackTV(getContext(), getActivity(), "series", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), id, null, null, trackingProgress, true);
+        else
+            MediaTracking.untrackTV(getContext(), getActivity(), "series", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), id, null, null, trackingProgress, false);
     }
 }

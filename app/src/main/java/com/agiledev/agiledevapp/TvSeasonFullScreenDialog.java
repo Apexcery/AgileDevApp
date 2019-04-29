@@ -92,7 +92,7 @@ public class TvSeasonFullScreenDialog extends DialogFragment {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MediaTracking.trackTV(getContext(), getActivity(), "season", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), seriesId, seasonNum, null, progressBar).show();
+                trackTV();
             }
         });
 
@@ -183,5 +183,17 @@ public class TvSeasonFullScreenDialog extends DialogFragment {
         Context mContext = getContext();
         RecyclerView.Adapter adapter = new EpisodeCardAdapter(mContext, episodeList, fragmentManager);
         episodeRecycler.setAdapter(adapter);
+    }
+
+    public void trackTV() {
+        Globals.responseType response;
+        response = Globals.trackedSeasonExists(seriesId, seasonNum);
+        if (response == Globals.responseType.NONE) {
+            MediaTracking.trackTV(getContext(), getActivity(), "season", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), seriesId, seasonNum, null, progressBar);
+        } else if (response == Globals.responseType.FULL) {
+            MediaTracking.untrackTV(getContext(), getActivity(), "season", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), seriesId, seasonNum, null, progressBar, false);
+        } else {
+            MediaTracking.untrackTV(getContext(), getActivity(), "season", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), seriesId, seasonNum, null, progressBar, true);
+        }
     }
 }

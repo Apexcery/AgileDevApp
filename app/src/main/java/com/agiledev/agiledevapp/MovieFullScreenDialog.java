@@ -80,11 +80,22 @@ public class MovieFullScreenDialog extends DialogFragment {
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    static ProfileFragment.ReturnToProfileListener listener;
+
     public static MovieFullScreenDialog newInstance(String id) {
         MovieFullScreenDialog fragment = new MovieFullScreenDialog();
         Bundle args = new Bundle();
         args.putString("id", id);
         fragment.setArguments(args);
+        return fragment;
+    }
+
+    public static MovieFullScreenDialog newInstance(String id, ProfileFragment.ReturnToProfileListener returnListener) {
+        MovieFullScreenDialog fragment = new MovieFullScreenDialog();
+        Bundle args = new Bundle();
+        args.putString("id", id);
+        fragment.setArguments(args);
+        listener = returnListener;
         return fragment;
     }
 
@@ -130,8 +141,6 @@ public class MovieFullScreenDialog extends DialogFragment {
             }
         });
 
-//        getMovieDetails(view);
-
         return view;
     }
 
@@ -172,32 +181,41 @@ public class MovieFullScreenDialog extends DialogFragment {
                 String runtimeString = "";
 
                 if (MovieFullScreenDialog.this.isAdded()) {
-                    Glide.with(MovieFullScreenDialog.this).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
-                        @Override
-                        public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
-                            return false;
-                        }
+                    if (movieDetails.getBackdrop_path() != null) {
+                        Glide.with(MovieFullScreenDialog.this).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
+                            @Override
+                            public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
+                                return false;
+                            }
 
-                        @Override
-                        public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                            trailerVideoPlayImage.setVisibility(View.VISIBLE);
+                            @Override
+                            public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                                trailerVideoPlayImage.setVisibility(View.VISIBLE);
 
-                            final FullMovieDetails.Video tempVideo = movieDetails.getVideos().get(0);
-                            //TODO: Deal with the movie not having any videos.
-
-                            trailerVideoPlayImage.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    openYoutubeVideo(getContext(), tempVideo.getKey());
+                                final FullMovieDetails.Video tempVideo;
+                                if (movieDetails.getVideos() != null && movieDetails.getVideos().size() > 0) {
+                                    tempVideo = movieDetails.getVideos().get(0);
+                                    trailerVideoPlayImage.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            openYoutubeVideo(getContext(), tempVideo.getKey());
+                                        }
+                                    });
+                                } else {
+                                    trailerVideoPlayImage.setVisibility(View.GONE);
                                 }
-                            });
 
-                            view.findViewById(R.id.movieLoadingSpinner).setVisibility(View.GONE);
-                            view.findViewById(R.id.fabTrackMovie).setVisibility(View.VISIBLE);
-                            pageContent.setVisibility(View.VISIBLE);
-                            return false;
-                        }
-                    }).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).dontAnimate().into(trailerVideoImage);
+                                view.findViewById(R.id.movieLoadingSpinner).setVisibility(View.GONE);
+                                view.findViewById(R.id.fabTrackMovie).setVisibility(View.VISIBLE);
+                                pageContent.setVisibility(View.VISIBLE);
+                                return false;
+                            }
+                        }).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).dontAnimate().into(trailerVideoImage);
+                    } else {
+                        view.findViewById(R.id.movieLoadingSpinner).setVisibility(View.GONE);
+                        view.findViewById(R.id.fabTrackMovie).setVisibility(View.VISIBLE);
+                        pageContent.setVisibility(View.VISIBLE);
+                    }
 
                     releaseDateString = getResources().getString(R.string.release_date) + " <font color='#ffffff'>" + movieDetails.getRelease_date() + "</font>";
 
@@ -289,5 +307,12 @@ public class MovieFullScreenDialog extends DialogFragment {
     public void onDestroy() {
         super.onDestroy();
         dismiss();
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        super.onDismiss(dialog);
+        if (listener != null)
+            listener.onDialogDismissed();
     }
 }
