@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.View;
 import android.widget.Toast;
 
@@ -34,6 +35,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import cz.msebera.android.httpclient.Header;
@@ -50,6 +52,7 @@ public class MediaTracking {
     private static int runtime;
     private static Map<FullTvShowDetails.season, Boolean> flags = new HashMap<>();
     static final Map<String, Object> trackedSeasons = new HashMap<>();
+    static int alreadyTrackedAmountShow = 0, totalEpsShow = 0;
 
     public static AlertDialog trackMovie(final Context mContext, final Activity mActivity, final String username, final String id, final MaterialProgressBar progressBar) {
         final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, mContext, "Track Movie", "Are you sure you want to track this movie?");
@@ -497,8 +500,11 @@ public class MediaTracking {
                                                 s.seasonNum = seasonNum;
                                             }
 
-                                            if (s.trackedEpisodes != null && !s.trackedEpisodes.isEmpty())
+                                            int alreadyTrackedAmount = 0;
+                                            if (s.trackedEpisodes != null && !s.trackedEpisodes.isEmpty()) {
+                                                alreadyTrackedAmount = s.trackedEpisodes.size();
                                                 s.trackedEpisodes.clear();
+                                            }
 
                                             Globals.removeTrackedShow(tv.id);
 
@@ -576,6 +582,8 @@ public class MediaTracking {
                                             }
 
                                             final DocumentReference userRef = FirebaseFirestore.getInstance().collection("UserDetails").document(username);
+                                            final int finalAlreadyTrackedAmount = alreadyTrackedAmount;
+                                            final int finalTotalEps = totalEps;
                                             userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                                 @Override
                                                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -583,11 +591,13 @@ public class MediaTracking {
                                                         DocumentSnapshot doc = task.getResult();
                                                         Map<String, Object> userData = new HashMap<>();
                                                         Map<String, Long> userGenres = (Map<String, Long>)doc.get("genresWatched");
-                                                        for (FullTvShowDetails.Genre g : genreList) {
-                                                            if (userGenres.containsKey(g.name)) {
-                                                                userGenres.put(g.name, userGenres.get(g.name) + 1);
-                                                            } else {
-                                                                userGenres.put(g.name, 1L);
+                                                        for (int i = 0; i < finalTotalEps - finalAlreadyTrackedAmount; i++) {
+                                                            for (FullTvShowDetails.Genre g : genreList) {
+                                                                if (userGenres.containsKey(g.name)) {
+                                                                    userGenres.put(g.name, userGenres.get(g.name) + 1);
+                                                                } else {
+                                                                    userGenres.put(g.name, 1L);
+                                                                }
                                                             }
                                                         }
                                                         userData.put("genresWatched", userGenres);
@@ -723,8 +733,13 @@ public class MediaTracking {
                                                 DocumentSnapshot doc = task.getResult();
                                                 Map<String, Object> userData = new HashMap<>();
                                                 Map<String, Long> userGenres = (Map<String, Long>)doc.get("genresWatched");
-                                                for (FullTvShowDetails.Genre g : genreList) {
-                                                    userGenres.put(g.name, userGenres.get(g.name) + 1);
+                                                for (int i = 0; i < totalEpsShow - alreadyTrackedAmountShow; i++) {
+                                                    for (FullTvShowDetails.Genre g : genreList) {
+                                                        if (userGenres.containsKey(g.name))
+                                                            userGenres.put(g.name, userGenres.get(g.name) + 1);
+                                                        else
+                                                            userGenres.put(g.name, 1L);
+                                                    }
                                                 }
                                                 userData.put("genresWatched", userGenres);
                                                 userRef.update(userData);
@@ -815,8 +830,10 @@ public class MediaTracking {
                     sTemp.seasonNum = s.season_number;
                 }
 
-                if (sTemp.trackedEpisodes != null && !sTemp.trackedEpisodes.isEmpty())
+                if (sTemp.trackedEpisodes != null && !sTemp.trackedEpisodes.isEmpty()) {
+                    alreadyTrackedAmountShow += sTemp.trackedEpisodes.size();
                     sTemp.trackedEpisodes.clear();
+                }
 
                 Globals.removeTrackedShow(tv.id);
 
@@ -856,6 +873,7 @@ public class MediaTracking {
                 }
                 sTemp.totalEpisodes = totalEps;
                 trackedEpisode.put("totalEpisodes", totalEps);
+                totalEpsShow += totalEps;
 
                 tv.trackedSeasons.add(sTemp);
                 Globals.addToTrackedTvShows(tv);
@@ -1016,11 +1034,27 @@ public class MediaTracking {
 
     private static void untrackTVShow(final Context mContext, final Activity mActivity, final String username, final String seriesId, final MaterialProgressBar progressBar) {
         progressBar.setVisibility(View.VISIBLE);
+
+        SerializableSparseArray<String> genreList = new SerializableSparseArray<>();
+        int epAmount = 0;
+        for (Globals.trackedTV tv : Globals.getTrackedTvShows()) {
+            if (tv.id.equals(seriesId)) {
+                genreList = tv.genres;
+                for (Globals.trackedTV.Season season : tv.trackedSeasons) {
+                    epAmount += season.trackedEpisodes.size();
+                }
+                System.out.println();
+                break;
+            }
+        }
+
         DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedTV").document(username);
         ref.update(seriesId, FieldValue.delete());
 
         Globals.removeTrackedShow(seriesId);
 
+        final SerializableSparseArray<String> finalGenreList = genreList;
+        final int finalEpAmount = epAmount;
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -1032,7 +1066,6 @@ public class MediaTracking {
                         FullTvShowDetails tvDetails = new Gson().fromJson(response.toString(), FullTvShowDetails.class);
                         if (tvDetails == null)
                             return;
-                        final ArrayList<FullTvShowDetails.Genre> genreList = tvDetails.getGenres();
 
                         final DocumentReference userRef = FirebaseFirestore.getInstance().collection("UserDetails").document(username);
                         userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -1042,8 +1075,18 @@ public class MediaTracking {
                                     DocumentSnapshot doc = task.getResult();
                                     Map<String, Object> userData = new HashMap<>();
                                     Map<String, Long> userGenres = (Map<String, Long>)doc.get("genresWatched");
-                                    for (FullTvShowDetails.Genre g : genreList) {
-                                        userGenres.put(g.name, userGenres.get(g.name) - 1);
+                                    for (int i = 0; i < finalGenreList.size(); i++) {
+                                        for (int j = 0; j < finalEpAmount; j++) {
+                                            int key = finalGenreList.keyAt(i);
+                                            String val = finalGenreList.get(key);
+                                            if (userGenres.containsKey(val)) {
+                                                if (userGenres.get(val) - 1 <= 0) {
+                                                    userGenres.remove(val);
+                                                } else {
+                                                    userGenres.put(val, userGenres.get(val) - 1);
+                                                }
+                                            }
+                                        }
                                     }
                                     userData.put("genresWatched", userGenres);
                                     userRef.update(userData);
@@ -1086,19 +1129,64 @@ public class MediaTracking {
             untrackSeason(mActivity, username, seriesId, seasonNum, progressBar);
     }
 
-    private static void untrackSeason(final Activity mActivity, String username, String seriesId, int seasonNum, final MaterialProgressBar progressBar) {
+    private static void untrackSeason(final Activity mActivity, final String username, String seriesId, int seasonNum, final MaterialProgressBar progressBar) {
         progressBar.setVisibility(View.VISIBLE);
+
+        SerializableSparseArray<String> genreList = new SerializableSparseArray<>();
+        int epAmount = 0;
+        for (Globals.trackedTV tv : Globals.getTrackedTvShows()) {
+            if (tv.id.equals(seriesId)) {
+                genreList = tv.genres;
+                for (Globals.trackedTV.Season season : tv.trackedSeasons) {
+                    if (season.seasonNum == seasonNum) {
+                        epAmount = season.trackedEpisodes.size();
+                        break;
+                    }
+                }
+                System.out.println();
+                break;
+            }
+        }
 
         Globals.removeTrackedSeason(seriesId, seasonNum);
 
         DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedTV").document(username);
         Map<String, Object> seasonToDelete = new HashMap<>();
         seasonToDelete.put(seriesId + ".Season " + seasonNum, FieldValue.delete());
+        final SerializableSparseArray<String> finalGenreList = genreList;
+        final int finalEpAmount = epAmount;
         ref.update(seasonToDelete).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(mActivity.getApplicationContext(), "Season Untracked!", Toast.LENGTH_LONG).show();
+                final DocumentReference userRef = FirebaseFirestore.getInstance().collection("UserDetails").document(username);
+                userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            DocumentSnapshot doc = task.getResult();
+                            Map<String, Object> userData = new HashMap<>();
+                            Map<String, Long> userGenres = (Map<String, Long>)doc.get("genresWatched");
+                            for (int i = 0; i < finalGenreList.size(); i++) {
+                                for (int j = 0; j < finalEpAmount; j++) {
+                                    int key = finalGenreList.keyAt(i);
+                                    String val = finalGenreList.get(key);
+                                    if (userGenres.containsKey(val)) {
+                                        if (userGenres.get(val) - 1 <= 0) {
+                                            userGenres.remove(val);
+                                        } else {
+                                            userGenres.put(val, userGenres.get(val) - 1);
+                                        }
+                                    }
+                                }
+                            }
+                            userData.put("genresWatched", userGenres);
+                            userRef.update(userData);
+
+                            progressBar.setVisibility(View.GONE);
+                            Toast.makeText(mActivity.getApplicationContext(), "Season Untracked!", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
             }
         });
     }
@@ -1128,16 +1216,51 @@ public class MediaTracking {
     private static void untrackTVEpisode(final Activity mActivity, final String username, final String seriesId, final int seasonNum, final int episodeNum, final MaterialProgressBar progressBar) {
         progressBar.setVisibility(View.VISIBLE);
 
+        SerializableSparseArray<String> genreList = new SerializableSparseArray<>();
+        for (Globals.trackedTV tv : Globals.getTrackedTvShows()) {
+            if (tv.id.equals(seriesId)) {
+                genreList = tv.genres;
+                System.out.println();
+                break;
+            }
+        }
+
         Globals.removeTrackedEpisode(seriesId, seasonNum, episodeNum);
 
         DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedTV").document(username);
         Map<String, Object> episodeToDelete = new HashMap<>();
         episodeToDelete.put(seriesId + ".Season " + seasonNum + ".Episode " + episodeNum, FieldValue.delete());
+        final SerializableSparseArray<String> finalGenreList = genreList;
         ref.update(episodeToDelete).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(mActivity.getApplicationContext(), "Episode Untracked!", Toast.LENGTH_LONG).show();
+                final DocumentReference userRef = FirebaseFirestore.getInstance().collection("UserDetails").document(username);
+                userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            DocumentSnapshot doc = task.getResult();
+                            Map<String, Object> userData = new HashMap<>();
+                            Map<String, Long> userGenres = (Map<String, Long>)doc.get("genresWatched");
+                            for (int i = 0; i < finalGenreList.size(); i++) {
+                                int key = finalGenreList.keyAt(i);
+                                String val = finalGenreList.get(key);
+                                if (userGenres.containsKey(val)) {
+                                    if (userGenres.get(val) - 1 <= 0) {
+                                        userGenres.remove(val);
+                                    } else {
+                                        userGenres.put(val, userGenres.get(val) - 1);
+                                    }
+                                }
+                                userData.put("genresWatched", userGenres);
+                                userRef.update(userData);
+
+                                progressBar.setVisibility(View.GONE);
+                                Toast.makeText(mActivity.getApplicationContext(), "Episode Untracked!", Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    }
+                });
             }
         });
     }
