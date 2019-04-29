@@ -192,7 +192,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
                         }
                     }).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).dontAnimate().into(trailerVideoImage);
 
-                    firstReleased = getResources().getString(R.string.first_released) + " <font color='#ffffff'>" + tvshowDetails.getFirst_air_date() + "</font>";
+                    firstReleased = getResources().getString(R.string.release_date) + " <font color='#ffffff'>" + tvshowDetails.getFirst_air_date() + "</font>";
                     nextEpString = tvshowDetails.getNext_episode_to_air() == null ? getResources().getString(R.string.nextep) + " <font color='#ffffff'>N/A</font>" : getResources().getString(R.string.nextep) + " <font color='#ffffff'>" + tvshowDetails.getNext_episode_to_air().air_date + "</font>";
 
                     addCastToLayout(tvshowDetails.getCast(), getActivity().getSupportFragmentManager());

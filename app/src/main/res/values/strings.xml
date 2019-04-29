@@ -32,8 +32,16 @@
     <string name="nav_item_settings">Settings</string>
     <string name="nav_log_out">Log Out</string>
     <string name="logout_caps">LOGOUT</string>
-    <string name="credit">Credit</string>
-    <string name="dev_title">Developers</string>
+    <string name="credit"><b><u>Credit</u></b></string>
+    <string name="Issue_button">Report Issue</string>
+    <string name="firebase_desc">clickable image for firebase</string>
+    <string name="tmdb_desc">clickable image for tmdb</string>
+    <string name="hint">Message</string>
+    <string name="cancel">Cancel</string>
+    <string name="submit">Submit</string>
+    <string name="issue_text">Please explain the issue you are experiencing.</string>
+    <string name="feedback_text">Please give us feedback on how we can Improve.</string>
+    <string name="dev_title"><b><u>Developers</u></b></string>
     <string name="dev_names">Stuart - Lead Dev \nTom \nJordan \nJakub</string>
     <string name="about_text">This app is used to track movies and TV shows that you watch.
         Allowing you to see information about the cast/crew/director etc. When you search for a movie,
@@ -55,6 +63,10 @@
     <string name="episodes"><u><b>Episodes</b></u></string>
     <string name="view_more">View More</string>
     <string name="born">Born -</string>
+    <string name="change_avatar">Change Avatar</string>
+    <string name="upload_image">Upload Image</string>
+    <string name="skip">Skip</string>
+    <string name="confirm">confirm</string>
     <string name="release_date">Release Date:</string>
     <string name="first_released">First Episode:</string>
     <string name="initial_release">Initial Release Date:</string>
@@ -64,7 +76,7 @@
     <string name="title_activity_feedback">Feedback</string>
     <string name="title_activity_help">activity_help</string>
 
-    <string name="About"><u>About</u></string>
+    <string name="About"><b><u>About</u></b></string>
     <string name="biography"><u>Biography</u></string>
     <string name="username">Username</string>
     <string name="password">Password</string>

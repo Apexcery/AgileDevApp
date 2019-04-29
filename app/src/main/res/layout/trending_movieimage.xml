@@ -17,7 +17,6 @@
         android:layout_alignParentTop="true"
         android:adjustViewBounds="true"
         android:cropToPadding="false"
-        android:layout_weight="1"
         android:layout_margin="0dp"/>
 
     <RatingBar
