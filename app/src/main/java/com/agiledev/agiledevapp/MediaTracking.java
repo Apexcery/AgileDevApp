@@ -382,7 +382,7 @@ public class MediaTracking {
                                                                     @Override
                                                                     public void run() {
                                                                         progressBar.setVisibility(View.GONE);
-                                                                        Toast.makeText(mContext.getApplicationContext(), "TV Episode Tracked!", Snackbar.LENGTH_LONG).show();
+                                                                        Toast.makeText(mContext.getApplicationContext(), "TV Episode Tracked!", Toast.LENGTH_LONG).show();
                                                                     }
                                                                 });
                                                             }
@@ -607,7 +607,7 @@ public class MediaTracking {
                                                             @Override
                                                             public void run() {
                                                                 progressBar.setVisibility(View.GONE);
-                                                                Toast.makeText(mContext.getApplicationContext(), "TV Season Tracked!", Snackbar.LENGTH_LONG).show();
+                                                                Toast.makeText(mContext.getApplicationContext(), "TV Season Tracked!", Toast.LENGTH_LONG).show();
                                                             }
                                                         });
                                                     }
@@ -748,7 +748,7 @@ public class MediaTracking {
                                                     @Override
                                                     public void run() {
                                                         progressBar.setVisibility(View.GONE);
-                                                        Toast.makeText(mContext.getApplicationContext(), "TV Show Tracked!", Snackbar.LENGTH_LONG).show();
+                                                        Toast.makeText(mContext.getApplicationContext(), "TV Show Tracked!", Toast.LENGTH_LONG).show();
                                                     }
                                                 });
                                             }
