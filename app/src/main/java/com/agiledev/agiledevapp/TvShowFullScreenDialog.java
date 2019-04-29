@@ -76,11 +76,22 @@ public class TvShowFullScreenDialog extends DialogFragment {
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    static ProfileFragment.ReturnToProfileListener listener;
+
     public static TvShowFullScreenDialog newInstance(String id) {
         TvShowFullScreenDialog fragment = new TvShowFullScreenDialog();
         Bundle args = new Bundle();
         args.putString("id", id);
         fragment.setArguments(args);
+        return fragment;
+    }
+
+    public static TvShowFullScreenDialog newInstance(String id, ProfileFragment.ReturnToProfileListener returnListener) {
+        TvShowFullScreenDialog fragment = new TvShowFullScreenDialog();
+        Bundle args = new Bundle();
+        args.putString("id", id);
+        fragment.setArguments(args);
+        listener = returnListener;
         return fragment;
     }
 
@@ -131,7 +142,7 @@ public class TvShowFullScreenDialog extends DialogFragment {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MediaTracking.trackTV(getContext(), getActivity(), "series", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), id, null, null, trackingProgress).show();
+                trackTvShow();
             }
         });
 
@@ -263,7 +274,23 @@ public class TvShowFullScreenDialog extends DialogFragment {
 
     public void addSeasonsToLayout(ArrayList<FullTvShowDetails.season> seasonList, FragmentManager fragmentManager) {
         Context mContext = getContext();
-        RecyclerView.Adapter adapter = new HorizontalAdapter(mContext, seasonList, fragmentManager, HorizontalAdapter.MediaType.SEASON, id);
+        RecyclerView.Adapter adapter = new HorizontalAdapter(mContext, seasonList, fragmentManager, HorizontalAdapter.MediaType.SEASON, id, null);
         seasonRecycler.setAdapter(adapter);
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        super.onDismiss(dialog);
+        if (listener != null)
+            listener.onDialogDismissed();
+    }
+
+    void trackTvShow() {
+        if (Globals.trackedShowExists(id).equals(Globals.responseType.NONE))
+            MediaTracking.trackTV(getContext(), getActivity(), "series", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), id, null, null, trackingProgress);
+        else if (Globals.trackedShowExists(id).equals(Globals.responseType.PARTIAL))
+            MediaTracking.untrackTV(getContext(), getActivity(), "series", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), id, null, null, trackingProgress, true);
+        else
+            MediaTracking.untrackTV(getContext(), getActivity(), "series", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), id, null, null, trackingProgress, false);
     }
 }

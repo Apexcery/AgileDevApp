@@ -43,7 +43,7 @@ public class ActivityHelp extends AppCompatActivity
             public void onClick(View view)
             {
 
-                dialog.show(getFragmentManager(), "FeedbackDialogFragment");
+                dialog.show(getSupportFragmentManager(), "FeedbackDialogFragment");
             }
         });
 

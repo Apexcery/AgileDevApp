@@ -8,7 +8,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.View;
 import android.widget.Toast;
 
@@ -24,6 +23,11 @@ import com.loopj.android.http.SyncHttpClient;
 
 import org.json.JSONObject;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
@@ -158,106 +162,165 @@ public class MediaTracking {
         return dialog;
     }
 
-    public static AlertDialog trackTV(Context mContext, Activity mActivity, String type, String username, String seriesId, @Nullable Integer seasonNum, @Nullable Integer episodeNum, MaterialProgressBar progressBar) {
+    public static void trackTV(Context mContext, Activity mActivity, String type, String username, String seriesId, @Nullable Integer seasonNum, @Nullable Integer episodeNum, MaterialProgressBar progressBar) {
         switch (type) {
             case "series":
-                return trackTVShow(mContext, mActivity, username, seriesId, progressBar);
+                trackTVShowDialog(mContext, mActivity, username, seriesId, progressBar, true);
             case "season":
                 if (seasonNum != null)
-                    return trackTVSeason(mContext, mActivity, username, seriesId, seasonNum, progressBar);
+                    trackTVSeasonDialog(mContext, mActivity, username, seriesId, seasonNum, progressBar, true);
                 else
                     Log.e("Tracking Season", "SeasonNum was null.");
                 break;
             case "episode":
                 if (seasonNum != null && episodeNum != null)
-                    return trackTVEpisode(mContext, mActivity, username, seriesId, seasonNum, episodeNum, progressBar);
+                    trackTVEpisodeDialog(mContext, mActivity, username, seriesId, seasonNum, episodeNum, progressBar, true);
                 else
                     Log.e("Tracking Episode", "SeasonNum or EpisodeNum was null.");
                 break;
             default:
                 Log.e("Tracking", "Type was invalid.");
         }
-        return null;
     }
 
-    private static AlertDialog trackTVEpisode(final Context mContext, final Activity mActivity, final String username, final String seriesId, final int seasonNum, final int episodeNum, final MaterialProgressBar progressBar) {
-        final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, mContext, "Track TV", "Are you sure you want to track this episode?");
-        dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
+    private static void trackTVEpisodeDialog(final Context mContext, final Activity mActivity, final String username, final String seriesId, final int seasonNum, final int episodeNum,final MaterialProgressBar progressBar, boolean showDialog) {
+        if (showDialog) {
+            final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, mContext, "Track Episode", "Are you sure you want to track this episode?");
+            dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    trackTVEpisode(mContext, mActivity, username, seriesId, seasonNum, episodeNum, progressBar);
+                }
+            });
+            dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialog.dismiss();
+                }
+            });
+            dialog.show();
+        } else
+            trackTVEpisode(mContext, mActivity, username, seriesId, seasonNum, episodeNum, progressBar);
+    }
+
+    private static void trackTVEpisode(final Context mContext, final Activity mActivity, final String username, final String seriesId, final int seasonNum, final int episodeNum, final MaterialProgressBar progressBar) {
+        progressBar.setVisibility(View.VISIBLE);
+        final DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedTV").document(username);
+        ref.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                progressBar.setVisibility(View.VISIBLE);
-                final DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedTV").document(username);
-                ref.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            final DocumentSnapshot doc = task.getResult();
-                            new Thread(new Runnable() {
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    final DocumentSnapshot doc = task.getResult();
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            final SyncHttpClient client = new SyncHttpClient();
+                            String url = "https://api.themoviedb.org/3/" + "tv/" + seriesId + "/season/" + seasonNum + "/episode/" + episodeNum + "?api_key=" + TmdbClient.key;
+                            client.get(url, null, new JsonHttpResponseHandler() {
                                 @Override
-                                public void run() {
-                                    final SyncHttpClient client = new SyncHttpClient();
-                                    String url = "https://api.themoviedb.org/3/" + "tv/" + seriesId + "/season/" + seasonNum + "/episode/" + episodeNum + "?api_key=" + TmdbClient.key;
+                                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                                    final FullTvEpisodeDetails episode = new Gson().fromJson(response.toString(), FullTvEpisodeDetails.class);
+                                    if (episode == null)
+                                        return;
+                                    final Map<String, Object> trackedTV = new HashMap<>();
+                                    final Map<String, Object> trackedSeason = new HashMap<>();
+                                    final Map<String, Object> trackedEpisode = new HashMap<>();
+                                    final Map<String, Object> trackData = new HashMap<>();
+
+                                    final Date date = new Date();
+                                    trackData.put("date", date);
+                                    trackData.put("episodeName", episode.getName());
+                                    trackData.put("episodeNum", episode.getEpisode_number());
+
+                                    String url = "https://api.themoviedb.org/3/" + "tv/" + seriesId + "?api_key=" + TmdbClient.key;
                                     client.get(url, null, new JsonHttpResponseHandler() {
                                         @Override
                                         public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                                            final FullTvEpisodeDetails episode = new Gson().fromJson(response.toString(), FullTvEpisodeDetails.class);
-                                            if (episode == null)
+                                            final FullTvShowDetails show = new Gson().fromJson(response.toString(), FullTvShowDetails.class);
+                                            if (show == null)
                                                 return;
-                                            final Map<String, Object> trackedTV = new HashMap<>();
-                                            final Map<String, Object> trackedSeason = new HashMap<>();
-                                            final Map<String, Object> trackedEpisode = new HashMap<>();
-                                            final Map<String, Object> trackData = new HashMap<>();
 
-                                            trackData.put("date", new Date());
-                                            trackData.put("episodeName", episode.getName());
-                                            trackData.put("episodeNum", episode.getEpisode_number());
+                                            trackData.put("id", episode.getId());
+                                            trackData.put("seriesName", show.getName());
 
-                                            String url = "https://api.themoviedb.org/3/" + "tv/" + seriesId + "?api_key=" + TmdbClient.key;
+                                            final String episodeString = "Episode " + episode.getEpisode_number();
+                                            trackedEpisode.put(episodeString, trackData);
+
+                                            String url = "https://api.themoviedb.org/3/" + "tv/" + seriesId + "/season/" + seasonNum + "?api_key=" + TmdbClient.key;
                                             client.get(url, null, new JsonHttpResponseHandler() {
                                                 @Override
                                                 public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                                                    final FullTvShowDetails show = new Gson().fromJson(response.toString(), FullTvShowDetails.class);
-                                                    if (show == null)
+                                                    final FullTvSeasonDetails seasonDetails = new Gson().fromJson(response.toString(), FullTvSeasonDetails.class);
+                                                    if (seasonDetails == null)
                                                         return;
 
-                                                    trackData.put("id", episode.getId());
-                                                    trackData.put("seriesName", show.getName());
+                                                    int totalEps = 0;
+                                                    for (final FullTvSeasonDetails.Episode e : seasonDetails.getEpisodes()) {
+                                                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                                                        try {
+                                                            Date episodeDate = sdf.parse(e.getAir_date());
+                                                            if (episodeDate.before(date)) {
+                                                                totalEps++;
+                                                            }
+                                                        } catch (ParseException ex) {
+                                                            ex.printStackTrace();
+                                                        }
+                                                    }
+                                                    trackedEpisode.put("totalEpisodes", totalEps);
 
-                                                    String episodeString = "Episode " + episode.getEpisode_number();
-                                                    trackedEpisode.put(episodeString, trackData);
                                                     String seasonString = "Season " + episode.getSeason_number();
                                                     trackedSeason.put(seasonString, trackedEpisode);
                                                     trackedSeason.put("name", show.getName());
                                                     trackedSeason.put("poster_path", show.getPoster_path());
-                                                    Date date = new Date();
                                                     trackedSeason.put("lastWatched", date);
-                                                    ArrayList<FullTvShowDetails.Genre> genreList = show.getGenres();
+                                                    final ArrayList<FullTvShowDetails.Genre> genreList = show.getGenres();
                                                     Map<String, String> genres = new HashMap<>();
                                                     for (FullTvShowDetails.Genre g : genreList) {
                                                         genres.put(String.valueOf(g.id), g.name);
                                                     }
                                                     trackedSeason.put("genres", genres);
+                                                    trackedSeason.put("totalSeasons", show.getSeason().size());
                                                     trackedTV.put(show.getId(), trackedSeason);
 
-                                                    Globals.trackedTV tv = null;
-                                                    if (Globals.trackedTVContains(show.getId())) {
+                                                    Globals.trackedTV tv = new Globals.trackedTV();
+                                                    if (Globals.basicTvShowExists(show.getId())) {
                                                         for (Globals.trackedTV t : Globals.getTrackedTvShows()) {
-                                                            if (t.id.equals(show.getId())) {
-                                                                tv = t;
+                                                            if (t.id.equals(seriesId)) {
+                                                                tv = (Globals.trackedTV) cloneObject(t);
+                                                                break;
                                                             }
                                                         }
                                                     } else {
-                                                        tv = new Globals.trackedTV();
+                                                        tv.date = date;
+                                                        tv.id = show.getId();
+                                                        tv.name = show.getName();
+                                                        tv.poster_path = show.getPoster_path();
+                                                        SerializableSparseArray<String> trackedGenres = new SerializableSparseArray<>();
+                                                        for (FullTvShowDetails.Genre g : genreList) {
+                                                            trackedGenres.put(g.id, g.name);
+                                                        }
+                                                        tv.genres = trackedGenres;
                                                     }
-                                                    tv.date = date;
-                                                    tv.id = show.getId();
-                                                    tv.name = show.getName();
-                                                    tv.poster_path = show.getPoster_path();
-                                                    SparseArray<String> trackedGenres = new SparseArray<>();
-                                                    for (FullTvShowDetails.Genre g : (ArrayList<FullTvShowDetails.Genre>)genreList) {
-                                                        trackedGenres.put(g.id, g.name);
+
+                                                    Globals.trackedTV.Season s = new Globals.trackedTV.Season();
+                                                    if (Globals.trackedSeasonExists(seriesId, seasonNum) == Globals.responseType.PARTIAL || Globals.trackedSeasonExists(seriesId, seasonNum) == Globals.responseType.FULL) {
+                                                        for (Globals.trackedTV t : Globals.getTrackedTvShows()) {
+                                                            if (t.id.equals(seriesId)) {
+                                                                for (Globals.trackedTV.Season season : t.trackedSeasons) {
+                                                                    if (season.seasonNum == seasonNum) {
+                                                                        s = (Globals.trackedTV.Season) cloneObject(season);
+                                                                        tv.removeSeason(s.seasonNum);
+                                                                        break;
+                                                                    }
+                                                                }
+                                                                break;
+                                                            }
+                                                        }
+                                                    } else {
+                                                        s.seasonNum = seasonNum;
                                                     }
-                                                    tv.genres = trackedGenres;
+
+                                                    Globals.removeTrackedShow(tv.id);
 
                                                     Globals.trackedTV.Episode e = new Globals.trackedTV.Episode();
                                                     e.date = date;
@@ -265,8 +328,12 @@ public class MediaTracking {
                                                     e.id = episode.getId();
                                                     e.seriesName = show.getName();
                                                     e.episodeNum = episode.getEpisode_number();
-                                                    tv.addEpisode(e);
+                                                    e.seasonNum = seasonNum;
+                                                    s.totalEpisodes = totalEps;
+                                                    s.addEpisode(e);
 
+                                                    tv.trackedSeasons.add(s);
+                                                    Globals.addToTrackedTvShows(tv);
 
                                                     if (!doc.exists()) {
                                                         ref.set(trackedTV);
@@ -277,21 +344,45 @@ public class MediaTracking {
                                                                     HashMap currentEps = ((HashMap)((HashMap)doc.get(show.getId())).get(seasonString));
                                                                     currentEps.put(episodeString, trackedEpisode.get(episodeString));
                                                                     ref.update(show.getId() + "." + seasonString, currentEps);
+                                                                    ref.update(show.getId() + ".lastWatched", trackedSeason.get("lastWatched"));
                                                                 }
                                                             } else {
                                                                 HashMap currentSeasons = ((HashMap)doc.get(show.getId()));
                                                                 currentSeasons.put(seasonString, trackedSeason.get(seasonString));
                                                                 ref.update(show.getId(), currentSeasons);
+                                                                ref.update(show.getId() + ".lastWatched", trackedSeason.get("lastWatched"));
                                                             }
                                                         } else {
                                                             ref.update(trackedTV);
                                                         }
                                                     }
-                                                    mActivity.runOnUiThread(new Runnable() {
+
+                                                    final DocumentReference userRef = FirebaseFirestore.getInstance().collection("UserDetails").document(username);
+                                                    userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                                         @Override
-                                                        public void run() {
-                                                            progressBar.setVisibility(View.GONE);
-                                                            Toast.makeText(mContext.getApplicationContext(), "TV Episode Tracked!", Snackbar.LENGTH_LONG).show();
+                                                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                                            if (task.isSuccessful()) {
+                                                                DocumentSnapshot doc = task.getResult();
+                                                                Map<String, Object> userData = new HashMap<>();
+                                                                Map<String, Long> userGenres = (Map<String, Long>)doc.get("genresWatched");
+                                                                for (FullTvShowDetails.Genre g : genreList) {
+                                                                    if (userGenres.containsKey(g.name)) {
+                                                                        userGenres.put(g.name, userGenres.get(g.name) + 1);
+                                                                    } else {
+                                                                        userGenres.put(g.name, 1L);
+                                                                    }
+                                                                }
+                                                                userData.put("genresWatched", userGenres);
+                                                                userRef.update(userData);
+
+                                                                mActivity.runOnUiThread(new Runnable() {
+                                                                    @Override
+                                                                    public void run() {
+                                                                        progressBar.setVisibility(View.GONE);
+                                                                        Toast.makeText(mContext.getApplicationContext(), "TV Episode Tracked!", Snackbar.LENGTH_LONG).show();
+                                                                    }
+                                                                });
+                                                            }
                                                         }
                                                     });
                                                 }
@@ -299,279 +390,363 @@ public class MediaTracking {
                                         }
                                     });
                                 }
-                            }).start();
-
+                            });
                         }
-                    }
-                });
+                    }).start();
+                }
             }
         });
-
-        dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialog.dismiss();
-            }
-        });
-
-        return dialog;
     }
 
-    private static AlertDialog trackTVSeason(final Context mContext, final Activity mActivity, final String username, final String seriesId, final int seasonNum, final MaterialProgressBar progressBar) {
-        final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, mContext, "Track TV", "Are you sure you want to track this entire season?");
-        dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                progressBar.setVisibility(View.VISIBLE);
-                final DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedTV").document(username);
-                ref.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            final DocumentSnapshot doc = task.getResult();
+    private static void trackTVSeasonDialog(final Context mContext, final Activity mActivity, final String username, final String seriesId, final int seasonNum, final MaterialProgressBar progressBar, boolean showDialog) {
+        if (showDialog) {
+            final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, mContext, "Track TV", "Are you sure you want to track this entire tv season?");
+            dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    trackTVSeason(mContext, mActivity, username, seriesId, seasonNum, progressBar);
+                }
+            });
+            dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialog.dismiss();
+                }
+            });
+            dialog.show();
+        } else
+            trackTVSeason(mContext, mActivity, username, seriesId, seasonNum, progressBar);
+    }
 
-                            new Thread(new Runnable() {
+    private static void trackTVSeason(final Context mContext, final Activity mActivity, final String username, final String seriesId, final int seasonNum, final MaterialProgressBar progressBar) {
+        progressBar.setVisibility(View.VISIBLE);
+        final DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedTV").document(username);
+        ref.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    final DocumentSnapshot doc = task.getResult();
+
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            final SyncHttpClient client = new SyncHttpClient();
+                            String url = "https://api.themoviedb.org/3/" + "tv/"+ seriesId + "/season/" + seasonNum + "?api_key=" + TmdbClient.key;
+                            client.get(url, null, new JsonHttpResponseHandler() {
                                 @Override
-                                public void run() {
-                                    final SyncHttpClient client = new SyncHttpClient();
-                                    String url = "https://api.themoviedb.org/3/" + "tv/"+ seriesId + "/season/" + seasonNum + "?api_key=" + TmdbClient.key;
+                                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                                    final FullTvSeasonDetails season = new Gson().fromJson(response.toString(), FullTvSeasonDetails.class);
+                                    if (season == null)
+                                        return;
+
+                                    String url = "https://api.themoviedb.org/3/" + "tv/" + seriesId + "?api_key=" + TmdbClient.key;
                                     client.get(url, null, new JsonHttpResponseHandler() {
                                         @Override
                                         public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                                            final FullTvSeasonDetails season = new Gson().fromJson(response.toString(), FullTvSeasonDetails.class);
-                                            if (season == null)
+                                            final FullTvShowDetails show = new Gson().fromJson(response.toString(), FullTvShowDetails.class);
+                                            if (show == null)
                                                 return;
 
-                                            String url = "https://api.themoviedb.org/3/" + "tv/" + seriesId + "?api_key=" + TmdbClient.key;
-                                            client.get(url, null, new JsonHttpResponseHandler() {
-                                                @Override
-                                                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                                                    final FullTvShowDetails show = new Gson().fromJson(response.toString(), FullTvShowDetails.class);
-                                                    if (show == null)
-                                                        return;
+                                            ArrayList<FullTvSeasonDetails.Episode> episodes = season.getEpisodes();
+                                            final Map<String, Object> trackedTV = new HashMap<>();
+                                            final Map<String, Object> trackedSeason = new HashMap<>();
+                                            final Map<String, Object> trackedEpisode = new HashMap<>();
 
-                                                    ArrayList<FullTvSeasonDetails.Episode> episodes = season.getEpisodes();
-                                                    final Map<String, Object> trackedTV = new HashMap<>();
-                                                    final Map<String, Object> trackedSeason = new HashMap<>();
-                                                    final Map<String, Object> trackedEpisode = new HashMap<>();
-
-                                                    Date date = new Date();
-
-                                                    Globals.trackedTV tv = null;
-                                                    if (Globals.trackedTVContains(show.getId())) {
-                                                        for (Globals.trackedTV t : Globals.getTrackedTvShows()) {
-                                                            if (t.id.equals(show.getId())) {
-                                                                tv = t;
-                                                            }
-                                                        }
-                                                    } else {
-                                                        tv = new Globals.trackedTV();
-                                                    }
-                                                    tv.date = date;
-                                                    tv.id = show.getId();
-                                                    tv.name = show.getName();
-                                                    tv.poster_path = show.getPoster_path();
-                                                    SparseArray<String> trackedGenres = new SparseArray<>();
-                                                    ArrayList<FullTvShowDetails.Genre> genreList = show.getGenres();
-                                                    for (FullTvShowDetails.Genre g : genreList) {
-                                                        trackedGenres.put(g.id, g.name);
-                                                    }
-                                                    tv.genres = trackedGenres;
-
-                                                    for (final FullTvSeasonDetails.Episode e : episodes) {
-                                                        final Map<String, Object> trackData = new HashMap<>();
-
-                                                        trackData.put("date", date);
-                                                        trackData.put("episodeName", e.getName());
-                                                        trackData.put("episodeNum", e.getEpisode_number());
-
-                                                        trackData.put("id", e.getId());
-                                                        trackData.put("seriesName", show.getName());
-
-                                                        String episodeString = "Episode " + e.getEpisode_number();
-                                                        trackedEpisode.put(episodeString, trackData);
-
-                                                        Globals.trackedTV.Episode ep = new Globals.trackedTV.Episode();
-                                                        ep.date = date;
-                                                        ep.episodeName = e.getName();
-                                                        ep.id = e.getId();
-                                                        ep.seriesName = show.getName();
-                                                        ep.episodeNum = e.getEpisode_number();
-                                                        tv.addEpisode(ep);
-                                                    }
-
-                                                    String seasonString = "Season " + seasonNum;
-                                                    trackedSeason.put(seasonString, trackedEpisode);
-                                                    trackedSeason.put("name", show.getName());
-                                                    trackedSeason.put("poster_path", show.getPoster_path());
-                                                    trackedSeason.put("lastWatched", date);
-                                                    genreList = show.getGenres();
-                                                    Map<String, String> genres = new HashMap<>();
-                                                    for (FullTvShowDetails.Genre g : genreList) {
-                                                        genres.put(String.valueOf(g.id), g.name);
-                                                    }
-                                                    trackedSeason.put("genres", genres);
-                                                    trackedTV.put(show.getId(), trackedSeason);
-
-                                                    if (!doc.exists()) {
-                                                        ref.set(trackedTV);
-                                                    } else {
-                                                        if (doc.contains(show.getId())) { // Show exists
-                                                            if (!(((HashMap)doc.get(show.getId())).containsKey(seasonString))) { // Season doesn't exist
-                                                                HashMap<String, Object> currentSeasons = ((HashMap<String, Object>)doc.get(show.getId()));
-                                                                currentSeasons.put(seasonString, trackedSeason.get(seasonString));
-                                                                ref.update(show.getId(), currentSeasons);
-                                                            } else { //Season exists
-                                                                HashMap<String, Object> currentSeasons = ((HashMap<String, Object>)doc.get(show.getId()));
-                                                                HashMap<String, Object> currentSeason = (HashMap<String, Object>)currentSeasons.get(seasonString);
-                                                                for (Map.Entry<String, Object> entry : trackedEpisode.entrySet()) {
-                                                                    if (!currentSeason.containsKey(entry.getKey())) {
-                                                                        currentSeason.put(entry.getKey(), entry.getValue());
-                                                                    }
-                                                                }
-                                                                currentSeasons.put(seasonString, currentSeason);
-                                                                ref.update(show.getId(), currentSeasons);
-                                                            }
-                                                        } else {
-                                                            ref.update(trackedTV);
-                                                        }
-                                                    }
-                                                    mActivity.runOnUiThread(new Runnable() {
-                                                        @Override
-                                                        public void run() {
-                                                            progressBar.setVisibility(View.GONE);
-                                                            Toast.makeText(mContext.getApplicationContext(), "TV Season Tracked!", Snackbar.LENGTH_LONG).show();
-                                                        }
-                                                    });
-                                                }
-                                            });
-                                        }
-                                    });
-                                }
-                            }).start();
-
-                        }
-                    }
-                });
-            }
-        });
-
-        dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialog.dismiss();
-            }
-        });
-
-        return dialog;
-    }
-
-    private static synchronized AlertDialog trackTVShow(final Context mContext, final Activity mActivity, final String username, final String seriesId, final MaterialProgressBar progressBar) {
-        final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, mContext, "Track TV", "Are you sure you want to track this entire tv show?");
-        dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                progressBar.setVisibility(View.VISIBLE);
-                final DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedTV").document(username);
-                ref.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            final DocumentSnapshot doc = task.getResult();
-                            TmdbClient.getFullTvShowDetails(seriesId, null, new JsonHttpResponseHandler() {
-                                @Override
-                                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                                    final FullTvShowDetails show = new Gson().fromJson(response.toString(), FullTvShowDetails.class);
-                                    if (show == null)
-                                        return;
-
-                                    final Map<String, Object> trackedTV = new HashMap<>();
-
-                                    final ArrayList<FullTvShowDetails.Genre> genreList = show.getGenres();
-
-                                    for (final FullTvShowDetails.season s : show.getSeason()) {
-                                        flags.put(s, false);
-                                        new Thread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                Map.Entry<String, Object> entry = trackSeasonForShowTrack(seriesId, s, show, genreList);
-                                                trackedSeasons.put(entry.getKey(), entry.getValue());
-                                            }
-                                        }).start();
-                                    }
-
-                                    final Thread flagCheck = new Thread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            while (checkForNotCompletes(flags)) {
-
-                                            }
-                                            trackedSeasons.put("name", show.getName());
-                                            trackedSeasons.put("poster_path", show.getPoster_path());
-                                            trackedSeasons.put("lastWatched", new Date());
+                                            Date date = new Date();
+                                            final ArrayList<FullTvShowDetails.Genre> genreList = show.getGenres();
                                             Map<String, String> genres = new HashMap<>();
                                             for (FullTvShowDetails.Genre g : genreList) {
                                                 genres.put(String.valueOf(g.id), g.name);
                                             }
-                                            trackedSeasons.put("genres", genres);
-                                            trackedTV.put(show.getId(), trackedSeasons);
+
+                                            Globals.trackedTV tv = new Globals.trackedTV();
+                                            if (Globals.basicTvShowExists(show.getId())) {
+                                                for (Globals.trackedTV t : Globals.getTrackedTvShows()) {
+                                                    if (t.id.equals(seriesId)) {
+                                                        tv = (Globals.trackedTV) cloneObject(t);
+                                                        break;
+                                                    }
+                                                }
+                                            } else {
+                                                tv.date = date;
+                                                tv.id = show.getId();
+                                                tv.name = show.getName();
+                                                tv.poster_path = show.getPoster_path();
+                                                SerializableSparseArray<String> trackedGenres = new SerializableSparseArray<>();
+                                                for (FullTvShowDetails.Genre g : genreList) {
+                                                    trackedGenres.put(g.id, g.name);
+                                                }
+                                                tv.genres = trackedGenres;
+                                            }
+
+                                            Globals.trackedTV.Season s = new Globals.trackedTV.Season();
+                                            if (Globals.trackedSeasonExists(seriesId, seasonNum) == Globals.responseType.PARTIAL || Globals.trackedSeasonExists(seriesId, seasonNum) == Globals.responseType.FULL) {
+                                                for (Globals.trackedTV t : Globals.getTrackedTvShows()) {
+                                                    if (t.id.equals(seriesId)) {
+                                                        for (Globals.trackedTV.Season season : t.trackedSeasons) {
+                                                            if (season.seasonNum == seasonNum) {
+                                                                s = (Globals.trackedTV.Season) cloneObject(season);
+                                                                tv.removeSeason(s.seasonNum);
+                                                                break;
+                                                            }
+                                                        }
+                                                        break;
+                                                    }
+                                                }
+                                            } else {
+                                                s.seasonNum = seasonNum;
+                                            }
+
+                                            if (s.trackedEpisodes != null && !s.trackedEpisodes.isEmpty())
+                                                s.trackedEpisodes.clear();
+
+                                            Globals.removeTrackedShow(tv.id);
+
+                                            int totalEps = 0;
+                                            for (final FullTvSeasonDetails.Episode e : episodes) {
+                                                final Map<String, Object> trackData = new HashMap<>();
+
+                                                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                                                try {
+                                                    Date episodeDate = sdf.parse(e.getAir_date());
+                                                    if (episodeDate.before(date)) {
+                                                        totalEps++;
+                                                    }
+                                                } catch (ParseException ex) {
+                                                    ex.printStackTrace();
+                                                }
+
+                                                trackData.put("date", date);
+                                                trackData.put("episodeName", e.getName());
+                                                trackData.put("episodeNum", e.getEpisode_number());
+
+                                                trackData.put("id", e.getId());
+                                                trackData.put("seriesName", show.getName());
+
+                                                String episodeString = "Episode " + e.getEpisode_number();
+                                                trackedEpisode.put(episodeString, trackData);
+
+                                                Globals.trackedTV.Episode ep = new Globals.trackedTV.Episode();
+                                                ep.date = date;
+                                                ep.episodeName = e.getName();
+                                                ep.id = e.getId();
+                                                ep.seriesName = show.getName();
+                                                ep.episodeNum = e.getEpisode_number();
+                                                s.addEpisode(ep);
+                                            }
+                                            s.totalEpisodes = totalEps;
+                                            trackedEpisode.put("totalEpisodes", totalEps);
+
+                                            tv.trackedSeasons.add(s);
+                                            Globals.addToTrackedTvShows(tv);
+
+                                            String seasonString = "Season " + seasonNum;
+                                            trackedSeason.put(seasonString, trackedEpisode);
+                                            trackedSeason.put("name", show.getName());
+                                            trackedSeason.put("poster_path", show.getPoster_path());
+                                            trackedSeason.put("lastWatched", date);
+                                            trackedSeason.put("genres", genres);
+                                            trackedSeason.put("totalSeasons", show.getSeason().size());
+                                            trackedTV.put(show.getId(), trackedSeason);
 
                                             if (!doc.exists()) {
                                                 ref.set(trackedTV);
                                             } else {
                                                 if (doc.contains(show.getId())) { // Show exists
-                                                    HashMap currentStoredSeasons = ((HashMap)doc.get(show.getId()));
-                                                    for (Map.Entry<String, Object> entry : trackedSeasons.entrySet()) {
-                                                        String seasonString;
-                                                        if (entry.getKey().contains("Season")) {
-                                                            seasonString = entry.getKey();
-                                                            if ((((HashMap)doc.get(show.getId())).containsKey(seasonString))) { // Season exists
-                                                                HashMap currentStoredSeason = ((HashMap)((HashMap)doc.get(show.getId())).get(seasonString));
-                                                                HashMap<String, Object> allEpisodes = (HashMap<String, Object>)entry.getValue();
-                                                                for (Map.Entry<String, Object> e : allEpisodes.entrySet()) {
-                                                                    if (!currentStoredSeason.containsKey(e.getKey())) {
-                                                                        currentStoredSeason.put(e.getKey(), e.getValue());
-                                                                    }
-                                                                }
-                                                                if (!currentStoredSeason.isEmpty())
-                                                                    currentStoredSeasons.put(seasonString, currentStoredSeason);
-                                                            } else { // Season doesn't exist
-                                                                HashMap<String, Object> allEpisodes = (HashMap<String, Object>)entry.getValue();
-                                                                currentStoredSeasons.put(seasonString, allEpisodes);
+                                                    if (!(((HashMap)doc.get(show.getId())).containsKey(seasonString))) { // Season doesn't exist
+                                                        HashMap<String, Object> currentSeasons = ((HashMap<String, Object>)doc.get(show.getId()));
+                                                        currentSeasons.put(seasonString, trackedSeason.get(seasonString));
+                                                        ref.update(show.getId(), currentSeasons);
+                                                        ref.update(show.getId() + ".lastWatched", trackedSeason.get("lastWatched"));
+                                                    } else { //Season exists
+                                                        HashMap<String, Object> currentSeasons = ((HashMap<String, Object>)doc.get(show.getId()));
+                                                        HashMap<String, Object> currentSeason = (HashMap<String, Object>)currentSeasons.get(seasonString);
+                                                        for (Map.Entry<String, Object> entry : trackedEpisode.entrySet()) {
+                                                            if (!currentSeason.containsKey(entry.getKey())) {
+                                                                currentSeason.put(entry.getKey(), entry.getValue());
                                                             }
                                                         }
+                                                        currentSeasons.put(seasonString, currentSeason);
+                                                        ref.update(show.getId(), currentSeasons);
+                                                        ref.update(show.getId() + ".lastWatched", trackedSeason.get("lastWatched"));
                                                     }
-                                                    ref.update(show.getId(), currentStoredSeasons);
                                                 } else {
-                                                    ref.update(show.getId(), trackedTV.get(show.getId()));
+                                                    ref.update(trackedTV);
                                                 }
                                             }
-                                            mActivity.runOnUiThread(new Runnable() {
+
+                                            final DocumentReference userRef = FirebaseFirestore.getInstance().collection("UserDetails").document(username);
+                                            userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                                 @Override
-                                                public void run() {
-                                                    progressBar.setVisibility(View.GONE);
-                                                    Toast.makeText(mContext.getApplicationContext(), "TV Show Tracked!", Snackbar.LENGTH_LONG).show();
+                                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                                    if (task.isSuccessful()) {
+                                                        DocumentSnapshot doc = task.getResult();
+                                                        Map<String, Object> userData = new HashMap<>();
+                                                        Map<String, Long> userGenres = (Map<String, Long>)doc.get("genresWatched");
+                                                        for (FullTvShowDetails.Genre g : genreList) {
+                                                            if (userGenres.containsKey(g.name)) {
+                                                                userGenres.put(g.name, userGenres.get(g.name) + 1);
+                                                            } else {
+                                                                userGenres.put(g.name, 1L);
+                                                            }
+                                                        }
+                                                        userData.put("genresWatched", userGenres);
+                                                        userRef.update(userData);
+
+                                                        mActivity.runOnUiThread(new Runnable() {
+                                                            @Override
+                                                            public void run() {
+                                                                progressBar.setVisibility(View.GONE);
+                                                                Toast.makeText(mContext.getApplicationContext(), "TV Season Tracked!", Snackbar.LENGTH_LONG).show();
+                                                            }
+                                                        });
+                                                    }
                                                 }
                                             });
                                         }
                                     });
-                                    flagCheck.start();
                                 }
                             });
                         }
-                    }
-                });
+                    }).start();
+                }
             }
         });
+    }
 
-        dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+    private static void trackTVShowDialog(final Context mContext, final Activity mActivity, final String username, final String seriesId, final MaterialProgressBar progressBar, boolean showDialog) {
+        if (showDialog) {
+            final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, mContext, "Track TV", "Are you sure you want to track this entire tv show?");
+            dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    trackTVShow(mContext, mActivity, username, seriesId, progressBar);
+                }
+            });
+            dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialog.dismiss();
+                }
+            });
+            dialog.show();
+        } else {
+            trackTVShow(mContext, mActivity, username, seriesId, progressBar);
+        }
+    }
+
+    private static void trackTVShow(final Context mContext, final Activity mActivity, final String username, final String seriesId, final MaterialProgressBar progressBar) {
+        progressBar.setVisibility(View.VISIBLE);
+        final DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedTV").document(username);
+        ref.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialog.dismiss();
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    final DocumentSnapshot doc = task.getResult();
+                    TmdbClient.getFullTvShowDetails(seriesId, null, new JsonHttpResponseHandler() {
+                        @Override
+                        public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                            final FullTvShowDetails show = new Gson().fromJson(response.toString(), FullTvShowDetails.class);
+                            if (show == null)
+                                return;
+
+                            final Map<String, Object> trackedTV = new HashMap<>();
+
+                            final ArrayList<FullTvShowDetails.Genre> genreList = show.getGenres();
+
+                            for (final FullTvShowDetails.season s : show.getSeason()) {
+                                flags.put(s, false);
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Map.Entry<String, Object> entry = trackSeasonForShowTrack(seriesId, s, show, genreList);
+                                        trackedSeasons.put(entry.getKey(), entry.getValue());
+                                    }
+                                }).start();
+                            }
+
+                            final Thread flagCheck = new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    while (checkForNotCompletes(flags)) {
+
+                                    }
+                                    trackedSeasons.put("name", show.getName());
+                                    trackedSeasons.put("poster_path", show.getPoster_path());
+                                    trackedSeasons.put("lastWatched", new Date());
+                                    Map<String, String> genres = new HashMap<>();
+                                    for (FullTvShowDetails.Genre g : genreList) {
+                                        genres.put(String.valueOf(g.id), g.name);
+                                    }
+                                    trackedSeasons.put("genres", genres);
+                                    trackedSeasons.put("totalSeasons", show.getSeason().size());
+                                    trackedTV.put(show.getId(), trackedSeasons);
+
+                                    if (!doc.exists()) {
+                                        ref.set(trackedTV);
+                                    } else {
+                                        if (doc.contains(show.getId())) { // Show exists
+                                            HashMap currentStoredSeasons = ((HashMap)doc.get(show.getId()));
+                                            for (Map.Entry<String, Object> entry : trackedSeasons.entrySet()) {
+                                                String seasonString;
+                                                if (entry.getKey().contains("Season ")) {
+                                                    seasonString = entry.getKey();
+                                                    if ((((HashMap)doc.get(show.getId())).containsKey(seasonString))) { // Season exists
+                                                        HashMap currentStoredSeason = ((HashMap)((HashMap)doc.get(show.getId())).get(seasonString));
+                                                        HashMap<String, Object> allEpisodes = (HashMap<String, Object>)entry.getValue();
+                                                        for (Map.Entry<String, Object> e : allEpisodes.entrySet()) {
+                                                            if (!currentStoredSeason.containsKey(e.getKey())) {
+                                                                currentStoredSeason.put(e.getKey(), e.getValue());
+                                                            }
+                                                        }
+                                                        if (!currentStoredSeason.isEmpty())
+                                                            currentStoredSeasons.put(seasonString, currentStoredSeason);
+                                                    } else { // Season doesn't exist
+                                                        HashMap<String, Object> allEpisodes = (HashMap<String, Object>)entry.getValue();
+                                                        currentStoredSeasons.put(seasonString, allEpisodes);
+                                                    }
+                                                }
+                                            }
+                                            ref.update(show.getId(), currentStoredSeasons);
+                                            ref.update(show.getId() + ".lastWatched", trackedSeasons.get("lastWatched"));
+                                        } else {
+                                            ref.update(show.getId(), trackedTV.get(show.getId()));
+                                            ref.update(show.getId() + ".lastWatched", trackedSeasons.get("lastWatched"));
+                                        }
+                                    }
+
+                                    final DocumentReference userRef = FirebaseFirestore.getInstance().collection("UserDetails").document(username);
+                                    userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                            if (task.isSuccessful()) {
+                                                DocumentSnapshot doc = task.getResult();
+                                                Map<String, Object> userData = new HashMap<>();
+                                                Map<String, Long> userGenres = (Map<String, Long>)doc.get("genresWatched");
+                                                for (FullTvShowDetails.Genre g : genreList) {
+                                                    userGenres.put(g.name, userGenres.get(g.name) + 1);
+                                                }
+                                                userData.put("genresWatched", userGenres);
+                                                userRef.update(userData);
+
+                                                mActivity.runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        progressBar.setVisibility(View.GONE);
+                                                        Toast.makeText(mContext.getApplicationContext(), "TV Show Tracked!", Snackbar.LENGTH_LONG).show();
+                                                    }
+                                                });
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                            flagCheck.start();
+                        }
+                    });
+                }
             }
         });
-
-        return dialog;
     }
 
     private static boolean checkForNotCompletes(Map<FullTvShowDetails.season, Boolean> map) {
@@ -582,7 +757,7 @@ public class MediaTracking {
         return false;
     }
 
-    private static synchronized Map.Entry<String, Object> trackSeasonForShowTrack(String seriesId, final FullTvShowDetails.season s, final FullTvShowDetails show, final ArrayList<FullTvShowDetails.Genre> genreList) {
+    private static synchronized Map.Entry<String, Object> trackSeasonForShowTrack(final String seriesId, final FullTvShowDetails.season s, final FullTvShowDetails show, final ArrayList<FullTvShowDetails.Genre> genreList) {
         final HashMap<String, Object> tempMap = new HashMap<>();
         SyncHttpClient client = new SyncHttpClient();
         String url = "https://api.themoviedb.org/3/" + "tv/"+ seriesId + "/season/" + s.season_number + "?api_key=" + TmdbClient.key;
@@ -601,26 +776,51 @@ public class MediaTracking {
 
                 Date date = new Date();
 
-                Globals.trackedTV tv = null;
-                if (Globals.trackedTVContains(show.getId())) {
+                Globals.trackedTV tv = new Globals.trackedTV();
+                if (Globals.basicTvShowExists(show.getId())) {
                     for (Globals.trackedTV t : Globals.getTrackedTvShows()) {
-                        if (t.id.equals(show.getId())) {
-                            tv = t;
+                        if (t.id.equals(seriesId)) {
+                            tv = (Globals.trackedTV) cloneObject(t);
+                            break;
                         }
                     }
                 } else {
-                    tv = new Globals.trackedTV();
+                    tv.date = date;
+                    tv.id = show.getId();
+                    tv.name = show.getName();
+                    tv.poster_path = show.getPoster_path();
+                    SerializableSparseArray<String> trackedGenres = new SerializableSparseArray<>();
+                    for (FullTvShowDetails.Genre g : genreList) {
+                        trackedGenres.put(g.id, g.name);
+                    }
+                    tv.genres = trackedGenres;
+                    tv.totalSeasons = show.getNumber_of_seasons();
                 }
-                tv.date = date;
-                tv.id = show.getId();
-                tv.name = show.getName();
-                tv.poster_path = show.getPoster_path();
-                SparseArray<String> trackedGenres = new SparseArray<>();
-                for (FullTvShowDetails.Genre g : genreList) {
-                    trackedGenres.put(g.id, g.name);
-                }
-                tv.genres = trackedGenres;
 
+                Globals.trackedTV.Season sTemp = new Globals.trackedTV.Season();
+                if (Globals.trackedSeasonExists(seriesId, s.season_number) == Globals.responseType.PARTIAL || Globals.trackedSeasonExists(seriesId, s.season_number) == Globals.responseType.FULL) {
+                    for (Globals.trackedTV t : Globals.getTrackedTvShows()) {
+                        if (t.id.equals(seriesId)) {
+                            for (Globals.trackedTV.Season seasonTemp : t.trackedSeasons) {
+                                if (seasonTemp.seasonNum == s.season_number) {
+                                    sTemp = (Globals.trackedTV.Season) cloneObject(seasonTemp);
+                                    tv.removeSeason(sTemp.seasonNum);
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                } else {
+                    sTemp.seasonNum = s.season_number;
+                }
+
+                if (sTemp.trackedEpisodes != null && !sTemp.trackedEpisodes.isEmpty())
+                    sTemp.trackedEpisodes.clear();
+
+                Globals.removeTrackedShow(tv.id);
+
+                int totalEps = 0;
                 for (final FullTvSeasonDetails.Episode e : episodes) {
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                     try {
@@ -628,6 +828,8 @@ public class MediaTracking {
                         if (episodeDate.after(date)) {
                             flags.put(s, true);
                             break;
+                        } else {
+                            totalEps++;
                         }
                     } catch (ParseException ex) {
                         ex.printStackTrace();
@@ -650,8 +852,13 @@ public class MediaTracking {
                     ep.id = e.getId();
                     ep.seriesName = show.getName();
                     ep.episodeNum = e.getEpisode_number();
-                    tv.addEpisode(ep);
+                    sTemp.addEpisode(ep);
                 }
+                sTemp.totalEpisodes = totalEps;
+                trackedEpisode.put("totalEpisodes", totalEps);
+
+                tv.trackedSeasons.add(sTemp);
+                Globals.addToTrackedTvShows(tv);
 
                 String seasonString = "Season " + s.season_number;
                 tempMap.put(seasonString, trackedEpisode);
@@ -707,7 +914,7 @@ public class MediaTracking {
                                                 public void run() {
                                                     if (progressBar != null)
                                                         progressBar.setVisibility(View.GONE);
-                                                    Toast.makeText(mContext.getApplicationContext(), "Movie Untracked!", Snackbar.LENGTH_LONG).show();
+                                                    Toast.makeText(mContext.getApplicationContext(), "Movie Untracked!", Toast.LENGTH_LONG).show();
                                                 }
                                             });
                                         }
@@ -730,7 +937,230 @@ public class MediaTracking {
         return dialog;
     }
 
-    public static void untrackTV() {
+    public static void untrackTV(final Context mContext, final Activity mActivity, String type, final String username, final String seriesId, @Nullable final Integer seasonNum, @Nullable Integer episodeNum, final MaterialProgressBar progressBar, boolean asking) {
+        switch (type) {
+            case "series":
+                if (asking) {
+                    AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, mContext, "Track?", "Do you want to track the rest of this show, or untrack all episodes?");
+                    dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Track", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            trackTVShow(mContext, mActivity, username, seriesId, progressBar);
+                        }
+                    });
+                    dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Untrack", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            untrackTvShowDialog(mContext, mActivity, username, seriesId, progressBar, false);
+                        }
+                    });
+                    dialog.show();
+                } else {
+                    untrackTvShowDialog(mContext, mActivity, username, seriesId, progressBar, true);
+                }
+                break;
+            case "season":
+                if (seasonNum != null)
+                    if (asking) {
+                        AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, mContext, "Track?", "Do you want to track the rest of this season, or untrack all episodes?");
+                        dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Track", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                trackTVSeason(mContext, mActivity, username, seriesId, seasonNum, progressBar);
+                            }
+                        });
+                        dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Untrack", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                untrackTvSeasonDialog(mContext, mActivity, username, seriesId, seasonNum, progressBar, false);
+                            }
+                        });
+                        dialog.show();
+                    } else {
+                        untrackTvSeasonDialog(mContext, mActivity, username, seriesId, seasonNum, progressBar, true);
+                    }
+                else
+                    Log.e("Tracking Season", "SeasonNum was null.");
+                break;
+            case "episode":
+                if (seasonNum != null && episodeNum != null)
+                    untrackTvEpisodeDialog(mContext, mActivity, username, seriesId, seasonNum, episodeNum, progressBar, true);
+                else
+                    Log.e("Tracking Episode", "SeasonNum or EpisodeNum was null.");
+                break;
+            default:
+                Log.e("Tracking", "Type was invalid.");
+        }
+    }
 
+    private static void untrackTvShowDialog(final Context mContext, final Activity mActivity, final String username, final String seriesId, final MaterialProgressBar progressBar, boolean showDialog) {
+        if (showDialog) {
+            final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, mContext, "Untrack TV", "Are you sure you want to untrack this entire tv show?");
+            dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    untrackTVShow(mContext, mActivity, username, seriesId, progressBar);
+                }
+            });
+            dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialog.dismiss();
+                }
+            });
+            dialog.show();
+        } else {
+            untrackTVShow(mContext, mActivity, username, seriesId, progressBar);
+        }
+    }
+
+    private static void untrackTVShow(final Context mContext, final Activity mActivity, final String username, final String seriesId, final MaterialProgressBar progressBar) {
+        progressBar.setVisibility(View.VISIBLE);
+        DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedTV").document(username);
+        ref.update(seriesId, FieldValue.delete());
+
+        Globals.removeTrackedShow(seriesId);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                SyncHttpClient client = new SyncHttpClient();
+                String url = "https://api.themoviedb.org/3/" + "tv/" + seriesId + "?api_key=" + TmdbClient.key;
+                client.get(url, null, new JsonHttpResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                        FullTvShowDetails tvDetails = new Gson().fromJson(response.toString(), FullTvShowDetails.class);
+                        if (tvDetails == null)
+                            return;
+                        final ArrayList<FullTvShowDetails.Genre> genreList = tvDetails.getGenres();
+
+                        final DocumentReference userRef = FirebaseFirestore.getInstance().collection("UserDetails").document(username);
+                        userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                if (task.isSuccessful()) {
+                                    DocumentSnapshot doc = task.getResult();
+                                    Map<String, Object> userData = new HashMap<>();
+                                    Map<String, Long> userGenres = (Map<String, Long>)doc.get("genresWatched");
+                                    for (FullTvShowDetails.Genre g : genreList) {
+                                        userGenres.put(g.name, userGenres.get(g.name) - 1);
+                                    }
+                                    userData.put("genresWatched", userGenres);
+                                    userRef.update(userData);
+
+                                    mActivity.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            progressBar.setVisibility(View.GONE);
+                                            Toast.makeText(mContext.getApplicationContext(), "TV Show Untracked", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        }).start();
+    }
+
+    private static void untrackTvSeasonDialog(final Context mContext, final Activity mActivity, final String username, final String seriesId, final int seasonNum, final MaterialProgressBar progressBar, boolean showDialog) {
+        if (showDialog) {
+            final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, mContext, "Untrack TV", "Are you sure you want to untrack this entire tv season?");
+            dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    untrackSeason(mActivity, username, seriesId, seasonNum, progressBar);
+                }
+            });
+
+            dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialog.dismiss();
+                }
+            });
+
+            dialog.show();
+        } else
+            untrackSeason(mActivity, username, seriesId, seasonNum, progressBar);
+    }
+
+    private static void untrackSeason(final Activity mActivity, String username, String seriesId, int seasonNum, final MaterialProgressBar progressBar) {
+        progressBar.setVisibility(View.VISIBLE);
+
+        Globals.removeTrackedSeason(seriesId, seasonNum);
+
+        DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedTV").document(username);
+        Map<String, Object> seasonToDelete = new HashMap<>();
+        seasonToDelete.put(seriesId + ".Season " + seasonNum, FieldValue.delete());
+        ref.update(seasonToDelete).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(mActivity.getApplicationContext(), "Season Untracked!", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private static void untrackTvEpisodeDialog(final Context mContext, final Activity mActivity, final String username, final String seriesId, final int seasonNum, final int episodeNum, final MaterialProgressBar progressBar, boolean showDialog) {
+        if (showDialog) {
+            final AlertDialog dialog = SimpleDialog.create(DialogOption.YesCancel, mContext, "Untrack Episode", "Are you sure you want to untrack this episode?");
+            dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    untrackTVEpisode(mActivity, username, seriesId, seasonNum, episodeNum, progressBar);
+                }
+            });
+
+            dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialog.dismiss();
+                }
+            });
+
+            dialog.show();
+        } else
+            untrackTVEpisode(mActivity, username, seriesId, seasonNum, episodeNum, progressBar);
+    }
+
+    private static void untrackTVEpisode(final Activity mActivity, final String username, final String seriesId, final int seasonNum, final int episodeNum, final MaterialProgressBar progressBar) {
+        progressBar.setVisibility(View.VISIBLE);
+
+        Globals.removeTrackedEpisode(seriesId, seasonNum, episodeNum);
+
+        DocumentReference ref = FirebaseFirestore.getInstance().collection("TrackedTV").document(username);
+        Map<String, Object> episodeToDelete = new HashMap<>();
+        episodeToDelete.put(seriesId + ".Season " + seasonNum + ".Episode " + episodeNum, FieldValue.delete());
+        ref.update(episodeToDelete).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(mActivity.getApplicationContext(), "Episode Untracked!", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private static Object cloneObject(Object orig) {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = null;
+        try {
+            oos = new ObjectOutputStream(bos);
+            oos.writeObject(orig);
+            oos.flush();
+            oos.close();
+            bos.close();
+            byte[] byteData = bos.toByteArray();
+            ByteArrayInputStream bais = new ByteArrayInputStream(byteData);
+            Object object = new ObjectInputStream(bais).readObject();
+            return object;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

@@ -81,7 +81,7 @@ public class TvEpisodeFullScreenDialog extends DialogFragment {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MediaTracking.trackTV(getContext(), getActivity(),"episode", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), seriesId, seasonNum, episodeNum, progressBar).show();
+                trackEpisode();
             }
         });
 
@@ -150,5 +150,12 @@ public class TvEpisodeFullScreenDialog extends DialogFragment {
                 tvEpisodePlot.setText(tvEpisodeDetails.getOverview());
             }
         });
+    }
+
+    void trackEpisode() {
+        if (Globals.trackedEpisodeExists(seriesId, seasonNum, episodeNum).equals(Globals.responseType.NONE))
+            MediaTracking.trackTV(getContext(), getActivity(),"episode", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), seriesId, seasonNum, episodeNum, progressBar);
+        else
+            MediaTracking.untrackTV(getContext(), getActivity(), "episode", sharedPref.getString(getString(R.string.prefs_loggedin_username), null), seriesId, seasonNum, episodeNum, progressBar, false);
     }
 }

@@ -9,8 +9,6 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.SparseArray;
-import android.view.Menu;
-import android.view.View;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -26,7 +24,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -186,30 +183,38 @@ public class SplashScreen extends Activity {
                             Timestamp timestamp = (Timestamp)field.get("lastWatched");
                             tv.date = timestamp.toDate();
                             tv.poster_path = (String)field.get("poster_path");
-                            SparseArray<String> genres = new SparseArray<>();
+                            SerializableSparseArray<String> genres = new SerializableSparseArray<>();
                             for (Map.Entry<String, String> gEntry : ((HashMap<String, String>)field.get("genres")).entrySet()) {
                                 genres.put(Integer.parseInt(gEntry.getKey()), gEntry.getValue());
                             }
                             tv.genres = genres;
-                            Map<String, ArrayList<Globals.trackedTV.Episode>> seasons = new HashMap<>();
+                            tv.totalSeasons = ((Long)field.get("totalSeasons")).intValue();
+                            ArrayList<Globals.trackedTV.Season> seasons = new ArrayList<>();
                             for (Map.Entry<String, Object> e : field.entrySet()) {
                                 if (e.getKey().contains("Season ")) {
-                                    ArrayList<Globals.trackedTV.Episode> episodes = new ArrayList<>();
-                                    for (Map.Entry<String, HashMap> eEntry : ((HashMap<String, HashMap>)e.getValue()).entrySet()) {
-                                        Globals.trackedTV.Episode ep = new Globals.trackedTV.Episode();
-                                        Timestamp ts = (Timestamp)eEntry.getValue().get("date");
-                                        ep.date = ts.toDate();
-                                        ep.episodeName = (String)eEntry.getValue().get("episodeName");
-                                        ep.id = (String)eEntry.getValue().get("id");
-                                        ep.seriesName = (String)eEntry.getValue().get("seriesName");
-                                        ep.episodeNum = ((Long)eEntry.getValue().get("episodeNum")).intValue();
-                                        ep.seasonNum = Integer.parseInt(e.getKey().replace("Season ", ""));
-                                        episodes.add(ep);
+                                    Globals.trackedTV.Season season = new Globals.trackedTV.Season();
+                                    ArrayList<Globals.trackedTV.Episode> trackedEpisodes = new ArrayList<>();
+                                    for (Map.Entry<String, Object> eEntry : ((HashMap<String, Object>)e.getValue()).entrySet()) {
+                                        if (eEntry.getKey().contains("Episode ")) {
+                                            Globals.trackedTV.Episode ep = new Globals.trackedTV.Episode();
+                                            Timestamp ts = (Timestamp) ((HashMap)eEntry.getValue()).get("date");
+                                            ep.date = ts.toDate();
+                                            ep.episodeName = (String) ((HashMap)eEntry.getValue()).get("episodeName");
+                                            ep.id = (String) ((HashMap)eEntry.getValue()).get("id");
+                                            ep.seriesName = (String) ((HashMap)eEntry.getValue()).get("seriesName");
+                                            ep.episodeNum = ((Long) ((HashMap)eEntry.getValue()).get("episodeNum")).intValue();
+                                            ep.seasonNum = Integer.parseInt(e.getKey().replace("Season ", ""));
+                                            trackedEpisodes.add(ep);
+                                        } else {
+                                            season.totalEpisodes = ((Long) eEntry.getValue()).intValue();
+                                        }
                                     }
-                                    seasons.put(e.getKey(), episodes);
+                                    season.trackedEpisodes = trackedEpisodes;
+                                    season.seasonNum = Integer.parseInt(e.getKey().replace("Season ", ""));
+                                    seasons.add(season);
                                 }
                             }
-                            tv.seasons = seasons;
+                            tv.trackedSeasons = seasons;
                             tvList.add(tv);
                         }
                         Globals.setTrackedTvShows(tvList);

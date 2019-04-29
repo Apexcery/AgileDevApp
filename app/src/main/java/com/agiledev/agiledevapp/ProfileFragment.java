@@ -73,12 +73,16 @@ public class ProfileFragment extends Fragment {
     private static StorageReference avatarRef = FirebaseStorage.getInstance().getReference().child("avatars");
 
     static String username;
-    String imgExt;
 
     boolean viewingSelf = false;
 
     static CircleImageView imgAvatar;
     static ProgressBar imgAvatarSpinner;
+
+    public static HorizontalAdapter movieAdapter;
+    public static HorizontalAdapter tvAdapter;
+
+    RecyclerView movieRecycler;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -101,7 +105,7 @@ public class ProfileFragment extends Fragment {
         final CircleImageView imgAvatarEdit = view.findViewById(R.id.profile_avatar_edit);
         imgAvatarSpinner = view.findViewById(R.id.profile_avatar_spinner);
         final TextView txtTimeWatched = view.findViewById(R.id.profile_time_watched);
-        RecyclerView rcyLastMovies = view.findViewById(R.id.profile_last_movies_recycler);
+        movieRecycler = view.findViewById(R.id.profile_last_movies_recycler);
         RecyclerView rcyLastShows = view.findViewById(R.id.profile_last_shows_recycler);
         final BarChart chart = view.findViewById(R.id.profile_genre_chart);
 
@@ -252,7 +256,7 @@ public class ProfileFragment extends Fragment {
         txtNoMoviesWatched.setText(String.valueOf(noMovies));
         txtNoTVShowsWatched.setText(String.valueOf(noShows));
 
-        populateLastWatched(rcyLastMovies, rcyLastShows, view);
+        populateLastWatched(movieRecycler, rcyLastShows, view);
 
         TextView viewMoreMovies = view.findViewById(R.id.profile_view_more_movies);
         viewMoreMovies.setOnClickListener(new View.OnClickListener() {
@@ -290,10 +294,35 @@ public class ProfileFragment extends Fragment {
         RecyclerView.LayoutManager tvLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         tvRecycler.setLayoutManager(tvLayoutManager);
 
-        RecyclerView.Adapter adapter = new HorizontalAdapter(getContext(), lastMovies, getActivity().getSupportFragmentManager(), HorizontalAdapter.MediaType.MOVIE, null);
-        movieRecycler.setAdapter(adapter);
-        adapter = new HorizontalAdapter(getContext(), lastShows, getActivity().getSupportFragmentManager(), HorizontalAdapter.MediaType.TV, null);
-        tvRecycler.setAdapter(adapter);
+        movieAdapter = new HorizontalAdapter(getContext(), lastMovies, getActivity().getSupportFragmentManager(), HorizontalAdapter.MediaType.MOVIE, null, this);
+        movieRecycler.setAdapter(movieAdapter);
+        tvAdapter = new HorizontalAdapter(getContext(), lastShows, getActivity().getSupportFragmentManager(), HorizontalAdapter.MediaType.TV, null, this);
+        tvRecycler.setAdapter(tvAdapter);
+    }
+
+    interface ReturnToProfileListener {
+        void onDialogDismissed();
+    }
+
+    public void openMovieDialog(String id) {
+        final ProfileFragment self = this;
+        MovieFullScreenDialog dialog = MovieFullScreenDialog.newInstance(id, new ReturnToProfileListener() {
+            @Override
+            public void onDialogDismissed() {
+                getActivity().getSupportFragmentManager().beginTransaction().detach(self).attach(self).commit();
+            }
+        });
+        dialog.show(getActivity().getSupportFragmentManager(), MovieFullScreenDialog.TAG);
+    }
+    public void openTVDialog(String id) {
+        final ProfileFragment self = this;
+        TvShowFullScreenDialog dialog = TvShowFullScreenDialog.newInstance(id, new ReturnToProfileListener() {
+            @Override
+            public void onDialogDismissed() {
+                getActivity().getSupportFragmentManager().beginTransaction().detach(self).attach(self).commit();
+            }
+        });
+        dialog.show(getActivity().getSupportFragmentManager(), MovieFullScreenDialog.TAG);
     }
 
     void changeAvatar() {
@@ -335,5 +364,4 @@ public class ProfileFragment extends Fragment {
             }
         });
     }
-
 }

@@ -80,11 +80,22 @@ public class MovieFullScreenDialog extends DialogFragment {
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    static ProfileFragment.ReturnToProfileListener listener;
+
     public static MovieFullScreenDialog newInstance(String id) {
         MovieFullScreenDialog fragment = new MovieFullScreenDialog();
         Bundle args = new Bundle();
         args.putString("id", id);
         fragment.setArguments(args);
+        return fragment;
+    }
+
+    public static MovieFullScreenDialog newInstance(String id, ProfileFragment.ReturnToProfileListener returnListener) {
+        MovieFullScreenDialog fragment = new MovieFullScreenDialog();
+        Bundle args = new Bundle();
+        args.putString("id", id);
+        fragment.setArguments(args);
+        listener = returnListener;
         return fragment;
     }
 
@@ -129,8 +140,6 @@ public class MovieFullScreenDialog extends DialogFragment {
                 trackMovie();
             }
         });
-
-//        getMovieDetails(view);
 
         return view;
     }
@@ -289,5 +298,12 @@ public class MovieFullScreenDialog extends DialogFragment {
     public void onDestroy() {
         super.onDestroy();
         dismiss();
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        super.onDismiss(dialog);
+        if (listener != null)
+            listener.onDialogDismissed();
     }
 }

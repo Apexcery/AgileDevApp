@@ -51,7 +51,7 @@ public class SwipeToTrackCallback extends ItemTouchHelper.SimpleCallback {
             else
                 background = new ColorDrawable(Color.GREEN);
         } else if (mediaType == MediaTracking.Media.TV) {
-            tracked = Globals.trackedTVContains(((BasicTvShowDetails)mediaList.get(position)).getId());
+            tracked = Globals.basicTvShowExists(((BasicTvShowDetails)mediaList.get(position)).getId());
             if (tracked)
                 background = new ColorDrawable(Color.RED);
             else
