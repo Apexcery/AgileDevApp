@@ -177,31 +177,41 @@ public class TvShowFullScreenDialog extends DialogFragment {
 
                 String nextEpString = "", firstReleased = "";
                 if (TvShowFullScreenDialog.this.isAdded()) {
-                    Glide.with(TvShowFullScreenDialog.this).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
-                        @Override
-                        public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
-                            return false;
-                        }
+                    if (tvshowDetails.getBackdrop_path() != null) {
+                        Glide.with(TvShowFullScreenDialog.this).load(uri).listener(new RequestListener<Uri, GlideDrawable>() {
+                            @Override
+                            public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
+                                return false;
+                            }
 
-                        @Override
-                        public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                            trailerVideoPlayImage.setVisibility(View.VISIBLE);
+                            @Override
+                            public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                                trailerVideoPlayImage.setVisibility(View.VISIBLE);
 
-                            final FullTvShowDetails.Video tempVideo = tvshowDetails.getVideos().get(0); //TODO: Deal with the possibility of no videos.
-
-                            trailerVideoPlayImage.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    openYoutubeVideo(getContext(), tempVideo.getKey());
+                                final FullTvShowDetails.Video tempVideo;
+                                if (tvshowDetails.getVideos() != null && tvshowDetails.getVideos().size() > 0) {
+                                    tempVideo = tvshowDetails.getVideos().get(0);
+                                    trailerVideoPlayImage.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            openYoutubeVideo(getContext(), tempVideo.getKey());
+                                        }
+                                    });
+                                } else {
+                                    trailerVideoPlayImage.setVisibility(View.GONE);
                                 }
-                            });
 
-                            view.findViewById(R.id.tvshowLoadingSpinner).setVisibility(View.GONE);
-                            view.findViewById(R.id.fabTrackTV).setVisibility(View.VISIBLE);
-                            pageContent.setVisibility(View.VISIBLE);
-                            return false;
-                        }
-                    }).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).dontAnimate().into(trailerVideoImage);
+                                view.findViewById(R.id.tvshowLoadingSpinner).setVisibility(View.GONE);
+                                view.findViewById(R.id.fabTrackTV).setVisibility(View.VISIBLE);
+                                pageContent.setVisibility(View.VISIBLE);
+                                return false;
+                            }
+                        }).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).dontAnimate().into(trailerVideoImage);
+                    } else {
+                        view.findViewById(R.id.tvshowLoadingSpinner).setVisibility(View.GONE);
+                        view.findViewById(R.id.fabTrackTV).setVisibility(View.VISIBLE);
+                        pageContent.setVisibility(View.VISIBLE);
+                    }
 
                     firstReleased = getResources().getString(R.string.first_released) + " <font color='#ffffff'>" + tvshowDetails.getFirst_air_date() + "</font>";
                     nextEpString = tvshowDetails.getNext_episode_to_air() == null ? getResources().getString(R.string.nextep) + " <font color='#ffffff'>N/A</font>" : getResources().getString(R.string.nextep) + " <font color='#ffffff'>" + tvshowDetails.getNext_episode_to_air().air_date + "</font>";
